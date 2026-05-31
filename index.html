@@ -313,12 +313,12 @@ const catalysts = [
     description: "Trump posted deal is 'largely negotiated.' MOU being finalized. Strait reopening = oil crash + broad market rally.",
     trigger: "Trump Truth Social post confirming MOU signed / Strait reopening",
     tickers: [
-      { symbol: "DAL", tv: "NYSE:DAL", name: "Delta Air Lines", sector: "Airlines", direction: "BUY", thesis: "Oil drop = fuel cost savings → margin expansion. Airlines are the biggest beneficiary of any Hormuz reopening.", confidence: "HIGH" },
+      { symbol: "DAL", tv: "NYSE:DAL", name: "Delta Air Lines", sector: "Airlines", direction: "BUY", thesis: "Oil drop = fuel cost savings → margin expansion. Airlines are the biggest beneficiary of fuel cost decline.", confidence: "HIGH" },
       { symbol: "UAL", tv: "NASDAQ:UAL", name: "United Airlines", sector: "Airlines", direction: "BUY", thesis: "Same fuel cost thesis as DAL. High operating leverage to oil price decline.", confidence: "HIGH" },
-      { symbol: "QQQ", tv: "NASDAQ:QQQ", name: "Nasdaq 100 ETF", sector: "Broad Tech", direction: "BUY", thesis: "Lower oil = lower inflation = rate cut expectations return. Tech re-rates upward quickly.", confidence: "HIGH" },
+      { symbol: "QQQ", tv: "NASDAQ:QQQ", name: "Nasdaq 100 ETF", sector: "Broad Tech", direction: "BUY", thesis: "Lower oil = lower inflation = rate cut expectations return. Tech re-rates upward quickly on Fed pivot.", confidence: "HIGH" },
       { symbol: "SPY", tv: "AMEX:SPY", name: "S&P 500 ETF", sector: "Broad Market", direction: "BUY", thesis: "Peace deal = risk-on. Broad market rallies as energy crisis risk premium unwinds.", confidence: "HIGH" },
-      { symbol: "XOM", tv: "NYSE:XOM", name: "Exxon Mobil", sector: "Energy", direction: "WATCH", thesis: "Oil drops on reopening — XOM loses near-term. Strong long-term at $35 breakeven. Watch for dip entry.", confidence: "MEDIUM" },
-      { symbol: "FRO", tv: "NYSE:FRO", name: "Frontline PLC", sector: "Tankers", direction: "WATCH", thesis: "Up 51% YTD on Hormuz closure. Ceasefire unwinds this trade fast. Monitor to exit or hedge.", confidence: "HIGH" },
+      { symbol: "XOM", tv: "NYSE:XOM", name: "Exxon Mobil", sector: "Energy", direction: "WATCH", thesis: "Oil drops on reopening — XOM loses near-term. Strong long-term at $35 breakeven. Watch for bounce at $55–60.", confidence: "MEDIUM" },
+      { symbol: "FRO", tv: "NYSE:FRO", name: "Frontline PLC", sector: "Tankers", direction: "WATCH", thesis: "Up 51% YTD on Hormuz closure. Ceasefire unwinds this trade fast. Monitor to exit or hedge short.", confidence: "MEDIUM" }
     ]
   },
   {
@@ -331,12 +331,12 @@ const catalysts = [
     description: "Xi confirmed to visit the US in September. Market will pre-position 3–4 weeks ahead. May summit playbook: anticipation rally, then announcement risk.",
     trigger: "Summit date confirmed + pre-summit diplomatic signals or leaked deal terms",
     tickers: [
-      { symbol: "BA", tv: "NYSE:BA", name: "Boeing", sector: "Aerospace", direction: "BUY", thesis: "200-plane order confirmed at May summit. September likely to expand delivery schedule. Structural China reopening story.", confidence: "HIGH" },
-      { symbol: "QCOM", tv: "NASDAQ:QCOM", name: "Qualcomm", sector: "Semiconductors", direction: "BUY", thesis: "46% revenue from China. Any tariff reduction = direct earnings tailwind. Rallied 15% on April earnings alone.", confidence: "HIGH" },
+      { symbol: "BA", tv: "NYSE:BA", name: "Boeing", sector: "Aerospace", direction: "BUY", thesis: "200-plane order confirmed at May summit. September likely to expand delivery schedule. Structural China demand.", confidence: "HIGH" },
+      { symbol: "QCOM", tv: "NASDAQ:QCOM", name: "Qualcomm", sector: "Semiconductors", direction: "BUY", thesis: "46% revenue from China. Any tariff reduction = direct earnings tailwind. Rallied 15% on May summit.", confidence: "HIGH" },
       { symbol: "NVDA", tv: "NASDAQ:NVDA", name: "Nvidia", sector: "Semiconductors", direction: "BUY", thesis: "H200 chip sales to China cleared at May summit. September could expand export licenses further.", confidence: "HIGH" },
-      { symbol: "AAPL", tv: "NASDAQ:AAPL", name: "Apple", sector: "Consumer Tech", direction: "BUY", thesis: "Tim Cook attended Beijing summit. Major China manufacturing + sales exposure. Tariff relief = margin recovery.", confidence: "MEDIUM" },
-      { symbol: "ADM", tv: "NYSE:ADM", name: "Archer-Daniels-Midland", sector: "Agriculture", direction: "BUY", thesis: "$17B/yr ag purchase commitment through 2028. ADM is primary US soybean/corn processor exported to China.", confidence: "MEDIUM" },
-      { symbol: "MP", tv: "NYSE:MP", name: "MP Materials", sector: "Rare Earths", direction: "BUY", thesis: "US said China will address rare earth shortages. MP is the only US rare earth miner. Supply deal = major catalyst.", confidence: "MEDIUM" },
+      { symbol: "AAPL", tv: "NASDAQ:AAPL", name: "Apple", sector: "Consumer Tech", direction: "BUY", thesis: "Tim Cook attended Beijing summit. Major China manufacturing + sales exposure. Tariff relief = margin expansion.", confidence: "HIGH" },
+      { symbol: "ADM", tv: "NYSE:ADM", name: "Archer-Daniels-Midland", sector: "Agriculture", direction: "BUY", thesis: "$17B/yr ag purchase commitment through 2028. ADM is primary US soybean/corn exporter to China.", confidence: "MEDIUM" },
+      { symbol: "MP", tv: "NYSE:MP", name: "MP Materials", sector: "Rare Earths", direction: "BUY", thesis: "US said China will address rare earth shortages. MP is the only US rare earth miner. Supply-side upside.", confidence: "MEDIUM" }
     ]
   },
   {
@@ -350,9 +350,9 @@ const catalysts = [
     trigger: "Truth Social post about tariff pause, reduction, or new trade deal with any major partner",
     tickers: [
       { symbol: "IWM", tv: "AMEX:IWM", name: "Russell 2000 ETF", sector: "Small Caps", direction: "BUY", thesis: "Small caps most sensitive to domestic tariff cost pressures. Biggest bounce on de-escalation signals.", confidence: "HIGH" },
-      { symbol: "XLI", tv: "AMEX:XLI", name: "Industrials ETF", sector: "Industrials", direction: "BUY", thesis: "Morgan Stanley's top pick for Hormuz reopening + tariff rollback. Includes Trane Tech, Rockwell Automation.", confidence: "HIGH" },
-      { symbol: "XLY", tv: "AMEX:XLY", name: "Consumer Disc. ETF", sector: "Consumer", direction: "BUY", thesis: "Lower tariffs = lower goods prices = consumer spending recovery. Seeking Alpha base case for peace deal.", confidence: "MEDIUM" },
-      { symbol: "FCX", tv: "NYSE:FCX", name: "Freeport-McMoRan", sector: "Copper/Mining", direction: "WATCH", thesis: "Up 62% YoY on Hormuz-disrupted copper supply. Trade deal = supply normalizes = price pulls back. Risky hold.", confidence: "MEDIUM" },
+      { symbol: "XLI", tv: "AMEX:XLI", name: "Industrials ETF", sector: "Industrials", direction: "BUY", thesis: "Morgan Stanley's top pick for Hormuz reopening + tariff rollback. Includes Trane, Flowserve, Emerson.", confidence: "HIGH" },
+      { symbol: "XLY", tv: "AMEX:XLY", name: "Consumer Disc. ETF", sector: "Consumer", direction: "BUY", thesis: "Lower tariffs = lower goods prices = consumer spending recovery. Seeking Alpha base case $145.", confidence: "MEDIUM" },
+      { symbol: "FCX", tv: "NYSE:FCX", name: "Freeport-McMoRan", sector: "Copper/Mining", direction: "WATCH", thesis: "Up 62% YoY on Hormuz-disrupted copper supply. Trade deal = supply normalizes = price correction risk.", confidence: "MEDIUM" }
     ]
   },
   {
@@ -365,11 +365,11 @@ const catalysts = [
     description: "If talks collapse — Trump ultimatum ignored, strikes resume — oil spikes again. These are inverse plays if de-escalation fails.",
     trigger: "Trump threatens renewed strikes / Iran rejects MOU / Hormuz attacks resume",
     tickers: [
-      { symbol: "XOM", tv: "NYSE:XOM", name: "Exxon Mobil", sector: "Energy", direction: "BUY", thesis: "Permian breakeven ~$35/bbl. Every $1 oil increase flows directly to bottom line. Wells Fargo PT: $183.", confidence: "HIGH" },
+      { symbol: "XOM", tv: "NYSE:XOM", name: "Exxon Mobil", sector: "Energy", direction: "BUY", thesis: "Permian breakeven ~$35/bbl. Every $1 oil increase flows directly to bottom line. Wells Fargo PT $140.", confidence: "HIGH" },
       { symbol: "CVX", tv: "NYSE:CVX", name: "Chevron", sector: "Energy", direction: "BUY", thesis: "$50/bbl dividend breakeven. Strong FCF at $100+ oil. Hit 52-week high during Iran conflict.", confidence: "HIGH" },
       { symbol: "COP", tv: "NYSE:COP", name: "ConocoPhillips", sector: "Energy", direction: "BUY", thesis: "Extra $1B FCF/yr at $70 oil. At $90–100, massive shareholder return via buybacks.", confidence: "HIGH" },
-      { symbol: "LMT", tv: "NYSE:LMT", name: "Lockheed Martin", sector: "Defense", direction: "BUY", thesis: "Geopolitical escalation = global defense spending surge. Iran war creates hardware demand shock.", confidence: "MEDIUM" },
-      { symbol: "GLD", tv: "AMEX:GLD", name: "Gold ETF", sector: "Safe Haven", direction: "BUY", thesis: "Gold surged to record highs on Iran war outbreak. Escalation = flight to safety trade activates.", confidence: "HIGH" },
+      { symbol: "LMT", tv: "NYSE:LMT", name: "Lockheed Martin", sector: "Defense", direction: "BUY", thesis: "Geopolitical escalation = global defense spending surge. Iran war creates hardware demand for decades.", confidence: "MEDIUM" },
+      { symbol: "GLD", tv: "AMEX:GLD", name: "Gold ETF", sector: "Safe Haven", direction: "BUY", thesis: "Gold surged to record highs on Iran war outbreak. Escalation = flight to safety trade activation.", confidence: "MEDIUM" }
     ]
   }
 ];
@@ -458,7 +458,7 @@ function renderTickers() {
               "colorTheme": "dark",
               "locale": "en"
             }
-            <\/script>
+            </script>
           </div>
         </div>
       </div>
