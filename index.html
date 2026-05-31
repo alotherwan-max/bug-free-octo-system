@@ -1,0 +1,482 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Trump Catalyst Watchlist</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    font-family: 'Helvetica Neue', Arial, sans-serif;
+    background: #050508;
+    color: #e2e8f0;
+    min-height: 100vh;
+  }
+
+  /* HEADER */
+  .header {
+    padding: 24px 20px 16px;
+    background: linear-gradient(180deg, #0c0c14 0%, #050508 100%);
+    border-bottom: 1px solid #0f172a;
+  }
+  .header-label {
+    font-family: monospace;
+    font-size: 9px;
+    letter-spacing: 3px;
+    color: #475569;
+    margin-bottom: 6px;
+    text-transform: uppercase;
+  }
+  .header h1 {
+    font-size: clamp(20px, 5vw, 28px);
+    font-weight: 800;
+    color: #f8fafc;
+    letter-spacing: -0.5px;
+    line-height: 1.15;
+  }
+  .header h1 span { color: #22c55e; }
+  .header p { margin-top: 6px; font-size: 11px; color: #334155; }
+
+  /* MARKET TICKER STRIP */
+  .ticker-strip {
+    border-bottom: 1px solid #0f172a;
+    background: #07070e;
+    overflow: hidden;
+  }
+
+  /* CATALYST TABS */
+  .tabs {
+    display: flex;
+    overflow-x: auto;
+    border-bottom: 1px solid #0f172a;
+    background: #07070e;
+    scrollbar-width: none;
+  }
+  .tabs::-webkit-scrollbar { display: none; }
+  .tab {
+    padding: 10px 14px;
+    background: none;
+    border: none;
+    border-bottom: 2px solid transparent;
+    color: #475569;
+    font-family: monospace;
+    font-size: 10px;
+    letter-spacing: 1px;
+    cursor: pointer;
+    white-space: nowrap;
+    text-transform: uppercase;
+    transition: all 0.15s;
+  }
+  .tab.active { color: #f8fafc; }
+  .tab .dot {
+    display: inline-block;
+    width: 6px; height: 6px;
+    border-radius: 50%;
+    margin-right: 6px;
+    vertical-align: middle;
+  }
+
+  /* CATALYST DETAIL */
+  .catalyst-detail {
+    padding: 14px 20px;
+    border-bottom: 1px solid #0f172a;
+    background: #07070e;
+  }
+  .status-row {
+    display: flex;
+    gap: 8px;
+    align-items: center;
+    margin-bottom: 6px;
+    flex-wrap: wrap;
+  }
+  .status-badge {
+    font-size: 9px;
+    letter-spacing: 2px;
+    font-family: monospace;
+    padding: 2px 8px;
+    border-radius: 3px;
+    text-transform: uppercase;
+  }
+  .timing { font-size: 10px; color: #475569; font-family: monospace; }
+  .catalyst-desc { font-size: 12px; color: #94a3b8; line-height: 1.5; margin-bottom: 8px; }
+  .trigger-box {
+    background: #0f172a;
+    border-left: 2px solid currentColor;
+    padding: 8px 12px;
+    border-radius: 0 4px 4px 0;
+    font-size: 11px;
+    color: #cbd5e1;
+  }
+  .trigger-label {
+    font-size: 9px;
+    color: #475569;
+    font-family: monospace;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+  }
+
+  /* CONTROLS */
+  .controls {
+    padding: 10px 20px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border-bottom: 1px solid #0f172a;
+  }
+  .count { font-family: monospace; font-size: 10px; color: #475569; text-transform: uppercase; letter-spacing: 1px; }
+  .toggle-btn {
+    padding: 5px 14px;
+    border-radius: 20px;
+    font-family: monospace;
+    font-size: 10px;
+    cursor: pointer;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    transition: all 0.15s;
+  }
+
+  /* TICKER CARDS */
+  .tickers { padding: 12px 16px; display: flex; flex-direction: column; gap: 8px; }
+  .ticker-card {
+    border-radius: 6px;
+    padding: 12px 14px;
+    transition: all 0.15s;
+  }
+  .ticker-card.buy {
+    border: 1px solid #22c55e30;
+    border-left: 3px solid #22c55e;
+    background: #030d03;
+  }
+  .ticker-card.watch {
+    border: 1px solid #f59e0b20;
+    border-left: 3px solid #f59e0b;
+    background: #0d0b03;
+  }
+  .ticker-top { display: flex; justify-content: space-between; align-items: flex-start; gap: 12px; }
+  .ticker-left { flex: 1; }
+  .ticker-header { display: flex; gap: 8px; align-items: center; margin-bottom: 4px; flex-wrap: wrap; }
+  .ticker-symbol {
+    font-family: monospace;
+    font-size: 15px;
+    font-weight: 900;
+    letter-spacing: 1px;
+  }
+  .ticker-name { font-size: 11px; color: #475569; }
+  .ticker-sector {
+    font-size: 9px;
+    padding: 1px 6px;
+    border-radius: 3px;
+    background: #1e293b;
+    color: #64748b;
+    font-family: monospace;
+  }
+  .ticker-thesis { font-size: 11px; color: #64748b; line-height: 1.5; }
+  .ticker-right { text-align: right; min-width: 70px; }
+  .direction-badge {
+    font-size: 10px;
+    font-weight: 800;
+    padding: 3px 8px;
+    border-radius: 4px;
+    font-family: monospace;
+    letter-spacing: 1px;
+    margin-bottom: 6px;
+    display: block;
+  }
+  .conf-bars { display: flex; gap: 2px; justify-content: flex-end; }
+  .conf-bar { width: 8px; height: 8px; border-radius: 2px; }
+  .conf-label { font-size: 8px; color: #334155; font-family: monospace; margin-top: 2px; text-transform: uppercase; }
+
+  /* LIVE PRICE WIDGET AREA */
+  .live-section {
+    margin-top: 10px;
+    border-top: 1px solid #0f172a;
+    padding-top: 10px;
+  }
+  .live-label {
+    font-family: monospace;
+    font-size: 9px;
+    color: #22c55e;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    margin-bottom: 6px;
+  }
+  .widget-wrapper {
+    border-radius: 4px;
+    overflow: hidden;
+    height: 80px;
+  }
+
+  /* LEGEND */
+  .legend {
+    margin: 4px 16px 20px;
+    padding: 12px 14px;
+    background: #07070e;
+    border: 1px solid #0f172a;
+    border-radius: 6px;
+  }
+  .legend-title {
+    font-family: monospace;
+    font-size: 9px;
+    color: #334155;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    margin-bottom: 8px;
+  }
+  .legend-items { display: flex; gap: 16px; flex-wrap: wrap; margin-bottom: 8px; }
+  .legend-item { display: flex; align-items: center; gap: 6px; }
+  .legend-key { font-family: monospace; font-size: 10px; }
+  .legend-desc { font-size: 10px; color: #334155; }
+  .disclaimer { font-size: 9px; color: #1e293b; font-family: monospace; line-height: 1.5; }
+
+  .hidden { display: none; }
+</style>
+</head>
+<body>
+
+<!-- HEADER -->
+<div class="header">
+  <div class="header-label">ANTICIPATORY WATCHLIST · TRUMP CATALYST TRACKER</div>
+  <h1>Position Before<br><span>He Speaks.</span></h1>
+  <p>4 catalysts · 20 tickers · Live prices via TradingView</p>
+</div>
+
+<!-- LIVE TICKER STRIP (TradingView) -->
+<div class="ticker-strip">
+  <div class="tradingview-widget-container">
+    <div class="tradingview-widget-container__widget"></div>
+    <script type="text/javascript" src="https://s3.tradingview.com/external-embedding/embed-widget-ticker-tape.js" async>
+    {
+      "symbols": [
+        {"proName": "NYSE:DAL", "title": "Delta"},
+        {"proName": "NASDAQ:UAL", "title": "United"},
+        {"proName": "NASDAQ:QQQ", "title": "QQQ"},
+        {"proName": "AMEX:SPY", "title": "S&P 500"},
+        {"proName": "NYSE:XOM", "title": "Exxon"},
+        {"proName": "NYSE:BA", "title": "Boeing"},
+        {"proName": "NASDAQ:QCOM", "title": "Qualcomm"},
+        {"proName": "NASDAQ:NVDA", "title": "Nvidia"},
+        {"proName": "NASDAQ:AAPL", "title": "Apple"},
+        {"proName": "NYSE:LMT", "title": "Lockheed"},
+        {"proName": "NYSE:CVX", "title": "Chevron"},
+        {"proName": "NYSE:COP", "title": "ConocoPhillips"},
+        {"proName": "AMEX:GLD", "title": "Gold ETF"},
+        {"proName": "NYSE:FCX", "title": "Freeport"},
+        {"proName": "NYSE:MP", "title": "MP Materials"}
+      ],
+      "showSymbolLogo": true,
+      "isTransparent": true,
+      "displayMode": "adaptive",
+      "colorTheme": "dark",
+      "locale": "en"
+    }
+    </script>
+  </div>
+</div>
+
+<!-- CATALYST TABS -->
+<div class="tabs" id="tabs"></div>
+
+<!-- CATALYST DETAIL -->
+<div class="catalyst-detail" id="catalystDetail"></div>
+
+<!-- CONTROLS -->
+<div class="controls">
+  <span class="count" id="countLabel">— tickers shown</span>
+  <button class="toggle-btn" id="toggleBtn" onclick="toggleBuyOnly()">ALL SIGNALS</button>
+</div>
+
+<!-- TICKER CARDS -->
+<div class="tickers" id="tickerList"></div>
+
+<!-- LEGEND -->
+<div class="legend">
+  <div class="legend-title">LEGEND</div>
+  <div class="legend-items">
+    <div class="legend-item"><span class="legend-key" style="color:#22c55e">✦ BUY</span><span class="legend-desc">High-conviction anticipatory entry</span></div>
+    <div class="legend-item"><span class="legend-key" style="color:#f59e0b">◈ WATCH</span><span class="legend-desc">Monitor — direction risk</span></div>
+    <div class="legend-item"><span class="legend-key" style="color:#22c55e">■■■</span><span class="legend-desc">HIGH confidence</span></div>
+    <div class="legend-item"><span class="legend-key" style="color:#f59e0b">■■□</span><span class="legend-desc">MEDIUM confidence</span></div>
+  </div>
+  <div class="disclaimer">NOT FINANCIAL ADVICE. For informational purposes only. Always consult a licensed financial advisor before investing.</div>
+</div>
+
+<script>
+const catalysts = [
+  {
+    id: "iran-deal",
+    title: "Iran Deal",
+    fullTitle: "Iran Peace Deal + Strait of Hormuz Reopening",
+    statusColor: "#f97316",
+    status: "IMMINENT",
+    timing: "Days to weeks",
+    description: "Trump posted deal is 'largely negotiated.' MOU being finalized. Strait reopening = oil crash + broad market rally.",
+    trigger: "Trump Truth Social post confirming MOU signed / Strait reopening",
+    tickers: [
+      { symbol: "DAL", tv: "NYSE:DAL", name: "Delta Air Lines", sector: "Airlines", direction: "BUY", thesis: "Oil drop = fuel cost savings → margin expansion. Airlines are the biggest beneficiary of any Hormuz reopening.", confidence: "HIGH" },
+      { symbol: "UAL", tv: "NASDAQ:UAL", name: "United Airlines", sector: "Airlines", direction: "BUY", thesis: "Same fuel cost thesis as DAL. High operating leverage to oil price decline.", confidence: "HIGH" },
+      { symbol: "QQQ", tv: "NASDAQ:QQQ", name: "Nasdaq 100 ETF", sector: "Broad Tech", direction: "BUY", thesis: "Lower oil = lower inflation = rate cut expectations return. Tech re-rates upward quickly.", confidence: "HIGH" },
+      { symbol: "SPY", tv: "AMEX:SPY", name: "S&P 500 ETF", sector: "Broad Market", direction: "BUY", thesis: "Peace deal = risk-on. Broad market rallies as energy crisis risk premium unwinds.", confidence: "HIGH" },
+      { symbol: "XOM", tv: "NYSE:XOM", name: "Exxon Mobil", sector: "Energy", direction: "WATCH", thesis: "Oil drops on reopening — XOM loses near-term. Strong long-term at $35 breakeven. Watch for dip entry.", confidence: "MEDIUM" },
+      { symbol: "FRO", tv: "NYSE:FRO", name: "Frontline PLC", sector: "Tankers", direction: "WATCH", thesis: "Up 51% YTD on Hormuz closure. Ceasefire unwinds this trade fast. Monitor to exit or hedge.", confidence: "HIGH" },
+    ]
+  },
+  {
+    id: "china-sept",
+    title: "China Summit",
+    fullTitle: "Trump-Xi September Summit (Washington D.C.)",
+    statusColor: "#3b82f6",
+    status: "UPCOMING",
+    timing: "Aug–Sep 2026",
+    description: "Xi confirmed to visit the US in September. Market will pre-position 3–4 weeks ahead. May summit playbook: anticipation rally, then announcement risk.",
+    trigger: "Summit date confirmed + pre-summit diplomatic signals or leaked deal terms",
+    tickers: [
+      { symbol: "BA", tv: "NYSE:BA", name: "Boeing", sector: "Aerospace", direction: "BUY", thesis: "200-plane order confirmed at May summit. September likely to expand delivery schedule. Structural China reopening story.", confidence: "HIGH" },
+      { symbol: "QCOM", tv: "NASDAQ:QCOM", name: "Qualcomm", sector: "Semiconductors", direction: "BUY", thesis: "46% revenue from China. Any tariff reduction = direct earnings tailwind. Rallied 15% on April earnings alone.", confidence: "HIGH" },
+      { symbol: "NVDA", tv: "NASDAQ:NVDA", name: "Nvidia", sector: "Semiconductors", direction: "BUY", thesis: "H200 chip sales to China cleared at May summit. September could expand export licenses further.", confidence: "HIGH" },
+      { symbol: "AAPL", tv: "NASDAQ:AAPL", name: "Apple", sector: "Consumer Tech", direction: "BUY", thesis: "Tim Cook attended Beijing summit. Major China manufacturing + sales exposure. Tariff relief = margin recovery.", confidence: "MEDIUM" },
+      { symbol: "ADM", tv: "NYSE:ADM", name: "Archer-Daniels-Midland", sector: "Agriculture", direction: "BUY", thesis: "$17B/yr ag purchase commitment through 2028. ADM is primary US soybean/corn processor exported to China.", confidence: "MEDIUM" },
+      { symbol: "MP", tv: "NYSE:MP", name: "MP Materials", sector: "Rare Earths", direction: "BUY", thesis: "US said China will address rare earth shortages. MP is the only US rare earth miner. Supply deal = major catalyst.", confidence: "MEDIUM" },
+    ]
+  },
+  {
+    id: "tariff-rollback",
+    title: "Tariff Rollback",
+    fullTitle: "Tariff Rollback / Trade De-escalation Signals",
+    statusColor: "#8b5cf6",
+    status: "ONGOING",
+    timing: "Ongoing / unpredictable",
+    description: "Any credible tariff pause tweet → immediate broad rally. 'Board of Trade' framework covering ~$30B goods still being negotiated.",
+    trigger: "Truth Social post about tariff pause, reduction, or new trade deal with any major partner",
+    tickers: [
+      { symbol: "IWM", tv: "AMEX:IWM", name: "Russell 2000 ETF", sector: "Small Caps", direction: "BUY", thesis: "Small caps most sensitive to domestic tariff cost pressures. Biggest bounce on de-escalation signals.", confidence: "HIGH" },
+      { symbol: "XLI", tv: "AMEX:XLI", name: "Industrials ETF", sector: "Industrials", direction: "BUY", thesis: "Morgan Stanley's top pick for Hormuz reopening + tariff rollback. Includes Trane Tech, Rockwell Automation.", confidence: "HIGH" },
+      { symbol: "XLY", tv: "AMEX:XLY", name: "Consumer Disc. ETF", sector: "Consumer", direction: "BUY", thesis: "Lower tariffs = lower goods prices = consumer spending recovery. Seeking Alpha base case for peace deal.", confidence: "MEDIUM" },
+      { symbol: "FCX", tv: "NYSE:FCX", name: "Freeport-McMoRan", sector: "Copper/Mining", direction: "WATCH", thesis: "Up 62% YoY on Hormuz-disrupted copper supply. Trade deal = supply normalizes = price pulls back. Risky hold.", confidence: "MEDIUM" },
+    ]
+  },
+  {
+    id: "escalation",
+    title: "Escalation Hedge",
+    fullTitle: "Iran Escalation / Hormuz Closure Worsens",
+    statusColor: "#ef4444",
+    status: "RISK",
+    timing: "If deal falls through",
+    description: "If talks collapse — Trump ultimatum ignored, strikes resume — oil spikes again. These are inverse plays if de-escalation fails.",
+    trigger: "Trump threatens renewed strikes / Iran rejects MOU / Hormuz attacks resume",
+    tickers: [
+      { symbol: "XOM", tv: "NYSE:XOM", name: "Exxon Mobil", sector: "Energy", direction: "BUY", thesis: "Permian breakeven ~$35/bbl. Every $1 oil increase flows directly to bottom line. Wells Fargo PT: $183.", confidence: "HIGH" },
+      { symbol: "CVX", tv: "NYSE:CVX", name: "Chevron", sector: "Energy", direction: "BUY", thesis: "$50/bbl dividend breakeven. Strong FCF at $100+ oil. Hit 52-week high during Iran conflict.", confidence: "HIGH" },
+      { symbol: "COP", tv: "NYSE:COP", name: "ConocoPhillips", sector: "Energy", direction: "BUY", thesis: "Extra $1B FCF/yr at $70 oil. At $90–100, massive shareholder return via buybacks.", confidence: "HIGH" },
+      { symbol: "LMT", tv: "NYSE:LMT", name: "Lockheed Martin", sector: "Defense", direction: "BUY", thesis: "Geopolitical escalation = global defense spending surge. Iran war creates hardware demand shock.", confidence: "MEDIUM" },
+      { symbol: "GLD", tv: "AMEX:GLD", name: "Gold ETF", sector: "Safe Haven", direction: "BUY", thesis: "Gold surged to record highs on Iran war outbreak. Escalation = flight to safety trade activates.", confidence: "HIGH" },
+    ]
+  }
+];
+
+let activeId = "iran-deal";
+let buyOnly = false;
+
+function render() {
+  renderTabs();
+  renderDetail();
+  renderTickers();
+}
+
+function renderTabs() {
+  const tabs = document.getElementById("tabs");
+  tabs.innerHTML = catalysts.map(c => `
+    <button class="tab ${c.id === activeId ? 'active' : ''}"
+      onclick="setActive('${c.id}')"
+      style="border-bottom-color: ${c.id === activeId ? c.statusColor : 'transparent'}">
+      <span class="dot" style="background:${c.statusColor}"></span>${c.title}
+    </button>
+  `).join('');
+}
+
+function renderDetail() {
+  const c = catalysts.find(x => x.id === activeId);
+  document.getElementById("catalystDetail").innerHTML = `
+    <div class="status-row">
+      <span class="status-badge" style="color:${c.statusColor};background:${c.statusColor}20">${c.status}</span>
+      <span class="timing">⏱ ${c.timing}</span>
+    </div>
+    <p class="catalyst-desc">${c.description}</p>
+    <div class="trigger-box" style="border-left-color:${c.statusColor}">
+      <span class="trigger-label">TRIGGER → </span>${c.trigger}
+    </div>
+  `;
+}
+
+function renderTickers() {
+  const c = catalysts.find(x => x.id === activeId);
+  const tickers = buyOnly ? c.tickers.filter(t => t.direction === "BUY") : c.tickers;
+
+  document.getElementById("countLabel").textContent = `${tickers.length} tickers shown`;
+  document.getElementById("toggleBtn").textContent = buyOnly ? "✦ BUY ONLY" : "ALL SIGNALS";
+  document.getElementById("toggleBtn").style.border = buyOnly ? "1px solid #22c55e" : "1px solid #1e293b";
+  document.getElementById("toggleBtn").style.background = buyOnly ? "#22c55e18" : "transparent";
+  document.getElementById("toggleBtn").style.color = buyOnly ? "#22c55e" : "#475569";
+
+  document.getElementById("tickerList").innerHTML = tickers.map(t => {
+    const isBuy = t.direction === "BUY";
+    const color = isBuy ? "#22c55e" : "#f59e0b";
+    const bars = t.confidence === "HIGH" ? 3 : 2;
+    const barsHtml = [1,2,3].map(n =>
+      `<div class="conf-bar" style="background:${n<=bars ? color : '#1e293b'}"></div>`
+    ).join('');
+
+    return `
+    <div class="ticker-card ${isBuy ? 'buy' : 'watch'}">
+      <div class="ticker-top">
+        <div class="ticker-left">
+          <div class="ticker-header">
+            <span class="ticker-symbol" style="color:${color}">${t.symbol}</span>
+            <span class="ticker-name">${t.name}</span>
+            <span class="ticker-sector">${t.sector}</span>
+          </div>
+          <p class="ticker-thesis">${t.thesis}</p>
+        </div>
+        <div class="ticker-right">
+          <span class="direction-badge" style="color:${color};background:${color}18;border:1px solid ${color}40">
+            ${isBuy ? '✦ BUY' : '◈ WATCH'}
+          </span>
+          <div class="conf-bars">${barsHtml}</div>
+          <div class="conf-label">${t.confidence}</div>
+        </div>
+      </div>
+      <div class="live-section">
+        <div class="live-label">◉ LIVE PRICE</div>
+        <div class="widget-wrapper">
+          <div class="tradingview-widget-container" style="height:80px">
+            <div class="tradingview-widget-container__widget"></div>
+            <script type="text/javascript" src="https://s3.tradingview.com/external-embedding/embed-widget-single-quote.js" async>
+            {
+              "symbol": "${t.tv}",
+              "width": "100%",
+              "isTransparent": true,
+              "colorTheme": "dark",
+              "locale": "en"
+            }
+            <\/script>
+          </div>
+        </div>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+function setActive(id) {
+  activeId = id;
+  render();
+}
+
+function toggleBuyOnly() {
+  buyOnly = !buyOnly;
+  renderTickers();
+}
+
+render();
+</script>
+</body>
+</html>
