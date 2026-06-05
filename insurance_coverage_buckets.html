@@ -1,0 +1,348 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Coverage Buckets</title>
+<link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=Geist:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg:#0f0f13; --surface:#17171d; --surface2:#1e1e26;
+  --border:rgba(255,255,255,0.07); --text:#e8e8f0; --muted:#6b6b80; --dim:#2a2a36;
+  --c-death:#4ade9a; --c-ci:#f87060; --c-hosp:#60a8f8;
+  --c-dis:#c084fc; --c-acc:#fbbf50; --c-sav:#34d4c8; --c-ret:#fb923c;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:'Geist',sans-serif;background:var(--bg);color:var(--text);min-height:100vh;padding:2.5rem 2rem}
+
+.page-eyebrow{font-size:11px;letter-spacing:.18em;text-transform:uppercase;color:var(--muted);margin-bottom:.5rem}
+h1{font-family:'Instrument Serif',serif;font-size:2.4rem;font-weight:400;line-height:1.1;margin-bottom:.4rem}
+h1 em{font-style:italic;color:rgba(232,232,240,.35)}
+.page-sub{font-size:13px;color:var(--muted);margin-bottom:3rem}
+
+/* ── Bucket grid ── */
+.bucket-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:1.25rem;margin-bottom:1.25rem}
+.bucket{background:var(--surface);border:.5px solid var(--border);border-radius:20px;overflow:hidden;cursor:default;transition:transform .15s,border-color .15s}
+.bucket:hover{transform:translateY(-2px);border-color:rgba(255,255,255,.12)}
+
+.bucket-top{padding:1.5rem 1.5rem 1.25rem}
+.bucket-icon{font-size:1.6rem;margin-bottom:.75rem}
+.bucket-name{font-size:13px;font-weight:600;letter-spacing:.02em;margin-bottom:.25rem}
+.bucket-tagline{font-size:11px;color:var(--muted);line-height:1.5}
+
+/* Big number */
+.bucket-amount{
+  font-family:'Instrument Serif',serif;font-size:2.1rem;font-weight:400;
+  line-height:1;margin:1rem 0 .25rem
+}
+.bucket-amount-label{font-size:10px;letter-spacing:.1em;text-transform:uppercase;color:var(--muted)}
+
+/* Color bar at bottom of top section */
+.bucket-bar{height:3px;width:100%;margin-top:1.25rem}
+
+/* Policies list */
+.bucket-policies{background:var(--surface2);padding:1rem 1.5rem}
+.policy-row{display:flex;justify-content:space-between;align-items:flex-start;padding:6px 0;border-bottom:.5px solid var(--border);gap:8px}
+.policy-row:last-child{border-bottom:none}
+.policy-name{font-size:11px;color:var(--muted);line-height:1.4;flex:1}
+.policy-val{font-size:11px;font-weight:500;white-space:nowrap}
+
+/* Condition chips */
+.conditions{display:flex;flex-wrap:wrap;gap:4px;margin-top:.75rem}
+.chip{font-size:9px;padding:2px 7px;border-radius:20px;background:var(--dim);color:var(--muted);letter-spacing:.04em}
+
+/* Note strip */
+.note-strip{background:var(--surface2);border-left:2px solid;border-radius:0 6px 6px 0;padding:.5rem .75rem;font-size:11px;color:var(--muted);line-height:1.5;margin-top:.75rem}
+
+/* Retirement section — full width */
+.retire-bucket{grid-column:1/-1}
+.retire-inner{display:grid;grid-template-columns:1fr 1.6fr;gap:0}
+.retire-left{padding:1.5rem}
+.retire-right{background:var(--surface2);padding:1.5rem;border-left:.5px solid var(--border)}
+.retire-row{display:flex;align-items:center;gap:8px;margin-bottom:6px}
+.retire-label{font-size:11px;color:var(--muted);width:160px;flex-shrink:0;text-align:right}
+.retire-track{flex:1;background:var(--dim);border-radius:3px;height:18px;overflow:hidden}
+.retire-fill{height:100%;border-radius:3px;display:flex;align-items:center;padding-left:6px;font-size:9px;font-weight:600;color:#1a1a1a;white-space:nowrap}
+.retire-num{width:70px;font-size:11px;font-weight:500;text-align:right;flex-shrink:0}
+.retire-divider{border:none;border-top:.5px dashed var(--border);margin:8px 0}
+.retire-target{background:rgba(251,146,60,.1);border:.5px solid rgba(251,146,60,.25);border-radius:10px;padding:.75rem 1rem;font-size:11px;color:rgba(251,146,60,.9);line-height:1.6;margin-top:1rem}
+
+/* Summary footer */
+.summary-footer{display:grid;grid-template-columns:repeat(4,1fr);gap:1rem;margin-top:1.25rem;margin-bottom:2rem}
+.sum-tile{background:var(--surface);border:.5px solid var(--border);border-radius:14px;padding:1rem 1.25rem}
+.sum-label{font-size:10px;letter-spacing:.1em;text-transform:uppercase;color:var(--muted);margin-bottom:.4rem}
+.sum-val{font-family:'Instrument Serif',serif;font-size:1.5rem;line-height:1}
+.sum-note{font-size:10px;color:var(--muted);margin-top:.3rem}
+
+.footnote{font-size:11px;color:var(--muted);text-align:center;line-height:1.8}
+
+/* Who badge */
+.who-row{display:flex;gap:6px;margin-bottom:.75rem}
+.who-badge{font-size:9px;padding:2px 8px;border-radius:20px;font-weight:600;letter-spacing:.06em}
+.who-owner{background:rgba(74,222,154,.12);color:var(--c-death)}
+.who-child{background:rgba(96,168,248,.12);color:var(--c-hosp)}
+.who-joint{background:rgba(251,191,80,.12);color:var(--c-acc)}
+
+@media(max-width:900px){
+  .bucket-grid{grid-template-columns:1fr 1fr}
+  .retire-bucket{grid-column:1/-1}
+  .retire-inner{grid-template-columns:1fr}
+  .retire-right{border-left:none;border-top:.5px solid var(--border)}
+  .summary-footer{grid-template-columns:1fr 1fr}
+}
+@media(max-width:560px){
+  .bucket-grid{grid-template-columns:1fr}
+  .summary-footer{grid-template-columns:1fr 1fr}
+  body{padding:1.5rem 1rem}
+}
+</style>
+</head>
+<body>
+
+<div class="page-eyebrow">Insurance Coverage · Jun 2026</div>
+<h1>What are you <em>actually</em> covered for?</h1>
+<p class="page-sub">All policies bucketed by what they protect against — Owner &amp; Child</p>
+
+<div class="bucket-grid">
+
+  <!-- ── DEATH / TPD ── -->
+  <div class="bucket" style="--c:var(--c-death)">
+    <div class="bucket-top">
+      <div class="bucket-icon">🛡️</div>
+      <div class="who-row"><span class="who-badge who-owner">Owner</span></div>
+      <div class="bucket-name" style="color:var(--c-death)">Death &amp; Total Disability</div>
+      <div class="bucket-tagline">Pays out to family if you die or become permanently disabled</div>
+      <div class="bucket-amount" style="color:var(--c-death)">$513,921</div>
+      <div class="bucket-amount-label">till age 65 (multipliers active)</div>
+      <div class="bucket-bar" style="background:linear-gradient(90deg,var(--c-death),transparent)"></div>
+    </div>
+    <div class="bucket-policies">
+      <div class="policy-row"><span class="policy-name">Supreme Early Multiplier 20</span><span class="policy-val" style="color:var(--c-death)">$200,000</span></div>
+      <div class="policy-row"><span class="policy-name">FlexiLife Multiplier 20</span><span class="policy-val" style="color:var(--c-death)">$150,000</span></div>
+      <div class="policy-row"><span class="policy-name">Personal Protector Basic (accident)</span><span class="policy-val" style="color:var(--c-death)">$200,000</span></div>
+      <div class="policy-row"><span class="policy-name">AIA Guaranteed 10 for Life</span><span class="policy-val" style="color:var(--c-death)">$27,000</span></div>
+      <div class="policy-row"><span class="policy-name">DPS (CPF OA · till 60)</span><span class="policy-val" style="color:var(--c-death)">$70,000</span></div>
+      <div class="conditions">
+        <span class="chip">After 65: drops to ~$77k</span>
+        <span class="chip">Multipliers end at 65</span>
+        <span class="chip">DPS ceases at 65</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── CRITICAL ILLNESS ── -->
+  <div class="bucket">
+    <div class="bucket-top">
+      <div class="bucket-icon">❤️‍🩹</div>
+      <div class="who-row"><span class="who-badge who-owner">Owner</span></div>
+      <div class="bucket-name" style="color:var(--c-ci)">Critical Illness</div>
+      <div class="bucket-tagline">Lump sum cash if diagnosed with cancer, stroke, heart attack and 36+ other conditions</div>
+      <div class="bucket-amount" style="color:var(--c-ci)">$377,000</div>
+      <div class="bucket-amount-label">combined early + major CI</div>
+      <div class="bucket-bar" style="background:linear-gradient(90deg,var(--c-ci),transparent)"></div>
+    </div>
+    <div class="bucket-policies">
+      <div class="policy-row"><span class="policy-name">Supreme Early Multiplier — Major CI</span><span class="policy-val" style="color:var(--c-ci)">$200,000</span></div>
+      <div class="policy-row"><span class="policy-name">Supreme Early Multiplier — Early CI</span><span class="policy-val" style="color:var(--c-ci)">$100,000</span></div>
+      <div class="policy-row"><span class="policy-name">FlexiLife Multiplier — Major CI</span><span class="policy-val" style="color:var(--c-ci)">$150,000</span></div>
+      <div class="policy-row"><span class="policy-name">AIA Guaranteed 10 — CI</span><span class="policy-val" style="color:var(--c-ci)">$27,000</span></div>
+      <div class="conditions">
+        <span class="chip">Early CI triggers at earlier stage</span>
+        <span class="chip">Multipliers active till 65</span>
+        <span class="chip">Premium waiver on CI for endowments</span>
+      </div>
+      <div class="note-strip" style="border-color:var(--c-ci)">Major CI policies overlap — total payout depends on which policies trigger. Not all pay simultaneously for same event.</div>
+    </div>
+  </div>
+
+  <!-- ── HOSPITALISATION ── -->
+  <div class="bucket">
+    <div class="bucket-top">
+      <div class="bucket-icon">🏥</div>
+      <div class="who-row"><span class="who-badge who-owner">Owner</span><span class="who-badge who-child">Child</span></div>
+      <div class="bucket-name" style="color:var(--c-hosp)">Hospitalisation</div>
+      <div class="bucket-tagline">Covers hospital bills — both admitted to any private hospital, as-charged</div>
+      <div class="bucket-amount" style="color:var(--c-hosp)">Private</div>
+      <div class="bucket-amount-label">as-charged · both owner &amp; child</div>
+      <div class="bucket-bar" style="background:linear-gradient(90deg,var(--c-hosp),transparent)"></div>
+    </div>
+    <div class="bucket-policies">
+      <div class="policy-row"><span class="policy-name">Owner: SupremeHealth P Plus</span><span class="policy-val" style="color:var(--c-hosp)">P Plus tier</span></div>
+      <div class="policy-row"><span class="policy-name">Owner: TotalCare P Optimum (rider)</span><span class="policy-val" style="color:var(--c-hosp)">Co-pay cover</span></div>
+      <div class="policy-row"><span class="policy-name">Child: SupremeHealth P Plus</span><span class="policy-val" style="color:var(--c-hosp)">P Plus tier</span></div>
+      <div class="policy-row"><span class="policy-name">Child: TotalCare P Optimum (rider)</span><span class="policy-val" style="color:var(--c-hosp)">Co-pay cover</span></div>
+      <div class="conditions">
+        <span class="chip">$3,500 deductible (owner)</span>
+        <span class="chip">10% co-ins before TotalCare</span>
+        <span class="chip">Child: Medisave funded</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── DISABILITY INCOME ── -->
+  <div class="bucket">
+    <div class="bucket-top">
+      <div class="bucket-icon">🦽</div>
+      <div class="who-row"><span class="who-badge who-owner">Owner</span><span class="who-badge who-child">Child</span></div>
+      <div class="bucket-name" style="color:var(--c-dis)">Disability Income</div>
+      <div class="bucket-tagline">Monthly cash if unable to perform daily activities due to illness or injury</div>
+      <div class="bucket-amount" style="color:var(--c-dis)">$5,000/mo</div>
+      <div class="bucket-amount-label">owner · combined monthly payout</div>
+      <div class="bucket-bar" style="background:linear-gradient(90deg,var(--c-dis),transparent)"></div>
+    </div>
+    <div class="bucket-policies">
+      <div class="policy-row"><span class="policy-name">LifeSecure Rider (till 65)</span><span class="policy-val" style="color:var(--c-dis)">$3,000/mo</span></div>
+      <div class="policy-row"><span class="policy-name">CareShield Supreme (2 ADLs · lifetime)</span><span class="policy-val" style="color:var(--c-dis)">$1,400/mo</span></div>
+      <div class="policy-row"><span class="policy-name">CareShield Basic (3 ADLs · till 67)</span><span class="policy-val" style="color:var(--c-dis)">$600/mo</span></div>
+      <div class="policy-row"><span class="policy-name">Child: LifeSecure Rider (till 65)</span><span class="policy-val" style="color:var(--c-dis)">$1,000/mo</span></div>
+      <div class="conditions">
+        <span class="chip">After 65: LifeSecure drops off</span>
+        <span class="chip">CareShield Supreme continues lifetime</span>
+        <span class="chip">2 ADLs = lower trigger (easier)</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── ACCIDENT ── -->
+  <div class="bucket">
+    <div class="bucket-top">
+      <div class="bucket-icon">🚨</div>
+      <div class="who-row"><span class="who-badge who-owner">Owner</span></div>
+      <div class="bucket-name" style="color:var(--c-acc)">Accident &amp; Misc</div>
+      <div class="bucket-tagline">Specific payouts for accidents, food poisoning, dengue, MC and medical reimbursement</div>
+      <div class="bucket-amount" style="color:var(--c-acc)">$600,000</div>
+      <div class="bucket-amount-label">accidental TPD (Personal Protector)</div>
+      <div class="bucket-bar" style="background:linear-gradient(90deg,var(--c-acc),transparent)"></div>
+    </div>
+    <div class="bucket-policies">
+      <div class="policy-row"><span class="policy-name">Personal Protector — Accidental death</span><span class="policy-val" style="color:var(--c-acc)">$200,000</span></div>
+      <div class="policy-row"><span class="policy-name">Personal Protector — Accidental TPD</span><span class="policy-val" style="color:var(--c-acc)">$600,000</span></div>
+      <div class="policy-row"><span class="policy-name">Acc Care Plus II — Medical reimb.</span><span class="policy-val" style="color:var(--c-acc)">$3,000</span></div>
+      <div class="policy-row"><span class="policy-name">Acc Care Plus II — MC income</span><span class="policy-val" style="color:var(--c-acc)">$50/wk</span></div>
+      <div class="policy-row"><span class="policy-name">Food poisoning / dengue</span><span class="policy-val" style="color:var(--c-acc)">$500</span></div>
+      <div class="conditions">
+        <span class="chip">$297/yr Personal Protector</span>
+        <span class="chip">$76/yr Acc Care Plus II</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── SAVINGS ── -->
+  <div class="bucket">
+    <div class="bucket-top">
+      <div class="bucket-icon">💰</div>
+      <div class="who-row"><span class="who-badge who-owner">Owner</span><span class="who-badge who-joint">Joint</span></div>
+      <div class="bucket-name" style="color:var(--c-sav)">Savings &amp; Endowments</div>
+      <div class="bucket-tagline">Forced savings with insurance wrapper — grows over time, accessible at maturity</div>
+      <div class="bucket-amount" style="color:var(--c-sav)">~$251,000</div>
+      <div class="bucket-amount-label">projected combined at age 65</div>
+      <div class="bucket-bar" style="background:linear-gradient(90deg,var(--c-sav),transparent)"></div>
+    </div>
+    <div class="bucket-policies">
+      <div class="policy-row"><span class="policy-name">ACE 25 Endowment (matures 2040)</span><span class="policy-val" style="color:var(--c-sav)">$103,000</span></div>
+      <div class="policy-row"><span class="policy-name">Family3 10Yr-Pay (income from 2030)</span><span class="policy-val" style="color:var(--c-sav)">$53–91k</span></div>
+      <div class="policy-row"><span class="policy-name">PruWealth III (joint · till 2032)</span><span class="policy-val" style="color:var(--c-sav)">$57k (50%)</span></div>
+      <div class="policy-row"><span class="policy-name">Smart Invest ILPs (paid up · now)</span><span class="policy-val" style="color:var(--c-sav)">$41,123</span></div>
+      <div class="conditions">
+        <span class="chip">ACE 25 gives $1,600/yr cashback</span>
+        <span class="chip">Family3 income $1,396/yr from yr 11</span>
+        <span class="chip">ILPs in Global Tech + Dynamic funds</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── RETIREMENT — full width ── -->
+  <div class="bucket retire-bucket">
+    <div class="retire-inner">
+      <div class="retire-left">
+        <div class="bucket-icon">🌅</div>
+        <div class="who-row" style="margin-top:.75rem"><span class="who-badge who-owner">Owner</span></div>
+        <div class="bucket-name" style="color:var(--c-ret);margin-bottom:.3rem">Retirement</div>
+        <div class="bucket-tagline" style="margin-bottom:1rem">Income and lump sums available from age 57 onwards</div>
+        <div class="bucket-amount" style="color:var(--c-ret)">$16,373/yr</div>
+        <div class="bucket-amount-label" style="margin-bottom:1.25rem">from age 57 for 10 years (Retire Income 5)</div>
+        <div class="bucket-policies" style="background:transparent;padding:0">
+          <div class="policy-row"><span class="policy-name">Retire Income 5 (from age 57)</span><span class="policy-val" style="color:var(--c-ret)">$16,373/yr × 10</span></div>
+          <div class="policy-row"><span class="policy-name">Lifetime Payout (from 2026)</span><span class="policy-val" style="color:var(--c-ret)">$900/yr ongoing</span></div>
+          <div class="conditions" style="margin-top:.75rem">
+            <span class="chip">Retire Income ends Dec 2026 premium</span>
+            <span class="chip">Lifetime Payout fully paid up</span>
+            <span class="chip">Currently both accumulating with GE</span>
+          </div>
+        </div>
+      </div>
+      <div class="retire-right">
+        <div style="font-size:11px;font-weight:500;margin-bottom:1rem;color:var(--muted);letter-spacing:.06em;text-transform:uppercase">Projected retirement assets at 65</div>
+        <div class="retire-row">
+          <span class="retire-label">Retire Income 5</span>
+          <div class="retire-track"><div class="retire-fill" style="width:42%;background:var(--c-ret)">$185k</div></div>
+          <span class="retire-num" style="color:var(--c-ret)">$185,000</span>
+        </div>
+        <div class="retire-row">
+          <span class="retire-label">ACE 25 Endowment</span>
+          <div class="retire-track"><div class="retire-fill" style="width:24%;background:var(--c-sav)">$103k</div></div>
+          <span class="retire-num" style="color:var(--c-sav)">$103,000</span>
+        </div>
+        <div class="retire-row">
+          <span class="retire-label">Family3 (best case)</span>
+          <div class="retire-track"><div class="retire-fill" style="width:21%;background:var(--c-sav)">$91k</div></div>
+          <span class="retire-num" style="color:var(--c-sav)">$91,000</span>
+        </div>
+        <div class="retire-row">
+          <span class="retire-label">PruWealth III (50%)</span>
+          <div class="retire-track"><div class="retire-fill" style="width:13%;background:var(--c-sav)">$57k</div></div>
+          <span class="retire-num" style="color:var(--c-sav)">$57,000</span>
+        </div>
+        <div class="retire-row">
+          <span class="retire-label">Lifetime Payout (best)</span>
+          <div class="retire-track"><div class="retire-fill" style="width:15%;background:var(--c-ret)">$64k</div></div>
+          <span class="retire-num" style="color:var(--c-ret)">$64,000</span>
+        </div>
+        <div class="retire-row">
+          <span class="retire-label">AIA Guaranteed 10</span>
+          <div class="retire-track"><div class="retire-fill" style="width:10%;background:var(--c-death)">$42k</div></div>
+          <span class="retire-num" style="color:var(--c-death)">$42,000</span>
+        </div>
+        <hr class="retire-divider">
+        <div class="retire-row">
+          <span class="retire-label" style="color:var(--text);font-weight:500">Total (best case)</span>
+          <div class="retire-track"><div class="retire-fill" style="width:100%;background:linear-gradient(90deg,var(--c-ret),var(--c-sav));color:#111;font-weight:600">~$542,000</div></div>
+          <span class="retire-num" style="color:var(--text);font-weight:600">$542,000</span>
+        </div>
+        <div class="retire-target">
+          <strong>Target:</strong> $30k/yr × 16 years from 65 = $480,000. Insurance portfolio alone (~$542k best case) covers the gap — before CPF LIFE &amp; surplus savings.
+        </div>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<!-- Footer summary -->
+<div class="summary-footer">
+  <div class="sum-tile">
+    <div class="sum-label">Annual premium (cash)</div>
+    <div class="sum-val" style="color:var(--c-acc)">$16,439</div>
+    <div class="sum-note">$1,370/mo · GE + AIA</div>
+  </div>
+  <div class="sum-tile">
+    <div class="sum-label">% of salary on insurance</div>
+    <div class="sum-val" style="color:var(--c-dis)">17%</div>
+    <div class="sum-note">of $8k monthly income</div>
+  </div>
+  <div class="sum-tile">
+    <div class="sum-label">Protection-only spend</div>
+    <div class="sum-val" style="color:var(--c-death)">~$4,900</div>
+    <div class="sum-note">Rest is savings/retirement (70%)</div>
+  </div>
+  <div class="sum-tile">
+    <div class="sum-label">Savings inside policies</div>
+    <div class="sum-val" style="color:var(--c-sav)">$109k+</div>
+    <div class="sum-note">Current surrender/fund values</div>
+  </div>
+</div>
+
+<p class="footnote">For personal reference only · Jun 2026 · Not financial advice<br>Projected values at 4.25% non-guaranteed scenario unless stated · Policies may overlap for same event</p>
+
+</body>
+</html>
