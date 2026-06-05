@@ -1,0 +1,523 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Financial Overview</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.js"></script>
+<style>
+  :root {
+    --ink: #1a1a2e;
+    --ink-light: #4a4a6a;
+    --ink-muted: #8888aa;
+    --cream: #faf8f3;
+    --warm: #f5f0e8;
+    --accent: #c8914a;
+    --accent-light: #f0dfc0;
+    --green: #2d6a4f;
+    --green-light: #d8f3dc;
+    --red: #9b2226;
+    --red-light: #fde8e9;
+    --blue: #1e4d8c;
+    --blue-light: #dbeafe;
+    --border: rgba(26,26,46,0.1);
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    font-family: 'DM Sans', sans-serif;
+    background: var(--cream);
+    color: var(--ink);
+    min-height: 100vh;
+  }
+  .header {
+    background: var(--ink);
+    color: var(--cream);
+    padding: 3rem 3rem 2rem;
+    position: relative;
+    overflow: hidden;
+  }
+  .header::before {
+    content: '';
+    position: absolute;
+    top: -60px; right: -60px;
+    width: 300px; height: 300px;
+    border-radius: 50%;
+    background: rgba(200,145,74,0.12);
+  }
+  .header::after {
+    content: '';
+    position: absolute;
+    bottom: -40px; left: 200px;
+    width: 180px; height: 180px;
+    border-radius: 50%;
+    background: rgba(200,145,74,0.07);
+  }
+  .header-label {
+    font-size: 11px;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    color: var(--accent);
+    font-weight: 500;
+    margin-bottom: 0.5rem;
+  }
+  .header h1 {
+    font-family: 'DM Serif Display', serif;
+    font-size: 2.4rem;
+    font-weight: 400;
+    line-height: 1.1;
+    margin-bottom: 0.4rem;
+  }
+  .header-sub {
+    font-size: 13px;
+    color: rgba(250,248,243,0.5);
+    font-weight: 300;
+  }
+  .header-date {
+    position: absolute;
+    top: 3rem; right: 3rem;
+    font-size: 12px;
+    color: rgba(250,248,243,0.4);
+    text-align: right;
+    font-weight: 300;
+  }
+  .main { padding: 2.5rem 3rem; max-width: 1100px; }
+
+  /* KPI row */
+  .kpi-row {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 1rem;
+    margin-bottom: 2.5rem;
+  }
+  .kpi {
+    background: white;
+    border: 0.5px solid var(--border);
+    border-radius: 12px;
+    padding: 1.25rem 1.5rem;
+    position: relative;
+    overflow: hidden;
+  }
+  .kpi-accent {
+    position: absolute;
+    top: 0; left: 0;
+    width: 3px; height: 100%;
+    border-radius: 12px 0 0 12px;
+  }
+  .kpi-label {
+    font-size: 11px;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--ink-muted);
+    font-weight: 500;
+    margin-bottom: 0.5rem;
+  }
+  .kpi-val {
+    font-family: 'DM Serif Display', serif;
+    font-size: 1.8rem;
+    font-weight: 400;
+    line-height: 1;
+    margin-bottom: 0.3rem;
+  }
+  .kpi-note { font-size: 11px; color: var(--ink-muted); }
+  .kpi-green .kpi-accent { background: var(--green); }
+  .kpi-green .kpi-val { color: var(--green); }
+  .kpi-red .kpi-accent { background: var(--red); }
+  .kpi-amber .kpi-accent { background: var(--accent); }
+  .kpi-blue .kpi-accent { background: var(--blue); }
+
+  /* Grid layout */
+  .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem; margin-bottom: 1.5rem; }
+  .grid-3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 1.5rem; margin-bottom: 1.5rem; }
+  .card {
+    background: white;
+    border: 0.5px solid var(--border);
+    border-radius: 16px;
+    padding: 1.5rem;
+  }
+  .card-title {
+    font-size: 11px;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--ink-muted);
+    font-weight: 500;
+    margin-bottom: 1.25rem;
+  }
+
+  /* Cash flow bar */
+  .cashflow-wrap { margin-bottom: 1rem; }
+  .cf-row { display: flex; align-items: center; gap: 10px; margin-bottom: 8px; }
+  .cf-label { width: 140px; font-size: 12px; color: var(--ink-light); flex-shrink: 0; text-align: right; }
+  .cf-bar-bg { flex: 1; background: var(--warm); border-radius: 4px; height: 20px; overflow: hidden; }
+  .cf-bar { height: 100%; border-radius: 4px; display: flex; align-items: center; padding-left: 8px; }
+  .cf-amt { width: 70px; font-size: 12px; font-weight: 500; color: var(--ink); text-align: right; flex-shrink: 0; }
+  .cf-divider { border: none; border-top: 1px dashed var(--border); margin: 12px 0; }
+
+  /* Donut chart */
+  .chart-wrap { position: relative; width: 100%; }
+  .donut-wrap { position: relative; height: 200px; }
+  .legend-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; margin-top: 1rem; }
+  .legend-item { display: flex; align-items: center; gap: 6px; font-size: 11px; color: var(--ink-light); }
+  .legend-sq { width: 8px; height: 8px; border-radius: 2px; flex-shrink: 0; }
+
+  /* Insurance table */
+  .ins-row { display: flex; justify-content: space-between; align-items: flex-start; padding: 10px 0; border-bottom: 0.5px solid var(--border); gap: 12px; }
+  .ins-row:last-child { border-bottom: none; }
+  .ins-name { font-size: 12px; font-weight: 500; color: var(--ink); }
+  .ins-sub { font-size: 11px; color: var(--ink-muted); margin-top: 2px; }
+  .ins-amt { font-size: 13px; font-weight: 500; color: var(--ink); white-space: nowrap; }
+  .badge { display: inline-block; font-size: 10px; padding: 2px 7px; border-radius: 20px; font-weight: 500; margin-top: 3px; }
+  .badge-green { background: var(--green-light); color: var(--green); }
+  .badge-amber { background: var(--accent-light); color: #7a5020; }
+  .badge-blue { background: var(--blue-light); color: var(--blue); }
+
+  /* Action items */
+  .action-item { display: flex; gap: 12px; padding: 10px 0; border-bottom: 0.5px solid var(--border); align-items: flex-start; }
+  .action-item:last-child { border-bottom: none; }
+  .action-num { width: 22px; height: 22px; border-radius: 50%; background: var(--ink); color: var(--cream); font-size: 11px; font-weight: 500; display: flex; align-items: center; justify-content: center; flex-shrink: 0; margin-top: 1px; }
+  .action-text { font-size: 12px; color: var(--ink-light); line-height: 1.5; }
+  .action-text strong { color: var(--ink); font-weight: 500; }
+
+  /* Net worth */
+  .nw-item { display: flex; justify-content: space-between; padding: 8px 0; border-bottom: 0.5px solid var(--border); }
+  .nw-item:last-child { border-bottom: none; }
+  .nw-label { font-size: 12px; color: var(--ink-light); }
+  .nw-val { font-size: 13px; font-weight: 500; }
+  .nw-total { display: flex; justify-content: space-between; padding: 12px 0 0; margin-top: 4px; border-top: 1.5px solid var(--ink); }
+  .nw-total .nw-label { font-weight: 500; color: var(--ink); font-size: 13px; }
+  .nw-total .nw-val { font-family: 'DM Serif Display', serif; font-size: 1.3rem; color: var(--green); }
+
+  /* Trend bars */
+  .trend-row { display: flex; align-items: flex-end; gap: 6px; height: 120px; margin-top: 0.5rem; }
+  .trend-col { flex: 1; display: flex; flex-direction: column; align-items: center; gap: 4px; height: 100%; justify-content: flex-end; }
+  .trend-bar { width: 100%; border-radius: 4px 4px 0 0; transition: opacity 0.2s; }
+  .trend-label { font-size: 10px; color: var(--ink-muted); }
+  .trend-val { font-size: 10px; font-weight: 500; color: var(--ink); }
+
+  @media (max-width: 768px) {
+    .header { padding: 2rem 1.5rem 1.5rem; }
+    .header h1 { font-size: 1.8rem; }
+    .header-date { display: none; }
+    .main { padding: 1.5rem; }
+    .kpi-row { grid-template-columns: 1fr 1fr; }
+    .grid-2, .grid-3 { grid-template-columns: 1fr; }
+  }
+</style>
+</head>
+<body>
+
+<div class="header">
+  <div class="header-label">Personal Finance Review</div>
+  <h1>Personal Finance</h1>
+  <p class="header-sub">Comprehensive overview · Singapore · Jun 2026</p>
+  <div class="header-date">Updated<br>June 2026</div>
+</div>
+
+<div class="main">
+
+  <!-- KPIs -->
+  <div class="kpi-row">
+    <div class="kpi kpi-green">
+      <div class="kpi-accent"></div>
+      <div class="kpi-label">Monthly salary</div>
+      <div class="kpi-val">$8,000</div>
+      <div class="kpi-note">Take-home</div>
+    </div>
+    <div class="kpi kpi-red">
+      <div class="kpi-accent"></div>
+      <div class="kpi-label">Total outgoings</div>
+      <div class="kpi-val">~$4,800</div>
+      <div class="kpi-note">Fixed + variable</div>
+    </div>
+    <div class="kpi kpi-green">
+      <div class="kpi-accent"></div>
+      <div class="kpi-label">Monthly surplus</div>
+      <div class="kpi-val">~$3,200</div>
+      <div class="kpi-note">~40% savings rate</div>
+    </div>
+    <div class="kpi kpi-amber">
+      <div class="kpi-accent"></div>
+      <div class="kpi-label">Insurance (annual)</div>
+      <div class="kpi-val">$16,439</div>
+      <div class="kpi-note">GE $16,324 · AIA $115</div>
+    </div>
+  </div>
+
+  <!-- Cash flow + spending split -->
+  <div class="grid-2">
+    <div class="card">
+      <div class="card-title">Monthly cash flow</div>
+      <div class="cashflow-wrap">
+        <div class="cf-row">
+          <span class="cf-label">Salary</span>
+          <div class="cf-bar-bg"><div class="cf-bar" style="width:100%;background:#2d6a4f"></div></div>
+          <span class="cf-amt" style="color:var(--green)">+$8,000</span>
+        </div>
+        <hr class="cf-divider">
+        <div class="cf-row">
+          <span class="cf-label">Insurance</span>
+          <div class="cf-bar-bg"><div class="cf-bar" style="width:34%;background:var(--accent)"></div></div>
+          <span class="cf-amt">$1,370</span>
+        </div>
+        <div class="cf-row">
+          <span class="cf-label">Car total</span>
+          <div class="cf-bar-bg"><div class="cf-bar" style="width:26%;background:#6b7db3"></div></div>
+          <span class="cf-amt">$1,044</span>
+        </div>
+        <div class="cf-row">
+          <span class="cf-label">Helper</span>
+          <div class="cf-bar-bg"><div class="cf-bar" style="width:17%;background:#6b7db3"></div></div>
+          <span class="cf-amt">$700</span>
+        </div>
+        <div class="cf-row">
+          <span class="cf-label">Groceries + baby</span>
+          <div class="cf-bar-bg"><div class="cf-bar" style="width:25%;background:#6b7db3"></div></div>
+          <span class="cf-amt">$1,000</span>
+        </div>
+        <div class="cf-row">
+          <span class="cf-label">Utilities</span>
+          <div class="cf-bar-bg"><div class="cf-bar" style="width:10%;background:#6b7db3"></div></div>
+          <span class="cf-amt">$400</span>
+        </div>
+        <div class="cf-row">
+          <span class="cf-label">Subscriptions</span>
+          <div class="cf-bar-bg"><div class="cf-bar" style="width:3%;background:#6b7db3"></div></div>
+          <span class="cf-amt">$119</span>
+        </div>
+        <hr class="cf-divider">
+        <div class="cf-row">
+          <span class="cf-label" style="font-weight:500;color:var(--ink)">Surplus</span>
+          <div class="cf-bar-bg"><div class="cf-bar" style="width:40%;background:var(--green)"></div></div>
+          <span class="cf-amt" style="color:var(--green);font-weight:600">~$3,200</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-title">Spending breakdown</div>
+      <div class="donut-wrap">
+        <canvas id="spendChart" role="img" aria-label="Monthly spending breakdown by category">Insurance $1370, Car $1044, Helper $700, Groceries and baby $1000, Utilities $400, Subscriptions $119</canvas>
+      </div>
+      <div class="legend-grid">
+        <div class="legend-item"><span class="legend-sq" style="background:#c8914a"></span>Insurance (29%)</div>
+        <div class="legend-item"><span class="legend-sq" style="background:#6b7db3"></span>Car (22%)</div>
+        <div class="legend-item"><span class="legend-sq" style="background:#2d6a4f"></span>Groceries+baby (21%)</div>
+        <div class="legend-item"><span class="legend-sq" style="background:#4a90b8"></span>Helper (15%)</div>
+        <div class="legend-item"><span class="legend-sq" style="background:#9b7b4a"></span>Utilities (8%)</div>
+        <div class="legend-item"><span class="legend-sq" style="background:#aaaacc"></span>Subscriptions (2%)</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- CC spend trend + net worth -->
+  <div class="grid-2">
+    <div class="card">
+      <div class="card-title">CC spend trend (monthly)</div>
+      <div class="trend-row">
+        <div class="trend-col">
+          <div class="trend-val">$2,634</div>
+          <div class="trend-bar" style="height:50%;background:#6b7db3"></div>
+          <div class="trend-label">Jan</div>
+        </div>
+        <div class="trend-col">
+          <div class="trend-val" style="color:var(--red)">$10,606</div>
+          <div class="trend-bar" style="height:100%;background:var(--red);opacity:0.7"></div>
+          <div class="trend-label">Feb ⚡</div>
+        </div>
+        <div class="trend-col">
+          <div class="trend-val">$2,974</div>
+          <div class="trend-bar" style="height:56%;background:#6b7db3"></div>
+          <div class="trend-label">Mar</div>
+        </div>
+        <div class="trend-col">
+          <div class="trend-val">$2,813</div>
+          <div class="trend-bar" style="height:53%;background:#6b7db3"></div>
+          <div class="trend-label">Apr</div>
+        </div>
+        <div class="trend-col">
+          <div class="trend-val" style="color:var(--ink-muted)">—</div>
+          <div class="trend-bar" style="height:4%;background:#ddd"></div>
+          <div class="trend-label">May</div>
+        </div>
+        <div class="trend-col">
+          <div class="trend-val" style="color:var(--ink-muted)">—</div>
+          <div class="trend-bar" style="height:4%;background:#ddd"></div>
+          <div class="trend-label">Jun</div>
+        </div>
+      </div>
+      <p style="font-size:11px;color:var(--ink-muted);margin-top:12px">Feb spike = Private hospital birth + hospital visits (one-off). Baseline avg ~$2,807/mo</p>
+    </div>
+
+    <div class="card">
+      <div class="card-title">Known asset snapshot</div>
+      <div class="nw-item">
+        <span class="nw-label">Smart Invest ILPs (GE)</span>
+        <span class="nw-val" style="color:var(--green)">$41,123</span>
+      </div>
+      <div class="nw-item">
+        <span class="nw-label">GE par policy surrender values</span>
+        <span class="nw-val" style="color:var(--green)">~$59,000</span>
+      </div>
+      <div class="nw-item">
+        <span class="nw-label">AIA Guaranteed 10 (cash value)</span>
+        <span class="nw-val" style="color:var(--green)">$9,300</span>
+      </div>
+      <div class="nw-item">
+        <span class="nw-label">CPF (OA/SA/MA)</span>
+        <span class="nw-val" style="color:var(--ink-muted)">Not reviewed</span>
+      </div>
+      <div class="nw-item">
+        <span class="nw-label">Car (depreciating asset)</span>
+        <span class="nw-val" style="color:var(--ink-muted)">Not reviewed</span>
+      </div>
+      <div class="nw-total">
+        <span class="nw-label">Visible assets (min.)</span>
+        <span class="nw-val">~$109,000+</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- Insurance portfolio -->
+  <div class="grid-3">
+    <div class="card">
+      <div class="card-title">Protection — Me</div>
+      <div class="ins-row">
+        <div><div class="ins-name">SupremeHealth P Plus + TotalCare</div><div class="ins-sub">Hospital plan (cash + Medisave)</div><span class="badge badge-blue">Hospitalisation</span></div>
+        <div class="ins-amt">$944</div>
+      </div>
+      <div class="ins-row">
+        <div><div class="ins-name">Supreme Early Multiplier 20</div><div class="ins-sub">$200k till 65, CI covered, till 2039</div><span class="badge badge-amber">Whole life</span></div>
+        <div class="ins-amt">$2,618</div>
+      </div>
+      <div class="ins-row">
+        <div><div class="ins-name">FlexiLife Multiplier 20</div><div class="ins-sub">$150k CI + accident riders, till 2035</div><span class="badge badge-amber">Whole life</span></div>
+        <div class="ins-amt">$2,232</div>
+      </div>
+      <div class="ins-row">
+        <div><div class="ins-name">Personal Protector Basic</div><div class="ins-sub">$200k AD&D accident cover</div><span class="badge badge-blue">Accident</span></div>
+        <div class="ins-amt">$297</div>
+      </div>
+      <div class="ins-row">
+        <div><div class="ins-name">CareShield Supreme</div><div class="ins-sub">Disability income, lifetime payout</div><span class="badge badge-blue">Disability</span></div>
+        <div class="ins-amt">$626</div>
+      </div>
+      <div class="ins-row">
+        <div><div class="ins-name">AIA Guaranteed 10 for Life</div><div class="ins-sub">$27k death/CI — fully paid up</div><span class="badge badge-green">Paid up</span></div>
+        <div class="ins-amt">$115</div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-title">Protection — Child (child)</div>
+      <div class="ins-row">
+        <div><div class="ins-name">SupremeHealth + TotalCare</div><div class="ins-sub">Hospital plan (Medisave only)</div><span class="badge badge-blue">Hospitalisation</span></div>
+        <div class="ins-amt">Medisave</div>
+      </div>
+      <div class="ins-row">
+        <div><div class="ins-name">Complete Flexi Living Protect 2</div><div class="ins-sub">$50k base, $150k CI multiplier rider</div><span class="badge badge-amber">Whole life</span></div>
+        <div class="ins-amt">$1,386</div>
+      </div>
+      <div class="card-title" style="margin-top:1.5rem">Savings & wealth</div>
+      <div class="ins-row">
+        <div><div class="ins-name">Annual Cashback Endowment 25</div><div class="ins-sub">Matures Feb 2040, SV $103k at 53</div><span class="badge badge-amber">Endowment</span></div>
+        <div class="ins-amt">$3,170</div>
+      </div>
+      <div class="ins-row">
+        <div><div class="ins-name">Family3 (10Yr-Pay) Series 3</div><div class="ins-sub">Income $1,396/yr from yr 11, ends 2029</div><span class="badge badge-amber">Endowment</span></div>
+        <div class="ins-amt">$3,643</div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-title">Savings & wealth (cont.)</div>
+      <div class="ins-row">
+        <div><div class="ins-name">Great Lifetime Payout</div><div class="ins-sub">$900/yr income from 2026, SV $20,358</div><span class="badge badge-green">Paid up</span></div>
+        <div class="ins-amt">$0</div>
+      </div>
+      <div class="ins-row">
+        <div><div class="ins-name">Great Retire Income 5</div><div class="ins-sub">$16,373/yr from age 57 (10 yrs), accumulating</div><span class="badge badge-amber">Retirement</span></div>
+        <div class="ins-amt">$13,880</div>
+      </div>
+      <div class="ins-row">
+        <div><div class="ins-name">Smart Invest SP x2</div><div class="ins-sub">ILP, fund value $41,123 (Jun 2026)</div><span class="badge badge-green">Paid up</span></div>
+        <div class="ins-amt">$0</div>
+      </div>
+      <div class="ins-row">
+        <div><div class="ins-name">PruWealth III</div><div class="ins-sub">Joint with Spouse, wealth accum., till 2032</div><span class="badge badge-amber">Savings ILP</span></div>
+        <div class="ins-amt">$2,440</div>
+      </div>
+      <div style="margin-top:1rem;padding-top:1rem;border-top:0.5px solid var(--border);display:flex;justify-content:space-between">
+        <span style="font-size:12px;font-weight:500">Total 2026 annual</span>
+        <span style="font-size:14px;font-weight:600;font-family:'DM Serif Display',serif">$16,439</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- Action items -->
+  <div class="card" style="margin-bottom:1.5rem">
+    <div class="card-title">Open action items</div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:0 2rem">
+      <div class="action-item">
+        <div class="action-num">1</div>
+        <div class="action-text"><strong>Set up GIRO for UOB cards</strong> — avoids late/finance charges (lost $134.62 in Mar–Apr 2026)</div>
+      </div>
+      <div class="action-item">
+        <div class="action-num">2</div>
+        <div class="action-text"><strong>Clarify Family3 income purpose</strong> with agent — $1,396/yr from yr 11 has no defined goal</div>
+      </div>
+      <div class="action-item">
+        <div class="action-num">3</div>
+        <div class="action-text"><strong>GE agent premium review</strong> — ongoing conversation to reduce overall insurance burden</div>
+      </div>
+      <div class="action-item">
+        <div class="action-num">4</div>
+        <div class="action-text"><strong>Confirm Great SP Series 12 payout</strong> — matured Feb 2026, $10,192 should have been received</div>
+      </div>
+      <div class="action-item">
+        <div class="action-num">5</div>
+        <div class="action-text"><strong>Check insurance claims</strong> for Feb 2026 Private hospital birth bills ($4,837 + $3,553)</div>
+      </div>
+      <div class="action-item">
+        <div class="action-num">6</div>
+        <div class="action-text"><strong>Retire Income 5 projected payout</strong> — confirm non-guaranteed component with GE to get full picture</div>
+      </div>
+      <div class="action-item">
+        <div class="action-num">7</div>
+        <div class="action-text"><strong>Review M1 plan</strong> when contract is up — $29.51/mo may have cheaper alternatives</div>
+      </div>
+      <div class="action-item">
+        <div class="action-num">8</div>
+        <div class="action-text"><strong>Consider investing surplus</strong> — ~$3,200/mo available; CPF top-up, SSBs or ETFs worth exploring</div>
+      </div>
+    </div>
+  </div>
+
+  <p style="font-size:11px;color:var(--ink-muted);text-align:center;padding-bottom:2rem">For personal reference only · Based on statements and documents reviewed June 2026 · Not financial advice</p>
+</div>
+
+<script>
+const ctx = document.getElementById('spendChart').getContext('2d');
+new Chart(ctx, {
+  type: 'doughnut',
+  data: {
+    labels: ['Insurance','Car','Groceries+Baby','Helper','Utilities','Subscriptions'],
+    datasets: [{
+      data: [1370, 1044, 1000, 700, 400, 119],
+      backgroundColor: ['#c8914a','#6b7db3','#2d6a4f','#4a90b8','#9b7b4a','#aaaacc'],
+      borderWidth: 0,
+      hoverOffset: 6
+    }]
+  },
+  options: {
+    responsive: true,
+    maintainAspectRatio: false,
+    cutout: '68%',
+    plugins: {
+      legend: { display: false },
+      tooltip: { callbacks: { label: ctx => ` S$${ctx.parsed.toLocaleString()} / mo` } }
+    }
+  }
+});
+</script>
+</body>
+</html>
