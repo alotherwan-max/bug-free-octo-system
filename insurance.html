@@ -3,346 +3,867 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Coverage Buckets</title>
-<link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=Geist:wght@300;400;500;600&display=swap" rel="stylesheet">
+<title>Financial Overview</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.js"></script>
 <style>
-:root {
-  --bg:#0f0f13; --surface:#17171d; --surface2:#1e1e26;
-  --border:rgba(255,255,255,0.07); --text:#e8e8f0; --muted:#6b6b80; --dim:#2a2a36;
-  --c-death:#4ade9a; --c-ci:#f87060; --c-hosp:#60a8f8;
-  --c-dis:#c084fc; --c-acc:#fbbf50; --c-sav:#34d4c8; --c-ret:#fb923c;
-}
-*{box-sizing:border-box;margin:0;padding:0}
-body{font-family:'Geist',sans-serif;background:var(--bg);color:var(--text);min-height:100vh;padding:2.5rem 2rem}
+  :root {
+    --ink:#1a1a2e;--ink-light:#4a4a6a;--ink-muted:#8888aa;
+    --cream:#faf8f3;--warm:#f5f0e8;--accent:#c8914a;--accent-light:#f0dfc0;
+    --green:#2d6a4f;--green-light:#d8f3dc;--red:#9b2226;--red-light:#fde8e9;
+    --blue:#1e4d8c;--blue-light:#dbeafe;--border:rgba(26,26,46,0.1);
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{font-family:'DM Sans',sans-serif;background:var(--cream);color:var(--ink);min-height:100vh}
 
-.page-eyebrow{font-size:11px;letter-spacing:.18em;text-transform:uppercase;color:var(--muted);margin-bottom:.5rem}
-h1{font-family:'Instrument Serif',serif;font-size:2.4rem;font-weight:400;line-height:1.1;margin-bottom:.4rem}
-h1 em{font-style:italic;color:rgba(232,232,240,.35)}
-.page-sub{font-size:13px;color:var(--muted);margin-bottom:3rem}
+  /* Header */
+  .header{background:var(--ink);color:var(--cream);padding:2.5rem 3rem 0;position:relative;overflow:hidden}
+  .header::before{content:'';position:absolute;top:-60px;right:-60px;width:300px;height:300px;border-radius:50%;background:rgba(200,145,74,0.12)}
+  .header::after{content:'';position:absolute;bottom:-40px;left:200px;width:180px;height:180px;border-radius:50%;background:rgba(200,145,74,0.07)}
+  .header-label{font-size:11px;letter-spacing:.18em;text-transform:uppercase;color:var(--accent);font-weight:500;margin-bottom:.5rem}
+  .header h1{font-family:'DM Serif Display',serif;font-size:2.2rem;font-weight:400;line-height:1.1;margin-bottom:.3rem}
+  .header-sub{font-size:13px;color:rgba(250,248,243,.5);font-weight:300}
+  .header-date{position:absolute;top:2.5rem;right:3rem;font-size:12px;color:rgba(250,248,243,.4);text-align:right;font-weight:300}
 
-/* ── Bucket grid ── */
-.bucket-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:1.25rem;margin-bottom:1.25rem}
-.bucket{background:var(--surface);border:.5px solid var(--border);border-radius:20px;overflow:hidden;cursor:default;transition:transform .15s,border-color .15s}
-.bucket:hover{transform:translateY(-2px);border-color:rgba(255,255,255,.12)}
+  /* Tabs */
+  .tab-nav{display:flex;gap:0;margin-top:1.5rem;position:relative;z-index:1}
+  .tab-btn{padding:.75rem 1.75rem;font-family:'DM Sans',sans-serif;font-size:13px;font-weight:500;background:transparent;border:none;color:rgba(250,248,243,.45);cursor:pointer;border-radius:10px 10px 0 0;transition:all .2s;letter-spacing:.02em}
+  .tab-btn:hover{color:rgba(250,248,243,.75)}
+  .tab-btn.active{background:var(--cream);color:var(--ink)}
 
-.bucket-top{padding:1.5rem 1.5rem 1.25rem}
-.bucket-icon{font-size:1.6rem;margin-bottom:.75rem}
-.bucket-name{font-size:13px;font-weight:600;letter-spacing:.02em;margin-bottom:.25rem}
-.bucket-tagline{font-size:11px;color:var(--muted);line-height:1.5}
+  /* Tab panels */
+  .tab-panel{display:none}.tab-panel.active{display:block}
+  .main{padding:2.5rem 3rem;max-width:1200px}
 
-/* Big number */
-.bucket-amount{
-  font-family:'Instrument Serif',serif;font-size:2.1rem;font-weight:400;
-  line-height:1;margin:1rem 0 .25rem
-}
-.bucket-amount-label{font-size:10px;letter-spacing:.1em;text-transform:uppercase;color:var(--muted)}
+  /* KPIs */
+  .kpi-row{display:grid;grid-template-columns:repeat(4,1fr);gap:1rem;margin-bottom:2.5rem}
+  .kpi{background:white;border:.5px solid var(--border);border-radius:12px;padding:1.25rem 1.5rem;position:relative;overflow:hidden}
+  .kpi-accent{position:absolute;top:0;left:0;width:3px;height:100%;border-radius:12px 0 0 12px}
+  .kpi-label{font-size:11px;letter-spacing:.1em;text-transform:uppercase;color:var(--ink-muted);font-weight:500;margin-bottom:.5rem}
+  .kpi-val{font-family:'DM Serif Display',serif;font-size:1.8rem;font-weight:400;line-height:1;margin-bottom:.3rem}
+  .kpi-note{font-size:11px;color:var(--ink-muted)}
+  .kpi-green .kpi-accent{background:var(--green)}.kpi-green .kpi-val{color:var(--green)}
+  .kpi-red .kpi-accent{background:var(--red)}
+  .kpi-amber .kpi-accent{background:var(--accent)}
+  .kpi-blue .kpi-accent{background:var(--blue)}
 
-/* Color bar at bottom of top section */
-.bucket-bar{height:3px;width:100%;margin-top:1.25rem}
+  /* Cards & grids */
+  .grid-2{display:grid;grid-template-columns:1fr 1fr;gap:1.5rem;margin-bottom:1.5rem}
+  .grid-3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:1.5rem;margin-bottom:1.5rem}
+  .card{background:white;border:.5px solid var(--border);border-radius:16px;padding:1.5rem}
+  .card-title{font-size:11px;letter-spacing:.12em;text-transform:uppercase;color:var(--ink-muted);font-weight:500;margin-bottom:1.25rem}
 
-/* Policies list */
-.bucket-policies{background:var(--surface2);padding:1rem 1.5rem}
-.policy-row{display:flex;justify-content:space-between;align-items:flex-start;padding:6px 0;border-bottom:.5px solid var(--border);gap:8px}
-.policy-row:last-child{border-bottom:none}
-.policy-name{font-size:11px;color:var(--muted);line-height:1.4;flex:1}
-.policy-val{font-size:11px;font-weight:500;white-space:nowrap}
+  /* Cash flow */
+  .cf-row{display:flex;align-items:center;gap:10px;margin-bottom:8px}
+  .cf-label{width:140px;font-size:12px;color:var(--ink-light);flex-shrink:0;text-align:right}
+  .cf-bar-bg{flex:1;background:var(--warm);border-radius:4px;height:20px;overflow:hidden}
+  .cf-bar{height:100%;border-radius:4px}
+  .cf-amt{width:70px;font-size:12px;font-weight:500;color:var(--ink);text-align:right;flex-shrink:0}
+  .cf-divider{border:none;border-top:1px dashed var(--border);margin:12px 0}
 
-/* Condition chips */
-.conditions{display:flex;flex-wrap:wrap;gap:4px;margin-top:.75rem}
-.chip{font-size:9px;padding:2px 7px;border-radius:20px;background:var(--dim);color:var(--muted);letter-spacing:.04em}
+  /* Donut */
+  .donut-wrap{position:relative;height:200px}
+  .legend-grid{display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-top:1rem}
+  .legend-item{display:flex;align-items:center;gap:6px;font-size:11px;color:var(--ink-light)}
+  .legend-sq{width:8px;height:8px;border-radius:2px;flex-shrink:0}
 
-/* Note strip */
-.note-strip{background:var(--surface2);border-left:2px solid;border-radius:0 6px 6px 0;padding:.5rem .75rem;font-size:11px;color:var(--muted);line-height:1.5;margin-top:.75rem}
+  /* Insurance rows */
+  .ins-row{display:flex;justify-content:space-between;align-items:flex-start;padding:10px 0;border-bottom:.5px solid var(--border);gap:12px}
+  .ins-row:last-child{border-bottom:none}
+  .ins-name{font-size:12px;font-weight:500;color:var(--ink)}
+  .ins-sub{font-size:11px;color:var(--ink-muted);margin-top:2px}
+  .ins-amt{font-size:13px;font-weight:500;color:var(--ink);white-space:nowrap}
+  .badge{display:inline-block;font-size:10px;padding:2px 7px;border-radius:20px;font-weight:500;margin-top:3px}
+  .badge-green{background:var(--green-light);color:var(--green)}
+  .badge-amber{background:var(--accent-light);color:#7a5020}
+  .badge-blue{background:var(--blue-light);color:var(--blue)}
+  .badge-red{background:var(--red-light);color:var(--red)}
 
-/* Retirement section — full width */
-.retire-bucket{grid-column:1/-1}
-.retire-inner{display:grid;grid-template-columns:1fr 1.6fr;gap:0}
-.retire-left{padding:1.5rem}
-.retire-right{background:var(--surface2);padding:1.5rem;border-left:.5px solid var(--border)}
-.retire-row{display:flex;align-items:center;gap:8px;margin-bottom:6px}
-.retire-label{font-size:11px;color:var(--muted);width:160px;flex-shrink:0;text-align:right}
-.retire-track{flex:1;background:var(--dim);border-radius:3px;height:18px;overflow:hidden}
-.retire-fill{height:100%;border-radius:3px;display:flex;align-items:center;padding-left:6px;font-size:9px;font-weight:600;color:#1a1a1a;white-space:nowrap}
-.retire-num{width:70px;font-size:11px;font-weight:500;text-align:right;flex-shrink:0}
-.retire-divider{border:none;border-top:.5px dashed var(--border);margin:8px 0}
-.retire-target{background:rgba(251,146,60,.1);border:.5px solid rgba(251,146,60,.25);border-radius:10px;padding:.75rem 1rem;font-size:11px;color:rgba(251,146,60,.9);line-height:1.6;margin-top:1rem}
+  /* Action items */
+  .action-item{display:flex;gap:12px;padding:10px 0;border-bottom:.5px solid var(--border);align-items:flex-start}
+  .action-item:last-child{border-bottom:none}
+  .action-num{width:22px;height:22px;border-radius:50%;background:var(--ink);color:var(--cream);font-size:11px;font-weight:500;display:flex;align-items:center;justify-content:center;flex-shrink:0;margin-top:1px}
+  .action-text{font-size:12px;color:var(--ink-light);line-height:1.5}
+  .action-text strong{color:var(--ink);font-weight:500}
 
-/* Summary footer */
-.summary-footer{display:grid;grid-template-columns:repeat(4,1fr);gap:1rem;margin-top:1.25rem;margin-bottom:2rem}
-.sum-tile{background:var(--surface);border:.5px solid var(--border);border-radius:14px;padding:1rem 1.25rem}
-.sum-label{font-size:10px;letter-spacing:.1em;text-transform:uppercase;color:var(--muted);margin-bottom:.4rem}
-.sum-val{font-family:'Instrument Serif',serif;font-size:1.5rem;line-height:1}
-.sum-note{font-size:10px;color:var(--muted);margin-top:.3rem}
+  /* Net worth */
+  .nw-item{display:flex;justify-content:space-between;padding:8px 0;border-bottom:.5px solid var(--border)}
+  .nw-item:last-child{border-bottom:none}
+  .nw-label{font-size:12px;color:var(--ink-light)}
+  .nw-val{font-size:13px;font-weight:500}
+  .nw-total{display:flex;justify-content:space-between;padding:12px 0 0;margin-top:4px;border-top:1.5px solid var(--ink)}
+  .nw-total .nw-label{font-weight:500;color:var(--ink);font-size:13px}
+  .nw-total .nw-val{font-family:'DM Serif Display',serif;font-size:1.3rem;color:var(--green)}
 
-.footnote{font-size:11px;color:var(--muted);text-align:center;line-height:1.8}
+  /* Trend */
+  .trend-row{display:flex;align-items:flex-end;gap:6px;height:120px;margin-top:.5rem}
+  .trend-col{flex:1;display:flex;flex-direction:column;align-items:center;gap:4px;height:100%;justify-content:flex-end}
+  .trend-bar{width:100%;border-radius:4px 4px 0 0}
+  .trend-label{font-size:10px;color:var(--ink-muted)}
+  .trend-val{font-size:10px;font-weight:500;color:var(--ink)}
 
-/* Who badge */
-.who-row{display:flex;gap:6px;margin-bottom:.75rem}
-.who-badge{font-size:9px;padding:2px 8px;border-radius:20px;font-weight:600;letter-spacing:.06em}
-.who-owner{background:rgba(74,222,154,.12);color:var(--c-death)}
-.who-child{background:rgba(96,168,248,.12);color:var(--c-hosp)}
-.who-joint{background:rgba(251,191,80,.12);color:var(--c-acc)}
+  /* ── Coverage tab styles ── */
+  .cov-section-title{
+    font-family:'DM Serif Display',serif;font-size:1.1rem;font-weight:400;
+    color:var(--ink);margin:2rem 0 1rem;display:flex;align-items:center;gap:10px
+  }
+  .cov-section-title::after{content:'';flex:1;height:1px;background:var(--border)}
+  .cov-table{width:100%;border-collapse:collapse;font-size:12px;margin-bottom:1.5rem}
+  .cov-table th{
+    font-size:10px;letter-spacing:.1em;text-transform:uppercase;color:var(--ink-muted);
+    font-weight:500;padding:8px 10px;border-bottom:1.5px solid var(--border);text-align:left;background:transparent
+  }
+  .cov-table th.right,.cov-table td.right{text-align:right}
+  .cov-table td{padding:10px 10px;border-bottom:.5px solid var(--border);color:var(--ink-light);vertical-align:top;line-height:1.5}
+  .cov-table tr:last-child td{border-bottom:none}
+  .cov-table td strong{color:var(--ink);font-weight:500}
+  .cov-amt{font-weight:500;color:var(--ink);font-size:13px;white-space:nowrap}
+  .cov-total-row td{font-weight:500;color:var(--ink);background:var(--warm);font-size:13px}
+  .pill{display:inline-flex;align-items:center;gap:4px;font-size:10px;padding:2px 8px;border-radius:20px;font-weight:500;white-space:nowrap}
+  .pill-life{background:#e0e7ff;color:#3730a3}
+  .pill-ci{background:#fce7f3;color:#9d174d}
+  .pill-hosp{background:var(--blue-light);color:var(--blue)}
+  .pill-disability{background:#f0fdf4;color:#166534}
+  .pill-accident{background:#fff7ed;color:#c2410c}
+  .pill-savings{background:var(--accent-light);color:#7a5020}
+  .pill-retirement{background:#f5f3ff;color:#5b21b6}
+  .pill-paidup{background:var(--green-light);color:var(--green)}
+  .summary-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:1rem;margin-bottom:2rem}
+  .sum-card{background:white;border:.5px solid var(--border);border-radius:12px;padding:1rem 1.25rem}
+  .sum-card-label{font-size:10px;letter-spacing:.1em;text-transform:uppercase;color:var(--ink-muted);margin-bottom:.4rem}
+  .sum-card-val{font-family:'DM Serif Display',serif;font-size:1.5rem;color:var(--ink)}
+  .sum-card-sub{font-size:11px;color:var(--ink-muted);margin-top:3px}
+  .gap-card{background:var(--red-light);border:.5px solid rgba(155,34,38,.2);border-radius:12px;padding:1rem 1.5rem;margin-bottom:2rem;display:flex;align-items:flex-start;gap:1rem}
+  .gap-icon{font-size:1.5rem;flex-shrink:0}
+  .gap-text{font-size:13px;color:var(--red);line-height:1.6}
+  .gap-text strong{font-weight:500}
 
-@media(max-width:900px){
-  .bucket-grid{grid-template-columns:1fr 1fr}
-  .retire-bucket{grid-column:1/-1}
-  .retire-inner{grid-template-columns:1fr}
-  .retire-right{border-left:none;border-top:.5px solid var(--border)}
-  .summary-footer{grid-template-columns:1fr 1fr}
-}
-@media(max-width:560px){
-  .bucket-grid{grid-template-columns:1fr}
-  .summary-footer{grid-template-columns:1fr 1fr}
-  body{padding:1.5rem 1rem}
-}
+  @media(max-width:768px){
+    .header{padding:2rem 1.5rem 0}.header h1{font-size:1.8rem}.header-date{display:none}
+    .main{padding:1.5rem}.kpi-row{grid-template-columns:1fr 1fr}
+    .grid-2,.grid-3{grid-template-columns:1fr}
+    .summary-grid{grid-template-columns:1fr 1fr}
+    .cov-table{font-size:11px}
+    .tab-btn{padding:.65rem 1rem;font-size:12px}
+  }
+
+  /* ── Retirement Planner ── */
+  .rp-grid{display:grid;grid-template-columns:340px 1fr;gap:1.5rem;margin-bottom:1.5rem;align-items:start}
+  .rp-inputs{background:white;border:.5px solid var(--border);border-radius:16px;padding:1.5rem;position:sticky;top:1rem}
+  .rp-input-group{margin-bottom:1.25rem}
+  .rp-label{font-size:11px;letter-spacing:.08em;text-transform:uppercase;color:var(--ink-muted);font-weight:500;margin-bottom:.4rem;display:flex;justify-content:space-between;align-items:center}
+  .rp-val-display{font-size:13px;font-weight:500;color:var(--ink);font-family:'DM Serif Display',serif}
+  .rp-range{width:100%;accent-color:var(--accent);cursor:pointer;margin-top:.3rem}
+  .rp-number{width:100%;border:1px solid var(--border);border-radius:8px;padding:.5rem .75rem;font-family:'DM Sans',sans-serif;font-size:14px;color:var(--ink);background:var(--cream);outline:none}
+  .rp-number:focus{border-color:var(--accent)}
+  .rp-divider{border:none;border-top:.5px solid var(--border);margin:1.25rem 0}
+  .rp-section-label{font-size:10px;letter-spacing:.12em;text-transform:uppercase;color:var(--ink-muted);font-weight:500;margin-bottom:.75rem}
+
+  /* Results */
+  .rp-results{display:flex;flex-direction:column;gap:1.25rem}
+  .rp-kpi-row{display:grid;grid-template-columns:repeat(3,1fr);gap:1rem}
+  .rp-kpi{background:white;border:.5px solid var(--border);border-radius:12px;padding:1rem 1.25rem;position:relative;overflow:hidden}
+  .rp-kpi-bar{position:absolute;top:0;left:0;width:3px;height:100%;border-radius:12px 0 0 12px}
+  .rp-kpi-label{font-size:10px;letter-spacing:.1em;text-transform:uppercase;color:var(--ink-muted);margin-bottom:.4rem}
+  .rp-kpi-val{font-family:'DM Serif Display',serif;font-size:1.6rem;line-height:1;margin-bottom:.2rem}
+  .rp-kpi-note{font-size:11px;color:var(--ink-muted)}
+
+  /* Timeline chart card */
+  .rp-chart-card{background:white;border:.5px solid var(--border);border-radius:16px;padding:1.5rem}
+  .rp-chart-title{font-size:11px;letter-spacing:.1em;text-transform:uppercase;color:var(--ink-muted);font-weight:500;margin-bottom:1rem}
+  .rp-chart-wrap{position:relative;height:280px}
+
+  /* Policy contributions */
+  .rp-contrib-card{background:white;border:.5px solid var(--border);border-radius:16px;padding:1.5rem}
+  .contrib-row{display:flex;align-items:center;gap:10px;margin-bottom:8px}
+  .contrib-label{width:200px;font-size:12px;color:var(--ink-light);flex-shrink:0}
+  .contrib-bar-bg{flex:1;background:var(--warm);border-radius:4px;height:20px;overflow:hidden}
+  .contrib-fill{height:100%;border-radius:4px;display:flex;align-items:center;padding-left:8px;font-size:10px;font-weight:500;color:white}
+  .contrib-amt{width:75px;font-size:12px;font-weight:500;text-align:right;flex-shrink:0}
+  .contrib-divider{border:none;border-top:1px dashed var(--border);margin:10px 0}
+
+  /* Gap indicator */
+  .rp-gap-positive{background:var(--green-light);border:.5px solid rgba(45,106,79,.2);border-radius:12px;padding:1rem 1.25rem;font-size:13px;color:var(--green);line-height:1.6}
+  .rp-gap-negative{background:var(--red-light);border:.5px solid rgba(155,34,38,.2);border-radius:12px;padding:1rem 1.25rem;font-size:13px;color:var(--red);line-height:1.6}
+  .rp-gap-positive strong,.rp-gap-negative strong{font-weight:500}
+
+  /* Milestone timeline */
+  .milestone-track{position:relative;padding:1rem 0}
+  .milestone-line{position:absolute;left:16px;top:0;bottom:0;width:1px;background:var(--border)}
+  .milestone-item{display:flex;gap:12px;padding:.5rem 0;position:relative;z-index:1}
+  .milestone-dot{width:32px;height:32px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:12px;flex-shrink:0;border:2px solid}
+  .milestone-content{padding-top:.25rem}
+  .milestone-year{font-size:12px;font-weight:500;color:var(--ink)}
+  .milestone-desc{font-size:11px;color:var(--ink-muted);line-height:1.5;margin-top:2px}
+
+  @media(max-width:900px){.rp-grid{grid-template-columns:1fr}.rp-kpi-row{grid-template-columns:1fr 1fr}}
 </style>
 </head>
 <body>
 
-<div class="page-eyebrow">Insurance Coverage · Jun 2026</div>
-<h1>What are you <em>actually</em> covered for?</h1>
-<p class="page-sub">All policies bucketed by what they protect against — Owner &amp; Child</p>
-
-<div class="bucket-grid">
-
-  <!-- ── DEATH / TPD ── -->
-  <div class="bucket" style="--c:var(--c-death)">
-    <div class="bucket-top">
-      <div class="bucket-icon">🛡️</div>
-      <div class="who-row"><span class="who-badge who-owner">Owner</span></div>
-      <div class="bucket-name" style="color:var(--c-death)">Death &amp; Total Disability</div>
-      <div class="bucket-tagline">Pays out to family if you die or become permanently disabled</div>
-      <div class="bucket-amount" style="color:var(--c-death)">$513,921</div>
-      <div class="bucket-amount-label">till age 65 (multipliers active)</div>
-      <div class="bucket-bar" style="background:linear-gradient(90deg,var(--c-death),transparent)"></div>
-    </div>
-    <div class="bucket-policies">
-      <div class="policy-row"><span class="policy-name">Supreme Early Multiplier 20</span><span class="policy-val" style="color:var(--c-death)">$200,000</span></div>
-      <div class="policy-row"><span class="policy-name">FlexiLife Multiplier 20</span><span class="policy-val" style="color:var(--c-death)">$150,000</span></div>
-      <div class="policy-row"><span class="policy-name">Personal Protector Basic (accident)</span><span class="policy-val" style="color:var(--c-death)">$200,000</span></div>
-      <div class="policy-row"><span class="policy-name">AIA Guaranteed 10 for Life</span><span class="policy-val" style="color:var(--c-death)">$27,000</span></div>
-      <div class="policy-row"><span class="policy-name">DPS (CPF OA · till 60)</span><span class="policy-val" style="color:var(--c-death)">$70,000</span></div>
-      <div class="conditions">
-        <span class="chip">After 65: drops to ~$77k</span>
-        <span class="chip">Multipliers end at 65</span>
-        <span class="chip">DPS ceases at 65</span>
-      </div>
-    </div>
-  </div>
-
-  <!-- ── CRITICAL ILLNESS ── -->
-  <div class="bucket">
-    <div class="bucket-top">
-      <div class="bucket-icon">❤️‍🩹</div>
-      <div class="who-row"><span class="who-badge who-owner">Owner</span></div>
-      <div class="bucket-name" style="color:var(--c-ci)">Critical Illness</div>
-      <div class="bucket-tagline">Lump sum cash if diagnosed with cancer, stroke, heart attack and 36+ other conditions</div>
-      <div class="bucket-amount" style="color:var(--c-ci)">$377,000</div>
-      <div class="bucket-amount-label">combined early + major CI</div>
-      <div class="bucket-bar" style="background:linear-gradient(90deg,var(--c-ci),transparent)"></div>
-    </div>
-    <div class="bucket-policies">
-      <div class="policy-row"><span class="policy-name">Supreme Early Multiplier — Major CI</span><span class="policy-val" style="color:var(--c-ci)">$200,000</span></div>
-      <div class="policy-row"><span class="policy-name">Supreme Early Multiplier — Early CI</span><span class="policy-val" style="color:var(--c-ci)">$100,000</span></div>
-      <div class="policy-row"><span class="policy-name">FlexiLife Multiplier — Major CI</span><span class="policy-val" style="color:var(--c-ci)">$150,000</span></div>
-      <div class="policy-row"><span class="policy-name">AIA Guaranteed 10 — CI</span><span class="policy-val" style="color:var(--c-ci)">$27,000</span></div>
-      <div class="conditions">
-        <span class="chip">Early CI triggers at earlier stage</span>
-        <span class="chip">Multipliers active till 65</span>
-        <span class="chip">Premium waiver on CI for endowments</span>
-      </div>
-      <div class="note-strip" style="border-color:var(--c-ci)">Major CI policies overlap — total payout depends on which policies trigger. Not all pay simultaneously for same event.</div>
-    </div>
-  </div>
-
-  <!-- ── HOSPITALISATION ── -->
-  <div class="bucket">
-    <div class="bucket-top">
-      <div class="bucket-icon">🏥</div>
-      <div class="who-row"><span class="who-badge who-owner">Owner</span><span class="who-badge who-child">Child</span></div>
-      <div class="bucket-name" style="color:var(--c-hosp)">Hospitalisation</div>
-      <div class="bucket-tagline">Covers hospital bills — both admitted to any private hospital, as-charged</div>
-      <div class="bucket-amount" style="color:var(--c-hosp)">Private</div>
-      <div class="bucket-amount-label">as-charged · both owner &amp; child</div>
-      <div class="bucket-bar" style="background:linear-gradient(90deg,var(--c-hosp),transparent)"></div>
-    </div>
-    <div class="bucket-policies">
-      <div class="policy-row"><span class="policy-name">Owner: SupremeHealth P Plus</span><span class="policy-val" style="color:var(--c-hosp)">P Plus tier</span></div>
-      <div class="policy-row"><span class="policy-name">Owner: TotalCare P Optimum (rider)</span><span class="policy-val" style="color:var(--c-hosp)">Co-pay cover</span></div>
-      <div class="policy-row"><span class="policy-name">Child: SupremeHealth P Plus</span><span class="policy-val" style="color:var(--c-hosp)">P Plus tier</span></div>
-      <div class="policy-row"><span class="policy-name">Child: TotalCare P Optimum (rider)</span><span class="policy-val" style="color:var(--c-hosp)">Co-pay cover</span></div>
-      <div class="conditions">
-        <span class="chip">$3,500 deductible (owner)</span>
-        <span class="chip">10% co-ins before TotalCare</span>
-        <span class="chip">Child: Medisave funded</span>
-      </div>
-    </div>
-  </div>
-
-  <!-- ── DISABILITY INCOME ── -->
-  <div class="bucket">
-    <div class="bucket-top">
-      <div class="bucket-icon">🦽</div>
-      <div class="who-row"><span class="who-badge who-owner">Owner</span><span class="who-badge who-child">Child</span></div>
-      <div class="bucket-name" style="color:var(--c-dis)">Disability Income</div>
-      <div class="bucket-tagline">Monthly cash if unable to perform daily activities due to illness or injury</div>
-      <div class="bucket-amount" style="color:var(--c-dis)">$5,000/mo</div>
-      <div class="bucket-amount-label">owner · combined monthly payout</div>
-      <div class="bucket-bar" style="background:linear-gradient(90deg,var(--c-dis),transparent)"></div>
-    </div>
-    <div class="bucket-policies">
-      <div class="policy-row"><span class="policy-name">LifeSecure Rider (till 65)</span><span class="policy-val" style="color:var(--c-dis)">$3,000/mo</span></div>
-      <div class="policy-row"><span class="policy-name">CareShield Supreme (2 ADLs · lifetime)</span><span class="policy-val" style="color:var(--c-dis)">$1,400/mo</span></div>
-      <div class="policy-row"><span class="policy-name">CareShield Basic (3 ADLs · till 67)</span><span class="policy-val" style="color:var(--c-dis)">$600/mo</span></div>
-      <div class="policy-row"><span class="policy-name">Child: LifeSecure Rider (till 65)</span><span class="policy-val" style="color:var(--c-dis)">$1,000/mo</span></div>
-      <div class="conditions">
-        <span class="chip">After 65: LifeSecure drops off</span>
-        <span class="chip">CareShield Supreme continues lifetime</span>
-        <span class="chip">2 ADLs = lower trigger (easier)</span>
-      </div>
-    </div>
-  </div>
-
-  <!-- ── ACCIDENT ── -->
-  <div class="bucket">
-    <div class="bucket-top">
-      <div class="bucket-icon">🚨</div>
-      <div class="who-row"><span class="who-badge who-owner">Owner</span></div>
-      <div class="bucket-name" style="color:var(--c-acc)">Accident &amp; Misc</div>
-      <div class="bucket-tagline">Specific payouts for accidents, food poisoning, dengue, MC and medical reimbursement</div>
-      <div class="bucket-amount" style="color:var(--c-acc)">$600,000</div>
-      <div class="bucket-amount-label">accidental TPD (Personal Protector)</div>
-      <div class="bucket-bar" style="background:linear-gradient(90deg,var(--c-acc),transparent)"></div>
-    </div>
-    <div class="bucket-policies">
-      <div class="policy-row"><span class="policy-name">Personal Protector — Accidental death</span><span class="policy-val" style="color:var(--c-acc)">$200,000</span></div>
-      <div class="policy-row"><span class="policy-name">Personal Protector — Accidental TPD</span><span class="policy-val" style="color:var(--c-acc)">$600,000</span></div>
-      <div class="policy-row"><span class="policy-name">Acc Care Plus II — Medical reimb.</span><span class="policy-val" style="color:var(--c-acc)">$3,000</span></div>
-      <div class="policy-row"><span class="policy-name">Acc Care Plus II — MC income</span><span class="policy-val" style="color:var(--c-acc)">$50/wk</span></div>
-      <div class="policy-row"><span class="policy-name">Food poisoning / dengue</span><span class="policy-val" style="color:var(--c-acc)">$500</span></div>
-      <div class="conditions">
-        <span class="chip">$297/yr Personal Protector</span>
-        <span class="chip">$76/yr Acc Care Plus II</span>
-      </div>
-    </div>
-  </div>
-
-  <!-- ── SAVINGS ── -->
-  <div class="bucket">
-    <div class="bucket-top">
-      <div class="bucket-icon">💰</div>
-      <div class="who-row"><span class="who-badge who-owner">Owner</span><span class="who-badge who-joint">Joint</span></div>
-      <div class="bucket-name" style="color:var(--c-sav)">Savings &amp; Endowments</div>
-      <div class="bucket-tagline">Forced savings with insurance wrapper — grows over time, accessible at maturity</div>
-      <div class="bucket-amount" style="color:var(--c-sav)">~$251,000</div>
-      <div class="bucket-amount-label">projected combined at age 65</div>
-      <div class="bucket-bar" style="background:linear-gradient(90deg,var(--c-sav),transparent)"></div>
-    </div>
-    <div class="bucket-policies">
-      <div class="policy-row"><span class="policy-name">ACE 25 Endowment (matures 2040)</span><span class="policy-val" style="color:var(--c-sav)">$103,000</span></div>
-      <div class="policy-row"><span class="policy-name">Family3 10Yr-Pay (income from 2030)</span><span class="policy-val" style="color:var(--c-sav)">$53–91k</span></div>
-      <div class="policy-row"><span class="policy-name">PruWealth III (joint · till 2032)</span><span class="policy-val" style="color:var(--c-sav)">$57k (50%)</span></div>
-      <div class="policy-row"><span class="policy-name">Smart Invest ILPs (paid up · now)</span><span class="policy-val" style="color:var(--c-sav)">$41,123</span></div>
-      <div class="conditions">
-        <span class="chip">ACE 25 gives $1,600/yr cashback</span>
-        <span class="chip">Family3 income $1,396/yr from yr 11</span>
-        <span class="chip">ILPs in Global Tech + Dynamic funds</span>
-      </div>
-    </div>
-  </div>
-
-  <!-- ── RETIREMENT — full width ── -->
-  <div class="bucket retire-bucket">
-    <div class="retire-inner">
-      <div class="retire-left">
-        <div class="bucket-icon">🌅</div>
-        <div class="who-row" style="margin-top:.75rem"><span class="who-badge who-owner">Owner</span></div>
-        <div class="bucket-name" style="color:var(--c-ret);margin-bottom:.3rem">Retirement</div>
-        <div class="bucket-tagline" style="margin-bottom:1rem">Income and lump sums available from age 57 onwards</div>
-        <div class="bucket-amount" style="color:var(--c-ret)">$16,373/yr</div>
-        <div class="bucket-amount-label" style="margin-bottom:1.25rem">from age 57 for 10 years (Retire Income 5)</div>
-        <div class="bucket-policies" style="background:transparent;padding:0">
-          <div class="policy-row"><span class="policy-name">Retire Income 5 (from age 57)</span><span class="policy-val" style="color:var(--c-ret)">$16,373/yr × 10</span></div>
-          <div class="policy-row"><span class="policy-name">Lifetime Payout (from 2026)</span><span class="policy-val" style="color:var(--c-ret)">$900/yr ongoing</span></div>
-          <div class="conditions" style="margin-top:.75rem">
-            <span class="chip">Retire Income ends Dec 2026 premium</span>
-            <span class="chip">Lifetime Payout fully paid up</span>
-            <span class="chip">Currently both accumulating with GE</span>
-          </div>
-        </div>
-      </div>
-      <div class="retire-right">
-        <div style="font-size:11px;font-weight:500;margin-bottom:1rem;color:var(--muted);letter-spacing:.06em;text-transform:uppercase">Projected retirement assets at 65</div>
-        <div class="retire-row">
-          <span class="retire-label">Retire Income 5</span>
-          <div class="retire-track"><div class="retire-fill" style="width:42%;background:var(--c-ret)">$185k</div></div>
-          <span class="retire-num" style="color:var(--c-ret)">$185,000</span>
-        </div>
-        <div class="retire-row">
-          <span class="retire-label">ACE 25 Endowment</span>
-          <div class="retire-track"><div class="retire-fill" style="width:24%;background:var(--c-sav)">$103k</div></div>
-          <span class="retire-num" style="color:var(--c-sav)">$103,000</span>
-        </div>
-        <div class="retire-row">
-          <span class="retire-label">Family3 (best case)</span>
-          <div class="retire-track"><div class="retire-fill" style="width:21%;background:var(--c-sav)">$91k</div></div>
-          <span class="retire-num" style="color:var(--c-sav)">$91,000</span>
-        </div>
-        <div class="retire-row">
-          <span class="retire-label">PruWealth III (50%)</span>
-          <div class="retire-track"><div class="retire-fill" style="width:13%;background:var(--c-sav)">$57k</div></div>
-          <span class="retire-num" style="color:var(--c-sav)">$57,000</span>
-        </div>
-        <div class="retire-row">
-          <span class="retire-label">Lifetime Payout (best)</span>
-          <div class="retire-track"><div class="retire-fill" style="width:15%;background:var(--c-ret)">$64k</div></div>
-          <span class="retire-num" style="color:var(--c-ret)">$64,000</span>
-        </div>
-        <div class="retire-row">
-          <span class="retire-label">AIA Guaranteed 10</span>
-          <div class="retire-track"><div class="retire-fill" style="width:10%;background:var(--c-death)">$42k</div></div>
-          <span class="retire-num" style="color:var(--c-death)">$42,000</span>
-        </div>
-        <hr class="retire-divider">
-        <div class="retire-row">
-          <span class="retire-label" style="color:var(--text);font-weight:500">Total (best case)</span>
-          <div class="retire-track"><div class="retire-fill" style="width:100%;background:linear-gradient(90deg,var(--c-ret),var(--c-sav));color:#111;font-weight:600">~$542,000</div></div>
-          <span class="retire-num" style="color:var(--text);font-weight:600">$542,000</span>
-        </div>
-        <div class="retire-target">
-          <strong>Target:</strong> $30k/yr × 16 years from 65 = $480,000. Insurance portfolio alone (~$542k best case) covers the gap — before CPF LIFE &amp; surplus savings.
-        </div>
-      </div>
-    </div>
-  </div>
-
-</div>
-
-<!-- Footer summary -->
-<div class="summary-footer">
-  <div class="sum-tile">
-    <div class="sum-label">Annual premium (cash)</div>
-    <div class="sum-val" style="color:var(--c-acc)">$16,439</div>
-    <div class="sum-note">$1,370/mo · GE + AIA</div>
-  </div>
-  <div class="sum-tile">
-    <div class="sum-label">% of salary on insurance</div>
-    <div class="sum-val" style="color:var(--c-dis)">17%</div>
-    <div class="sum-note">of $8k monthly income</div>
-  </div>
-  <div class="sum-tile">
-    <div class="sum-label">Protection-only spend</div>
-    <div class="sum-val" style="color:var(--c-death)">~$4,900</div>
-    <div class="sum-note">Rest is savings/retirement (70%)</div>
-  </div>
-  <div class="sum-tile">
-    <div class="sum-label">Savings inside policies</div>
-    <div class="sum-val" style="color:var(--c-sav)">$109k+</div>
-    <div class="sum-note">Current surrender/fund values</div>
+<div class="header">
+  <div class="header-label">Personal Finance Review</div>
+  <h1>Personal Finance</h1>
+  <p class="header-sub">Comprehensive overview · Singapore · Jun 2026</p>
+  <div class="header-date">Updated<br>June 2026</div>
+  <div class="tab-nav">
+    <button class="tab-btn active" onclick="switchTab('overview',this)">Overview</button>
+    <button class="tab-btn" onclick="switchTab('coverage',this)">Insurance Coverage</button>
+    <button class="tab-btn" onclick="switchTab('retire',this)">Retirement Planner</button>
   </div>
 </div>
 
-<p class="footnote">For personal reference only · Jun 2026 · Not financial advice<br>Projected values at 4.25% non-guaranteed scenario unless stated · Policies may overlap for same event</p>
+<!-- ══ TAB 1: OVERVIEW ══ -->
+<div id="tab-overview" class="tab-panel active">
+<div class="main">
+  <div class="kpi-row">
+    <div class="kpi kpi-green"><div class="kpi-accent"></div><div class="kpi-label">Monthly salary</div><div class="kpi-val">$8,000</div><div class="kpi-note">Take-home</div></div>
+    <div class="kpi kpi-red"><div class="kpi-accent"></div><div class="kpi-label">Total outgoings</div><div class="kpi-val">~$4,800</div><div class="kpi-note">Fixed + variable</div></div>
+    <div class="kpi kpi-green"><div class="kpi-accent"></div><div class="kpi-label">Monthly surplus</div><div class="kpi-val">~$3,200</div><div class="kpi-note">~40% savings rate</div></div>
+    <div class="kpi kpi-amber"><div class="kpi-accent"></div><div class="kpi-label">Insurance (annual)</div><div class="kpi-val">$2,559</div><div class="kpi-note">Active cash premiums only</div></div>
+  </div>
 
+  <div class="grid-2">
+    <div class="card">
+      <div class="card-title">Monthly cash flow</div>
+      <div class="cf-row"><span class="cf-label">Salary</span><div class="cf-bar-bg"><div class="cf-bar" style="width:100%;background:#2d6a4f"></div></div><span class="cf-amt" style="color:var(--green)">+$8,000</span></div>
+      <hr class="cf-divider">
+      <div class="cf-row"><span class="cf-label">Insurance</span><div class="cf-bar-bg"><div class="cf-bar" style="width:5%;background:var(--accent)"></div></div><span class="cf-amt">$213</span></div>
+      <div class="cf-row"><span class="cf-label">Car total</span><div class="cf-bar-bg"><div class="cf-bar" style="width:26%;background:#6b7db3"></div></div><span class="cf-amt">$1,044</span></div>
+      <div class="cf-row"><span class="cf-label">Helper</span><div class="cf-bar-bg"><div class="cf-bar" style="width:17%;background:#6b7db3"></div></div><span class="cf-amt">$700</span></div>
+      <div class="cf-row"><span class="cf-label">Groceries + baby</span><div class="cf-bar-bg"><div class="cf-bar" style="width:25%;background:#6b7db3"></div></div><span class="cf-amt">$1,000</span></div>
+      <div class="cf-row"><span class="cf-label">Utilities</span><div class="cf-bar-bg"><div class="cf-bar" style="width:10%;background:#6b7db3"></div></div><span class="cf-amt">$400</span></div>
+      <div class="cf-row"><span class="cf-label">Subscriptions</span><div class="cf-bar-bg"><div class="cf-bar" style="width:3%;background:#6b7db3"></div></div><span class="cf-amt">$119</span></div>
+      <hr class="cf-divider">
+      <div class="cf-row"><span class="cf-label" style="font-weight:500;color:var(--ink)">Surplus</span><div class="cf-bar-bg"><div class="cf-bar" style="width:40%;background:var(--green)"></div></div><span class="cf-amt" style="color:var(--green);font-weight:600">~$3,200</span></div>
+    </div>
+    <div class="card">
+      <div class="card-title">Spending breakdown</div>
+      <div class="donut-wrap"><canvas id="spendChart"></canvas></div>
+      <div class="legend-grid">
+        <div class="legend-item"><span class="legend-sq" style="background:#c8914a"></span>Insurance (29%)</div>
+        <div class="legend-item"><span class="legend-sq" style="background:#6b7db3"></span>Car (22%)</div>
+        <div class="legend-item"><span class="legend-sq" style="background:#2d6a4f"></span>Groceries+Baby (21%)</div>
+        <div class="legend-item"><span class="legend-sq" style="background:#4a90b8"></span>Helper (15%)</div>
+        <div class="legend-item"><span class="legend-sq" style="background:#9b7b4a"></span>Utilities (8%)</div>
+        <div class="legend-item"><span class="legend-sq" style="background:#aaaacc"></span>Subscriptions (2%)</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="grid-2">
+    <div class="card">
+      <div class="card-title">CC spend trend (monthly)</div>
+      <div class="trend-row">
+        <div class="trend-col"><div class="trend-val">$2,634</div><div class="trend-bar" style="height:50%;background:#6b7db3"></div><div class="trend-label">Jan</div></div>
+        <div class="trend-col"><div class="trend-val" style="color:var(--red)">$10,606</div><div class="trend-bar" style="height:100%;background:var(--red);opacity:.7"></div><div class="trend-label">Feb ⚡</div></div>
+        <div class="trend-col"><div class="trend-val">$2,974</div><div class="trend-bar" style="height:56%;background:#6b7db3"></div><div class="trend-label">Mar</div></div>
+        <div class="trend-col"><div class="trend-val">$2,813</div><div class="trend-bar" style="height:53%;background:#6b7db3"></div><div class="trend-label">Apr</div></div>
+        <div class="trend-col"><div class="trend-val" style="color:var(--ink-muted)">—</div><div class="trend-bar" style="height:4%;background:#ddd"></div><div class="trend-label">May</div></div>
+        <div class="trend-col"><div class="trend-val" style="color:var(--ink-muted)">—</div><div class="trend-bar" style="height:4%;background:#ddd"></div><div class="trend-label">Jun</div></div>
+      </div>
+      <p style="font-size:11px;color:var(--ink-muted);margin-top:12px">Feb spike = private hospital birth + visits (one-off). Baseline avg ~$2,807/mo</p>
+    </div>
+    <div class="card">
+      <div class="card-title">Known asset snapshot</div>
+      <div class="nw-item"><span class="nw-label">Smart Invest ILPs (GE)</span><span class="nw-val" style="color:var(--green)">$41,123</span></div>
+      <div class="nw-item"><span class="nw-label">GE par policy surrender values</span><span class="nw-val" style="color:var(--green)">~$59,000</span></div>
+      <div class="nw-item"><span class="nw-label">AIA Guaranteed 10 (cash value)</span><span class="nw-val" style="color:var(--green)">$9,300</span></div>
+      <div class="nw-item"><span class="nw-label">CPF (OA/SA/MA)</span><span class="nw-val" style="color:var(--ink-muted)">Not reviewed</span></div>
+      <div class="nw-item"><span class="nw-label">Car (depreciating asset)</span><span class="nw-val" style="color:var(--ink-muted)">Not reviewed</span></div>
+      <div class="nw-total"><span class="nw-label">Visible assets (min.)</span><span class="nw-val">~$109,000+</span></div>
+    </div>
+  </div>
+
+  <div class="grid-3">
+    <div class="card">
+      <div class="card-title">Protection — Owner</div>
+      <div class="ins-row"><div><div class="ins-name">SupremeHealth P Plus + TotalCare</div><div class="ins-sub">Hospital plan (cash + Medisave)</div><span class="badge badge-blue">Hospitalisation</span></div><div class="ins-amt">$944</div></div>
+      <div class="ins-row"><div><div class="ins-name">Supreme Early Multiplier 20</div><div class="ins-sub">$200k till 65, CI covered, till 2039</div><span class="badge badge-amber">Whole life</span></div><div class="ins-amt">$2,618</div></div>
+      <div class="ins-row"><div><div class="ins-name">FlexiLife Multiplier 20</div><div class="ins-sub">$150k CI + accident riders, till 2035</div><span class="badge badge-amber">Whole life</span></div><div class="ins-amt">$2,232</div></div>
+      <div class="ins-row"><div><div class="ins-name">Personal Protector Basic</div><div class="ins-sub">$200k AD&D accident cover</div><span class="badge badge-blue">Accident</span></div><div class="ins-amt">$297</div></div>
+      <div class="ins-row"><div><div class="ins-name">CareShield Supreme</div><div class="ins-sub">Disability income, lifetime payout</div><span class="badge badge-blue">Disability</span></div><div class="ins-amt">$626</div></div>
+      <div class="ins-row"><div><div class="ins-name">AIA Guaranteed 10 for Life</div><div class="ins-sub">Fully paid up</div><span class="badge badge-green">Paid up</span></div><div class="ins-amt">$115</div></div>
+    </div>
+    <div class="card">
+      <div class="card-title">Protection — Child</div>
+      <div class="ins-row"><div><div class="ins-name">SupremeHealth + TotalCare</div><div class="ins-sub">Hospital plan (Medisave only)</div><span class="badge badge-blue">Hospitalisation</span></div><div class="ins-amt">Medisave</div></div>
+      <div class="ins-row"><div><div class="ins-name">Complete Flexi Living Protect 2</div><div class="ins-sub">$50k base, $150k CI multiplier</div><span class="badge badge-amber">Whole life</span></div><div class="ins-amt">$1,386</div></div>
+      <div class="card-title" style="margin-top:1.5rem">Savings & wealth</div>
+      <div class="ins-row"><div><div class="ins-name">Annual Cashback Endowment 25</div><div class="ins-sub">Matures Feb 2040, SV $103k at 53</div><span class="badge badge-amber">Endowment</span></div><div class="ins-amt">$3,170</div></div>
+      <div class="ins-row"><div><div class="ins-name">Family3 (10Yr-Pay) Series 3</div><div class="ins-sub">Income $1,396/yr from yr 11, ends 2029</div><span class="badge badge-amber">Endowment</span></div><div class="ins-amt">$3,643</div></div>
+    </div>
+    <div class="card">
+      <div class="card-title">Savings & wealth (cont.)</div>
+      <div class="ins-row"><div><div class="ins-name">Great Lifetime Payout</div><div class="ins-sub">$900/yr income, SV $20,358</div><span class="badge badge-green">Paid up</span></div><div class="ins-amt">$0</div></div>
+      <div class="ins-row"><div><div class="ins-name">Great Retire Income 5</div><div class="ins-sub">$16,373/yr from age 57, fully paid (Dec 2025)</div><span class="badge badge-green">Paid up</span></div><div class="ins-amt">$0</div></div>
+      <div class="ins-row"><div><div class="ins-name">Smart Invest SP x2</div><div class="ins-sub">ILP fund value $41,123 (Jun 2026)</div><span class="badge badge-green">Paid up</span></div><div class="ins-amt">$0</div></div>
+      <div class="ins-row"><div><div class="ins-name">PruWealth III</div><div class="ins-sub">Joint with spouse, till 2032</div><span class="badge badge-amber">Savings ILP</span></div><div class="ins-amt">$2,440</div></div>
+      <div style="margin-top:1rem;padding-top:1rem;border-top:.5px solid var(--border);display:flex;justify-content:space-between">
+        <span style="font-size:12px;font-weight:500">Total 2026 annual</span>
+        <span style="font-size:14px;font-weight:600;font-family:'DM Serif Display',serif">$2,559</span>
+      </div>
+    </div>
+  </div>
+
+  <div class="card" style="margin-bottom:1.5rem">
+    <div class="card-title">Open action items</div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:0 2rem">
+      <div class="action-item"><div class="action-num">1</div><div class="action-text"><strong>Set up GIRO for UOB cards</strong> — avoids late/finance charges (lost $134.62 in Mar–Apr 2026)</div></div>
+      <div class="action-item"><div class="action-num">2</div><div class="action-text"><strong>Clarify Family3 income purpose</strong> with agent — $1,396/yr from yr 11 has no defined goal</div></div>
+      <div class="action-item"><div class="action-num">3</div><div class="action-text"><strong>GE agent premium review</strong> — ongoing conversation to reduce overall insurance burden</div></div>
+      <div class="action-item"><div class="action-num">4</div><div class="action-text"><strong>Confirm Great SP Series 12 payout</strong> — matured Feb 2026, $10,192 should have been received</div></div>
+      <div class="action-item"><div class="action-num">5</div><div class="action-text"><strong>Check insurance claims</strong> for Feb 2026 private hospital birth bills ($4,837 + $3,553)</div></div>
+      <div class="action-item"><div class="action-num">6</div><div class="action-text"><strong>Retire Income 5 projected payout</strong> — confirm non-guaranteed component with GE</div></div>
+      <div class="action-item"><div class="action-num">7</div><div class="action-text"><strong>Review M1 plan</strong> when contract is up — $29.51/mo, cheaper alternatives available</div></div>
+      <div class="action-item"><div class="action-num">8</div><div class="action-text"><strong>Consider investing surplus</strong> — ~$3,200/mo available; CPF top-up, SSBs or ETFs</div></div>
+    </div>
+  </div>
+  <p style="font-size:11px;color:var(--ink-muted);text-align:center;padding-bottom:2rem">For personal reference only · Based on statements reviewed June 2026 · Not financial advice</p>
+</div>
+</div>
+
+<!-- ══ TAB 2: INSURANCE COVERAGE ══ -->
+<div id="tab-coverage" class="tab-panel">
+<div class="main">
+
+  <!-- Coverage summary KPIs -->
+  <div class="summary-grid" style="margin-top:0">
+    <div class="sum-card"><div class="sum-card-label">Death / TPD (Owner)</div><div class="sum-card-val">$513,921</div><div class="sum-card-sub">Till age 65 (multiplied)</div></div>
+    <div class="sum-card"><div class="sum-card-label">Critical Illness (Owner)</div><div class="sum-card-val">$377,000</div><div class="sum-card-sub">Early + major CI combined</div></div>
+    <div class="sum-card"><div class="sum-card-label">Monthly disability income</div><div class="sum-card-val">$5,000</div><div class="sum-card-sub">CareShield $1,400 + LifeSecure $3,000 + Basic $600</div></div>
+    <div class="sum-card"><div class="sum-card-label">Hospital plan</div><div class="sum-card-val">Private</div><div class="sum-card-sub">As-charged, P Plus tier</div></div>
+  </div>
+
+  <!-- Retirement gap note -->
+  <div class="gap-card">
+    <div class="gap-icon">🎯</div>
+    <div class="gap-text"><strong>Retirement gap (as at 2024):</strong> To retire at age 65 with $30,000/yr for 16 years requires ~$480,000. Known retirement assets (Retire Income 5 projected $185k at 65 + Lifetime Payout $33–64k + Family3 $53–91k + ACE25 $103k) cover a significant portion. Remaining gap to address through CPF LIFE + surplus savings.</div>
+  </div>
+
+  <!-- OWNER coverage table -->
+  <div class="cov-section-title">Owner — Protection</div>
+  <table class="cov-table">
+    <thead><tr>
+      <th>Policy</th><th>Type</th><th class="right">Death / TPD</th><th class="right">Early CI</th><th class="right">Major CI</th><th class="right">Accident</th><th>Notes</th><th class="right">Annual $</th>
+    </tr></thead>
+    <tbody>
+      <tr>
+        <td><strong>DPS (CPF OA)</strong><br><span style="font-size:10px;color:var(--ink-muted)">Since 2009</span></td>
+        <td><span class="pill pill-life">Life</span></td>
+        <td class="right cov-amt">$70,000</td><td class="right">—</td><td class="right">—</td><td class="right">—</td>
+        <td>Covered till 60. Age 61–65: $55,000</td>
+        <td class="right cov-amt">$30 <span style="font-size:10px;font-weight:400">(CPF)</span></td>
+      </tr>
+      <tr>
+        <td><strong>AIA Guaranteed 10 for Life</strong><br><span style="font-size:10px;color:var(--ink-muted)">Since 2009</span></td>
+        <td><span class="pill pill-paidup">Paid up</span></td>
+        <td class="right cov-amt">$27,000</td><td class="right cov-amt">$27,000</td><td class="right cov-amt">$27,000</td><td class="right">—</td>
+        <td>Fully paid. Age 65: $42,000 projected</td>
+        <td class="right cov-amt">$115</td>
+      </tr>
+      <tr>
+        <td><strong>Supreme Early Multiplier 20 (4X–65)</strong><br><span style="font-size:10px;color:var(--ink-muted)">Since May 2019 · till 2039</span></td>
+        <td><span class="pill pill-life">Whole life</span></td>
+        <td class="right cov-amt">$200,000</td><td class="right cov-amt">$100,000</td><td class="right cov-amt">$200,000</td><td class="right">—</td>
+        <td>Basic $50k × 4 till 65. After 65: $50k. Age 65 surrender: $48,000</td>
+        <td class="right cov-amt">$2,618</td>
+      </tr>
+      <tr>
+        <td><strong>FlexiLife Multiplier 20</strong><br><span style="font-size:10px;color:var(--ink-muted)">Since Mar 2015 · till 2035</span></td>
+        <td><span class="pill pill-life">Whole life</span></td>
+        <td class="right cov-amt">$150,000</td><td class="right">—</td><td class="right cov-amt">$150,000</td><td class="right">—</td>
+        <td>Basic $50k × 3 till 65. Age 65 surrender: $54,000</td>
+        <td class="right cov-amt">$2,232</td>
+      </tr>
+      <tr>
+        <td><strong>Acc Care Plus II (rider)</strong><br><span style="font-size:10px;color:var(--ink-muted)">Attached to FlexiLife · till 65</span></td>
+        <td><span class="pill pill-accident">Accident</span></td>
+        <td class="right">—</td><td class="right">—</td><td class="right">—</td><td class="right cov-amt">$10,000</td>
+        <td>MC: $50/wk · Medical reimb: $3,000 · TPD: $600,000 · Food poisoning/dengue $500</td>
+        <td class="right cov-amt">$76</td>
+      </tr>
+      <tr>
+        <td><strong>Personal Protector Basic</strong><br><span style="font-size:10px;color:var(--ink-muted)">Since Dec 2018</span></td>
+        <td><span class="pill pill-accident">Accident</span></td>
+        <td class="right cov-amt">$200,000</td><td class="right">—</td><td class="right">—</td><td class="right cov-amt">$200,000</td>
+        <td>TPD $600,000 · Medical $3,000 · Food poisoning/dengue $500</td>
+        <td class="right cov-amt">$297</td>
+      </tr>
+    </tbody>
+  </table>
+
+  <!-- Owner disability / hospital -->
+  <div class="cov-section-title">Owner — Disability &amp; Hospital</div>
+  <table class="cov-table">
+    <thead><tr>
+      <th>Policy</th><th>Type</th><th>Coverage detail</th><th class="right">Monthly payout</th><th>Term</th><th class="right">Annual $</th>
+    </tr></thead>
+    <tbody>
+      <tr>
+        <td><strong>CareShield Basic (Govt)</strong><br><span style="font-size:10px;color:var(--ink-muted)">Since Oct 2020</span></td>
+        <td><span class="pill pill-disability">Disability</span></td>
+        <td>3 ADLs trigger payout</td>
+        <td class="right cov-amt">$600/mo</td>
+        <td>Payable till age 67</td>
+        <td class="right cov-amt">$200+ <span style="font-size:10px;font-weight:400">(CPF)</span></td>
+      </tr>
+      <tr>
+        <td><strong>Great CareShield Supreme</strong><br><span style="font-size:10px;color:var(--ink-muted)">Since Apr 2022</span></td>
+        <td><span class="pill pill-disability">Disability</span></td>
+        <td>2 ADLs trigger payout (lower bar)</td>
+        <td class="right cov-amt">$1,400/mo</td>
+        <td>Payable till age 99 (lifetime)</td>
+        <td class="right cov-amt">$627 <span style="font-size:10px;font-weight:400">(CPF+cash)</span></td>
+      </tr>
+      <tr>
+        <td><strong>LifeSecure Rider : 65</strong><br><span style="font-size:10px;color:var(--ink-muted)">Attached to FlexiLife</span></td>
+        <td><span class="pill pill-disability">Disability</span></td>
+        <td>Disability income rider</td>
+        <td class="right cov-amt">$3,000/mo</td>
+        <td>Till age 65</td>
+        <td class="right cov-amt">$356</td>
+      </tr>
+      <tr>
+        <td><strong>Great SupremeHealth P Plus</strong><br><span style="font-size:10px;color:var(--ink-muted)">Since Sep 2013</span></td>
+        <td><span class="pill pill-hosp">Hospital</span></td>
+        <td>As-charged to private hospital</td>
+        <td class="right">—</td>
+        <td>$3,500 deductible · 10% co-ins</td>
+        <td class="right cov-amt">$725 <span style="font-size:10px;font-weight:400">(CPF)</span></td>
+      </tr>
+      <tr>
+        <td><strong>Great TotalCare P Optimum</strong><br><span style="font-size:10px;color:var(--ink-muted)">Since Sep 2013</span></td>
+        <td><span class="pill pill-hosp">Hospital rider</span></td>
+        <td>Covers co-insurance &amp; deductible top-up</td>
+        <td class="right">—</td>
+        <td>Govt 95% capped $3k · Private panel: $3.5k + 50% co-ins (capped $6.5k)</td>
+        <td class="right cov-amt">$603</td>
+      </tr>
+    </tbody>
+  </table>
+
+  <!-- Owner savings -->
+  <div class="cov-section-title">Owner — Savings &amp; Retirement</div>
+  <table class="cov-table">
+    <thead><tr>
+      <th>Policy</th><th>Type</th><th>Payout / maturity</th><th class="right">Projected value</th><th>Premium term</th><th class="right">Annual $</th>
+    </tr></thead>
+    <tbody>
+      <tr>
+        <td><strong>Annual Cashback Endowment 25 (S2)</strong><br><span style="font-size:10px;color:var(--ink-muted)">Since Feb 2015 · matures Feb 2040</span></td>
+        <td><span class="pill pill-savings">Endowment</span></td>
+        <td>$1,600/yr cashback from yr 3. Waiver on CI.</td>
+        <td class="right cov-amt">$103,000 at 53</td>
+        <td>Full pay till 2040</td>
+        <td class="right cov-amt">$3,170</td>
+      </tr>
+      <tr>
+        <td><strong>Family3 (10Yr-Pay) Series 3</strong><br><span style="font-size:10px;color:var(--ink-muted)">Since May 2019 · ends 2029</span></td>
+        <td><span class="pill pill-savings">Endowment</span></td>
+        <td>Yr 3: $279/yr · Yr 11: G$698 + $698 = $1,396/yr. Waiver on CI.</td>
+        <td class="right cov-amt">$53k–$91k at 65</td>
+        <td>10-yr pay, ends 2029</td>
+        <td class="right cov-amt">$3,643</td>
+      </tr>
+      <tr>
+        <td><strong>Great Lifetime Payout</strong><br><span style="font-size:10px;color:var(--ink-muted)">Since Dec 2021 · Paid up</span></td>
+        <td><span class="pill pill-paidup">Paid up</span></td>
+        <td>G$300 + $600 = $900/yr from 2026. Accumulating with GE.</td>
+        <td class="right cov-amt">$33k–$64k at 65</td>
+        <td>Fully paid</td>
+        <td class="right cov-amt">$0</td>
+      </tr>
+      <tr>
+        <td><strong>Great Retire Income 5</strong><br><span style="font-size:10px;color:var(--ink-muted)">Since Dec 2021 · fully paid Dec 2025</span></td>
+        <td><span class="pill pill-retirement">Retirement</span></td>
+        <td>G$8,773 + $7,600 = $16,373/yr from age 57 for 10 years. Currently accumulating.</td>
+        <td class="right cov-amt">$185,000 at 65</td>
+        <td>Fully paid — last payment Dec 2025</td>
+        <td class="right cov-amt">$0 <span style="font-size:10px;font-weight:400">(paid up)</span></td>
+      </tr>
+      <tr>
+        <td><strong>PruWealth III</strong><br><span style="font-size:10px;color:var(--ink-muted)">Since Mar 2022 · joint policy</span></td>
+        <td><span class="pill pill-savings">Savings ILP</span></td>
+        <td>Wealth accumulation par fund. Age 65: $57,000 (50% share = $28,500)</td>
+        <td class="right cov-amt">$57,000 at 65</td>
+        <td>Limited pay till 2032</td>
+        <td class="right cov-amt">$2,440</td>
+      </tr>
+      <tr>
+        <td><strong>Smart Invest SP x2 (CPF OA)</strong><br><span style="font-size:10px;color:var(--ink-muted)">Since 2020 · Paid up</span></td>
+        <td><span class="pill pill-paidup">Paid up ILP</span></td>
+        <td>GreatLink Global Tech + Lifestyle Dynamic. Fund value $41,123 (Jun 2026)</td>
+        <td class="right cov-amt">$41,123 now</td>
+        <td>Fully paid</td>
+        <td class="right cov-amt">$0</td>
+      </tr>
+    </tbody>
+  </table>
+
+  <!-- Child coverage -->
+  <div class="cov-section-title">Child — Protection &amp; Hospital</div>
+  <table class="cov-table">
+    <thead><tr>
+      <th>Policy</th><th>Type</th><th class="right">Death / TPD</th><th class="right">CI</th><th>Notes</th><th class="right">Annual $</th>
+    </tr></thead>
+    <tbody>
+      <tr>
+        <td><strong>Great SupremeHealth P Plus</strong><br><span style="font-size:10px;color:var(--ink-muted)">Inforce</span></td>
+        <td><span class="pill pill-hosp">Hospital</span></td>
+        <td class="right">—</td><td class="right">—</td>
+        <td>As-charged private hospital. $3,500 deductible · 10% co-ins</td>
+        <td class="right cov-amt">Medisave</td>
+      </tr>
+      <tr>
+        <td><strong>Great TotalCare P Optimum</strong><br><span style="font-size:10px;color:var(--ink-muted)">Inforce</span></td>
+        <td><span class="pill pill-hosp">Hospital rider</span></td>
+        <td class="right">—</td><td class="right">—</td>
+        <td>Covers deductible &amp; co-insurance top-up</td>
+        <td class="right cov-amt">$368</td>
+      </tr>
+      <tr>
+        <td><strong>Complete Flexi Living Protect 2</strong><br><span style="font-size:10px;color:var(--ink-muted)">Inforce</span></td>
+        <td><span class="pill pill-life">Whole life</span></td>
+        <td class="right cov-amt">$50,000</td>
+        <td class="right cov-amt">$150,000</td>
+        <td>CI multiplier rider $150k. LifeSecure rider $1,000/mo disability</td>
+        <td class="right cov-amt">$1,386</td>
+      </tr>
+    </tbody>
+  </table>
+
+  <!-- Total row -->
+  <div style="background:white;border:.5px solid var(--border);border-radius:12px;padding:1.25rem 1.5rem;display:flex;justify-content:space-between;align-items:center;margin-bottom:2rem">
+    <div>
+      <div style="font-size:11px;letter-spacing:.1em;text-transform:uppercase;color:var(--ink-muted);margin-bottom:.3rem">Total annual insurance premium (cash)</div>
+      <div style="font-size:11px;color:var(--ink-muted)">Excludes CPF/Medisave payments · Source: GE 2025 statement + SGFinDex Jun 2026</div>
+    </div>
+    <div style="font-family:'DM Serif Display',serif;font-size:2rem;color:var(--ink)">$2,559</div>
+  </div>
+
+  <p style="font-size:11px;color:var(--ink-muted);text-align:center;padding-bottom:2rem">For personal reference only · Based on documents reviewed June 2026 · Not financial advice</p>
+</div>
+</div>
+
+<!-- ══ TAB 3: RETIREMENT PLANNER ══ -->
+<div id="tab-retire" class="tab-panel">
+<div class="main">
+
+  <div style="margin-bottom:1.5rem">
+    <div style="font-size:11px;letter-spacing:.1em;text-transform:uppercase;color:var(--ink-muted);margin-bottom:.3rem">Retirement Planner</div>
+    <div style="font-family:'DM Serif Display',serif;font-size:1.8rem;margin-bottom:.3rem">How much do you need — and are you on track?</div>
+    <div style="font-size:13px;color:var(--ink-muted)">Pre-loaded with your actual policy projections. Adjust the sliders to model different scenarios.</div>
+  </div>
+
+  <!-- KPIs -->
+  <div class="rp-kpi-row" style="margin-bottom:1.5rem">
+    <div class="rp-kpi">
+      <div class="rp-kpi-bar" style="background:var(--red)"></div>
+      <div class="rp-kpi-label">Inflation-adjusted target</div>
+      <div class="rp-kpi-val" id="rp-kpi-target" style="color:var(--red)">—</div>
+      <div class="rp-kpi-note" id="rp-kpi-target-note">Calculating...</div>
+    </div>
+    <div class="rp-kpi">
+      <div class="rp-kpi-bar" style="background:var(--blue)"></div>
+      <div class="rp-kpi-label">Projected total at retirement</div>
+      <div class="rp-kpi-val" id="rp-kpi-projected" style="color:var(--blue)">—</div>
+      <div class="rp-kpi-note" id="rp-kpi-projected-note">Calculating...</div>
+    </div>
+    <div class="rp-kpi">
+      <div class="rp-kpi-bar" style="background:var(--green)"></div>
+      <div class="rp-kpi-label">Surplus / Shortfall</div>
+      <div class="rp-kpi-val" id="rp-kpi-gap">—</div>
+      <div class="rp-kpi-note" id="rp-kpi-gap-note">Calculating...</div>
+    </div>
+  </div>
+
+  <div class="rp-grid">
+
+    <!-- Inputs -->
+    <div class="rp-inputs">
+      <div class="rp-section-label">Your goals</div>
+
+      <div class="rp-input-group">
+        <div class="rp-label">Target retirement age <span class="rp-val-display" id="rp-retire-age-val">Age 65</span></div>
+        <input type="range" class="rp-range" id="rp-retire-age" min="55" max="70" value="65" step="1">
+      </div>
+
+      <div class="rp-input-group">
+        <div class="rp-label">Desired annual income (today's $)</div>
+        <input type="text" class="rp-number" id="rp-annual-need" value="60,000" placeholder="e.g. 60,000">
+        <div style="font-size:10px;color:var(--ink-muted);margin-top:4px">In today's dollars · will be inflation-adjusted</div>
+      </div>
+
+      <div class="rp-input-group">
+        <div class="rp-label">Years in retirement <span class="rp-val-display" id="rp-retire-yrs-val">25 years</span></div>
+        <input type="range" class="rp-range" id="rp-retire-yrs" min="10" max="35" value="25" step="1">
+      </div>
+
+      <div class="rp-divider"></div>
+      <div class="rp-section-label">Assumptions</div>
+
+      <div class="rp-input-group">
+        <div class="rp-label">Inflation rate <span class="rp-val-display" id="rp-inflation-val">3%</span></div>
+        <input type="range" class="rp-range" id="rp-inflation" min="1" max="6" value="3" step="0.5">
+      </div>
+
+      <div class="rp-input-group">
+        <div class="rp-label">Monthly surplus to invest ($)</div>
+        <input type="text" class="rp-number" id="rp-surplus" value="3,200" placeholder="e.g. 3,200">
+        <div style="font-size:10px;color:var(--ink-muted);margin-top:4px">Invested at 3% p.a. till retirement</div>
+      </div>
+
+      <div class="rp-divider"></div>
+      <div style="font-size:10px;color:var(--ink-muted);line-height:1.6">Policy projections pre-loaded from your portfolio. CPF LIFE estimated at ~$1,000/mo from 65. Non-guaranteed values shown at 4.25% scenario.</div>
+    </div>
+
+    <!-- Results -->
+    <div class="rp-results">
+
+      <!-- Gap message -->
+      <div id="rp-gap-msg" class="rp-gap-positive">Calculating...</div>
+
+      <!-- Timeline chart -->
+      <div class="rp-chart-card">
+        <div class="rp-chart-title">Asset build-up timeline by source</div>
+        <div class="rp-chart-wrap"><canvas id="rp-timeline-chart"></canvas></div>
+      </div>
+
+      <!-- Contributions -->
+      <div class="rp-contrib-card">
+        <div class="card-title" style="margin-bottom:1rem">What makes up your projected total</div>
+        <div id="rp-contrib-bars"></div>
+      </div>
+
+      <!-- Milestones -->
+      <div class="card">
+        <div class="card-title" style="margin-bottom:.75rem">Key financial milestones</div>
+        <div class="milestone-track">
+          <div class="milestone-line"></div>
+          <div id="rp-milestones"></div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <p style="font-size:11px;color:var(--ink-muted);text-align:center;padding-bottom:2rem">Projections are illustrative only · Non-guaranteed values may differ · Not financial advice</p>
+</div>
+</div>
+
+<script>
+function switchTab(id, btn) {
+  document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+  document.getElementById('tab-'+id).classList.add('active');
+  btn.classList.add('active');
+  if(id==='overview' && !window._chartDone) { renderChart(); window._chartDone=true; }
+  if(id==='retire') { initRetire(); }
+}
+function renderChart() {
+  new Chart(document.getElementById('spendChart').getContext('2d'),{
+    type:'doughnut',
+    data:{
+      labels:['Insurance','Car','Groceries+Baby','Helper','Utilities','Subscriptions'],
+      datasets:[{data:[213,1044,1000,700,400,119],backgroundColor:['#c8914a','#6b7db3','#2d6a4f','#4a90b8','#9b7b4a','#aaaacc'],borderWidth:0,hoverOffset:6}]
+    },
+    options:{responsive:true,maintainAspectRatio:false,cutout:'68%',plugins:{legend:{display:false},tooltip:{callbacks:{label:ctx=>` S$${ctx.parsed.toLocaleString()} / mo`}}}}
+  });
+}
+window.addEventListener('DOMContentLoaded', () => { renderChart(); window._chartDone=true; });
+
+// ── Retirement Planner ──
+let rpChart = null;
+
+const POLICIES = [
+  { name:'Retire Income 5', color:'#fb923c', getValue:(age)=> age>=57 ? 185000 : (age>=45 ? Math.round((age-45)/12*185000) : 0) },
+  { name:'ACE 25 Endowment', color:'#34d4c8', getValue:(age)=> age>=53 ? 103000 : (age>=40 ? Math.round((age-40)/13*60000) : 0) },
+  { name:'Family3 Endowment', color:'#34d4c8', getValue:(age)=> age>=65 ? 91000 : (age>=40 ? Math.round((age-40)/25*91000) : 0) },
+  { name:'PruWealth III (50%)', color:'#6b7db3', getValue:(age)=> age>=65 ? 57000 : (age>=38 ? Math.round((age-38)/27*57000) : 0) },
+  { name:'Lifetime Payout', color:'#fb923c', getValue:(age)=> age>=65 ? 64000 : (age>=39 ? Math.round((age-39)/26*64000) : 0) },
+  { name:'AIA Guaranteed 10', color:'#4ade9a', getValue:(age)=> age>=65 ? 42000 : (age>=30 ? Math.round((age-30)/35*42000) : 0) },
+  { name:'Smart Invest ILPs', color:'#34d4c8', getValue:(age)=> { const base=41123; const yr=age-39; return Math.round(base*Math.pow(1.06,yr)); } },
+  { name:'CPF LIFE (est.)', color:'#2d6a4f', getValue:(age)=> age>=65 ? 240000 : 0 },
+];
+
+function getInputs() {
+  const currentAge = 39;
+  const retireAge  = parseInt(document.getElementById('rp-retire-age').value)||65;
+  const annualNeed = parseInt(document.getElementById('rp-annual-need').value.replace(/,/g,''))||60000;
+  const retireYrs  = parseInt(document.getElementById('rp-retire-yrs').value)||25;
+  const inflation  = parseFloat(document.getElementById('rp-inflation').value)||3;
+  const surplus    = parseInt(document.getElementById('rp-surplus').value.replace(/,/g,''))||3200;
+  return {currentAge, retireAge, annualNeed, retireYrs, inflation, surplus};
+}
+
+function fmtK(n){ return n>=1000000?'$'+(n/1000000).toFixed(2)+'M':'$'+(Math.round(n/1000))+'k'; }
+function fmtFull(n){ return '$'+Math.round(n).toLocaleString(); }
+
+function calcRetire() {
+  const {currentAge,retireAge,annualNeed,retireYrs,inflation,surplus} = getInputs();
+  const yrsToRetire = retireAge - currentAge;
+
+  // Inflation-adjusted annual need at retirement
+  const adjAnnual = annualNeed * Math.pow(1 + inflation/100, yrsToRetire);
+  // Total corpus needed (simple annuity, assume 3% drawdown return)
+  const drawdownRate = 0.03;
+  const corpus = adjAnnual * ((1 - Math.pow(1+drawdownRate, -retireYrs)) / drawdownRate);
+
+  // Policy projections at retirement age
+  const policyTotal = POLICIES.reduce((sum,p)=>sum+p.getValue(retireAge),0);
+
+  // Surplus savings compounded to retirement
+  const surplusSavings = surplus * 12 * ((Math.pow(1.03, yrsToRetire) - 1) / 0.03);
+
+  const totalProjected = policyTotal + surplusSavings;
+  const gap = corpus - totalProjected;
+
+  return {adjAnnual, corpus, policyTotal, surplusSavings, totalProjected, gap, yrsToRetire, retireAge, retireYrs, currentAge};
+}
+
+function renderResults() {
+  const r = calcRetire();
+  const {annualNeed, inflation} = getInputs();
+
+  // KPIs
+  document.getElementById('rp-kpi-target').textContent = fmtFull(r.corpus);
+  document.getElementById('rp-kpi-target-note').textContent = `${fmtFull(r.adjAnnual)}/yr in ${r.retireAge-r.currentAge} yrs at ${inflation}% inflation`;
+  document.getElementById('rp-kpi-projected').textContent = fmtFull(r.totalProjected);
+  document.getElementById('rp-kpi-projected-note').textContent = `Policies ${fmtK(r.policyTotal)} + savings ${fmtK(r.surplusSavings)}`;
+  const gap = r.gap;
+  document.getElementById('rp-kpi-gap').textContent = gap>0 ? '-'+fmtFull(gap) : '+'+fmtFull(Math.abs(gap));
+  document.getElementById('rp-kpi-gap').style.color = gap>0 ? '#9b2226' : '#2d6a4f';
+  document.getElementById('rp-kpi-gap-note').textContent = gap>0 ? 'Shortfall to close' : 'Surplus — on track!';
+
+  // Gap message
+  const gapEl = document.getElementById('rp-gap-msg');
+  if(gap <= 0) {
+    gapEl.className = 'rp-gap-positive';
+    gapEl.innerHTML = `<strong>✅ On track!</strong> Your projected assets of ${fmtFull(r.totalProjected)} exceed the inflation-adjusted target of ${fmtFull(r.corpus)}. You have a projected surplus of ${fmtFull(Math.abs(gap))}. Continue investing your monthly surplus to stay ahead.`;
+  } else {
+    const extraPerMonth = Math.round(gap / (r.yrsToRetire * 12));
+    gapEl.className = 'rp-gap-negative';
+    gapEl.innerHTML = `<strong>⚠️ Shortfall of ${fmtFull(gap)}.</strong> To close this gap, you'd need to save an additional <strong>${fmtFull(extraPerMonth)}/month</strong> between now and age ${r.retireAge}, assuming 3% annual growth. Alternatively, adjust your retirement income target or age.`;
+  }
+
+  // Contributions bar
+  const {retireAge} = getInputs();
+  const contribEl = document.getElementById('rp-contrib-bars');
+  const allItems = [
+    ...POLICIES.map(p=>({name:p.name, val:p.getValue(retireAge), color:p.color})),
+    {name:'Monthly surplus savings', val:Math.round(r.surplusSavings), color:'#2d6a4f'}
+  ].filter(x=>x.val>0).sort((a,b)=>b.val-a.val);
+  const maxVal = allItems[0]?.val || 1;
+  contribEl.innerHTML = allItems.map(item=>`
+    <div class="contrib-row">
+      <span class="contrib-label">${item.name}</span>
+      <div class="contrib-bar-bg"><div class="contrib-fill" style="width:${Math.round(item.val/maxVal*100)}%;background:${item.color}">${item.val>50000?fmtK(item.val):''}</div></div>
+      <span class="contrib-amt" style="color:${item.color}">${fmtFull(item.val)}</span>
+    </div>`).join('')+`
+    <hr class="contrib-divider">
+    <div class="contrib-row">
+      <span class="contrib-label" style="font-weight:500;color:var(--ink)">Total projected</span>
+      <div class="contrib-bar-bg"><div class="contrib-fill" style="width:100%;background:linear-gradient(90deg,#c8914a,#2d6a4f)">vs target ${fmtK(r.corpus)}</div></div>
+      <span class="contrib-amt" style="font-weight:600">${fmtFull(r.totalProjected)}</span>
+    </div>`;
+
+  // Timeline chart
+  const ages = [];
+  for(let a = r.currentAge; a <= Math.max(r.retireAge+r.retireYrs, 80); a+=2) ages.push(a);
+
+  const policyDatasets = POLICIES.map(p=>({
+    label: p.name,
+    data: ages.map(a=>p.getValue(a)),
+    backgroundColor: p.color+'33',
+    borderColor: p.color,
+    borderWidth: 1.5,
+    fill: false,
+    tension: 0.3,
+    pointRadius: 0,
+  }));
+
+  // Surplus savings line
+  const surplusLine = {
+    label:'Surplus savings',
+    data: ages.map(a=>{
+      const yrs = a - r.currentAge;
+      if(yrs<=0) return 0;
+      const {surplus} = getInputs();
+      return Math.round(surplus * 12 * ((Math.pow(1.03,yrs)-1)/0.03));
+    }),
+    borderColor:'#2d6a4f', backgroundColor:'#2d6a4f22',
+    borderWidth:1.5, fill:false, tension:0.3, pointRadius:0
+  };
+
+  // Target line
+  const targetLine = {
+    label:'Corpus target',
+    data: ages.map(a=> a < r.retireAge ? null : r.corpus),
+    borderColor:'#9b2226', borderDash:[6,3],
+    borderWidth:2, fill:false, pointRadius:0, tension:0
+  };
+
+  if(rpChart) rpChart.destroy();
+  rpChart = new Chart(document.getElementById('rp-timeline-chart').getContext('2d'), {
+    type:'line',
+    data:{ labels: ages.map(a=>'Age '+a), datasets:[...policyDatasets, surplusLine, targetLine] },
+    options:{
+      responsive:true, maintainAspectRatio:false,
+      interaction:{mode:'index', intersect:false},
+      plugins:{
+        legend:{display:true, position:'bottom', labels:{font:{size:10}, boxWidth:12, padding:8, color:'#4a4a6a'}},
+        tooltip:{callbacks:{label:ctx=>`${ctx.dataset.label}: ${ctx.parsed.y!=null?'$'+Math.round(ctx.parsed.y).toLocaleString():'—'}`}}
+      },
+      scales:{
+        x:{grid:{color:'rgba(26,26,46,0.05)'}, ticks:{font:{size:10}, color:'#8888aa'}},
+        y:{grid:{color:'rgba(26,26,46,0.05)'}, ticks:{font:{size:10}, color:'#8888aa', callback:v=>'$'+(v/1000)+'k'}}
+      }
+    }
+  });
+
+  // Milestones
+  const {retireYrs:rYrs} = getInputs();
+  const milestones = [
+    {age:39, icon:'📍', color:'#c8914a', label:'Today', desc:`Age 39 · $${(3200*12).toLocaleString()}/yr surplus available to invest`},
+    {age:40, icon:'✅', color:'#2d6a4f', label:'2027', desc:'Lifetime Payout starts paying $900/yr — accumulating with GE'},
+    {age:42, icon:'💰', color:'#34d4c8', label:'2029', desc:'Family3 premium ends — income of $1,396/yr kicks in from 2030'},
+    {age:53, icon:'🎯', color:'#34d4c8', label:'2040', desc:`ACE 25 matures — projected $103,000 payout`},
+    {age:57, icon:'🌅', color:'#fb923c', label:'Age 57', desc:`Retire Income 5 starts paying $16,373/yr for 10 years`},
+    {age:retireAge, icon:'🏖️', color:'#9b2226', label:`Age ${retireAge} — Target retirement`, desc:`Need ${fmtFull(r.adjAnnual)}/yr · inflation-adjusted from today's $${annualNeed.toLocaleString()}/yr`},
+    {age:65, icon:'📊', color:'#2d6a4f', label:'Age 65', desc:`CPF LIFE payouts begin · remaining policy values crystallise`},
+  ].filter((m,i,arr)=>m.age<=retireAge+5 && arr.findIndex(x=>x.age===m.age)===i).sort((a,b)=>a.age-b.age);
+
+  document.getElementById('rp-milestones').innerHTML = milestones.map(m=>`
+    <div class="milestone-item">
+      <div class="milestone-dot" style="background:${m.color}22;border-color:${m.color}">${m.icon}</div>
+      <div class="milestone-content">
+        <div class="milestone-year">${m.label}</div>
+        <div class="milestone-desc">${m.desc}</div>
+      </div>
+    </div>`).join('');
+}
+
+function initRetire() {
+  if(window._retireInit) return;
+  window._retireInit = true;
+  ['rp-retire-age','rp-annual-need','rp-retire-yrs','rp-inflation','rp-surplus'].forEach(id=>{
+    const el = document.getElementById(id);
+    if(!el) return;
+    el.addEventListener('input', ()=>{ syncSliderDisplay(); renderResults(); });
+  });
+  syncSliderDisplay();
+  renderResults();
+}
+
+function syncSliderDisplay() {
+  const age = document.getElementById('rp-retire-age').value;
+  const inf = document.getElementById('rp-inflation').value;
+  const yrs = document.getElementById('rp-retire-yrs').value;
+  document.getElementById('rp-retire-age-val').textContent = 'Age '+age;
+  document.getElementById('rp-inflation-val').textContent = inf+'%';
+  document.getElementById('rp-retire-yrs-val').textContent = yrs+' years';
+}
+</script>
 </body>
 </html>
