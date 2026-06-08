@@ -4,11 +4,6 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Trump Catalyst Watchlist</title>
-
-<!-- TradingView Web Components — single shared loader, no dynamic injection -->
-<script type="module" src="https://s3.tradingview.com/tv.js/bundles/tv-news.js"></script>
-<script src="https://s3.tradingview.com/tv.js" async></script>
-
 <style>
   * { margin: 0; padding: 0; box-sizing: border-box; }
   body { font-family: 'Helvetica Neue', Arial, sans-serif; background: #050508; color: #e2e8f0; min-height: 100vh; }
@@ -17,11 +12,11 @@
   .header-label { font-family: monospace; font-size: 9px; letter-spacing: 3px; color: #475569; margin-bottom: 6px; text-transform: uppercase; }
   .header h1 { font-size: clamp(20px, 5vw, 28px); font-weight: 800; color: #f8fafc; letter-spacing: -0.5px; line-height: 1.15; }
   .header h1 span { color: #22c55e; }
-  .header p { margin-top: 6px; font-size: 11px; color: #334155; }
+  .header-meta { display: flex; gap: 16px; margin-top: 8px; flex-wrap: wrap; }
+  .header-meta span { font-size: 10px; color: #334155; font-family: monospace; }
+  .header-meta .live { color: #22c55e; }
 
-  /* Ticker tape */
   #ticker-tape { border-bottom: 1px solid #0f172a; }
-  #ticker-tape .tradingview-widget-container { height: 52px; }
 
   .tabs { display: flex; overflow-x: auto; border-bottom: 1px solid #0f172a; background: #07070e; scrollbar-width: none; }
   .tabs::-webkit-scrollbar { display: none; }
@@ -37,6 +32,10 @@
   .trigger-box { background: #0f172a; border-left: 2px solid; padding: 8px 12px; border-radius: 0 4px 4px 0; font-size: 11px; color: #cbd5e1; }
   .trigger-label { font-size: 9px; color: #475569; font-family: monospace; text-transform: uppercase; letter-spacing: 1px; }
 
+  /* NEW: Context update banner */
+  .update-banner { margin: 8px 0 0; padding: 6px 10px; background: #1a1a0a; border: 1px solid #f59e0b30; border-radius: 4px; font-size: 10px; color: #f59e0b; font-family: monospace; line-height: 1.5; }
+  .update-banner b { color: #fbbf24; }
+
   .controls { padding: 10px 20px; display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #0f172a; }
   .count { font-family: monospace; font-size: 10px; color: #475569; text-transform: uppercase; letter-spacing: 1px; }
   .toggle-btn { padding: 5px 14px; border-radius: 20px; font-family: monospace; font-size: 10px; cursor: pointer; letter-spacing: 1px; text-transform: uppercase; transition: all 0.15s; }
@@ -51,6 +50,7 @@
   .ticker-symbol { font-family: monospace; font-size: 15px; font-weight: 900; letter-spacing: 1px; }
   .ticker-name { font-size: 11px; color: #475569; }
   .ticker-sector { font-size: 9px; padding: 1px 6px; border-radius: 3px; background: #1e293b; color: #64748b; font-family: monospace; }
+  .ticker-new { font-size: 9px; padding: 1px 6px; border-radius: 3px; background: #22c55e20; color: #22c55e; font-family: monospace; letter-spacing: 1px; }
   .ticker-thesis { font-size: 11px; color: #64748b; line-height: 1.5; }
   .ticker-right { text-align: right; min-width: 70px; flex-shrink: 0; }
   .direction-badge { font-size: 10px; font-weight: 800; padding: 3px 8px; border-radius: 4px; font-family: monospace; letter-spacing: 1px; margin-bottom: 6px; display: block; }
@@ -58,11 +58,9 @@
   .conf-bar { width: 8px; height: 8px; border-radius: 2px; }
   .conf-label { font-size: 8px; color: #334155; font-family: monospace; margin-top: 2px; text-transform: uppercase; }
 
-  /* Interactive mini chart */
   .chart-section { margin-top: 10px; border-top: 1px solid #0f172a; padding-top: 8px; }
   .chart-label { font-family: monospace; font-size: 9px; color: #22c55e; letter-spacing: 2px; text-transform: uppercase; margin-bottom: 6px; display: flex; justify-content: space-between; align-items: center; }
   .chart-label a { color: #3b82f6; font-size: 9px; text-decoration: none; }
-  .chart-label a:hover { color: #60a5fa; }
   .mini-chart-wrap { height: 150px; width: 100%; }
   .mini-chart-wrap .tradingview-widget-container { height: 150px; }
   .mini-chart-wrap .tradingview-widget-container__widget { height: 150px; }
@@ -74,6 +72,7 @@
   .legend-key { font-family: monospace; font-size: 10px; }
   .legend-desc { font-size: 10px; color: #334155; }
   .disclaimer { font-size: 9px; color: #1e293b; font-family: monospace; line-height: 1.5; }
+  .updated { font-size: 9px; color: #334155; font-family: monospace; margin-top: 6px; }
 </style>
 </head>
 <body>
@@ -81,10 +80,16 @@
 <div class="header">
   <div class="header-label">ANTICIPATORY WATCHLIST · TRUMP CATALYST TRACKER</div>
   <h1>Position Before<br><span>He Speaks.</span></h1>
-  <p>4 catalysts · 20 tickers · Interactive charts via TradingView</p>
+  <div class="header-meta">
+    <span>5 catalysts · 22 tickers</span>
+    <span>·</span>
+    <span class="live">◉ Charts live via TradingView</span>
+    <span>·</span>
+    <span>Updated Jun 8, 2026</span>
+  </div>
 </div>
 
-<!-- Ticker tape: static in HTML, works because script is in <head> -->
+<!-- Ticker tape -->
 <nav id="ticker-tape">
   <div class="tradingview-widget-container">
     <div class="tradingview-widget-container__widget"></div>
@@ -93,14 +98,15 @@
       "symbols": [
         {"proName":"NYSE:DAL","title":"Delta"},{"proName":"NASDAQ:UAL","title":"United"},
         {"proName":"NASDAQ:QQQ","title":"QQQ"},{"proName":"AMEX:SPY","title":"SPY"},
-        {"proName":"NYSE:XOM","title":"Exxon"},{"proName":"NYSE:FRO","title":"Frontline"},
-        {"proName":"NYSE:BA","title":"Boeing"},{"proName":"NASDAQ:QCOM","title":"Qualcomm"},
-        {"proName":"NASDAQ:NVDA","title":"Nvidia"},{"proName":"NASDAQ:AAPL","title":"Apple"},
-        {"proName":"NYSE:ADM","title":"ADM"},{"proName":"NYSE:MP","title":"MP Materials"},
+        {"proName":"NYSE:XOM","title":"Exxon"},{"proName":"NYSE:BA","title":"Boeing"},
+        {"proName":"NASDAQ:QCOM","title":"Qualcomm"},{"proName":"NASDAQ:NVDA","title":"Nvidia"},
+        {"proName":"NASDAQ:MU","title":"Micron"},{"proName":"NASDAQ:AAPL","title":"Apple"},
+        {"proName":"NYSE:GD","title":"Gen Dynamics"},{"proName":"NYSE:NOC","title":"Northrop"},
+        {"proName":"NYSE:LMT","title":"Lockheed"},{"proName":"NYSE:CVX","title":"Chevron"},
+        {"proName":"NYSE:COP","title":"ConocoPhillips"},{"proName":"AMEX:GLD","title":"Gold"},
         {"proName":"AMEX:IWM","title":"IWM"},{"proName":"AMEX:XLI","title":"XLI"},
-        {"proName":"AMEX:XLY","title":"XLY"},{"proName":"NYSE:FCX","title":"Freeport"},
-        {"proName":"NYSE:CVX","title":"Chevron"},{"proName":"NYSE:COP","title":"ConocoPhillips"},
-        {"proName":"NYSE:LMT","title":"Lockheed"},{"proName":"AMEX:GLD","title":"Gold"}
+        {"proName":"NYSE:COST","title":"Costco"},{"proName":"NASDAQ:ULTA","title":"Ulta"},
+        {"proName":"NYSE:ADM","title":"ADM"},{"proName":"NYSE:MP","title":"MP Materials"}
       ],
       "showSymbolLogo": true,
       "isTransparent": true,
@@ -127,90 +133,112 @@
     <div class="legend-item"><span class="legend-key" style="color:#f59e0b">◈ WATCH</span><span class="legend-desc">Monitor — direction risk</span></div>
     <div class="legend-item"><span class="legend-key" style="color:#22c55e">■■■</span><span class="legend-desc">HIGH confidence</span></div>
     <div class="legend-item"><span class="legend-key" style="color:#f59e0b">■■□</span><span class="legend-desc">MEDIUM confidence</span></div>
+    <div class="legend-item"><span class="legend-key" style="color:#22c55e; font-size:9px">NEW</span><span class="legend-desc">Added in Jun 8 update</span></div>
   </div>
-  <div class="disclaimer">Charts: TradingView (interactive, hover to explore). NOT FINANCIAL ADVICE. Always consult a licensed financial advisor.</div>
+  <div class="disclaimer">Charts: TradingView (interactive). Thesis based on analyst research & macro reasoning. NOT FINANCIAL ADVICE. Always consult a licensed financial advisor.</div>
+  <div class="updated">Last updated: Jun 8, 2026 · Sources: CNN, U.S. Bank, Polymarket, Axios, SocGen, Kiplinger, Motley Fool</div>
 </div>
 
 <script>
 const catalysts = [
   {
-    id:"iran-deal", title:"Iran Deal", statusColor:"#f97316", status:"IMMINENT", timing:"Days to weeks",
-    description:"Trump posted deal is 'largely negotiated.' MOU being finalized. Strait reopening = oil crash + broad market rally.",
-    trigger:"Trump Truth Social post confirming MOU signed / Strait reopening",
-    tickers:[
-      {symbol:"DAL", tv:"NYSE:DAL", name:"Delta Air Lines", sector:"Airlines", direction:"BUY", thesis:"Oil drop = fuel cost savings → margin expansion. Airlines biggest beneficiary of Hormuz reopening.", confidence:"HIGH"},
-      {symbol:"UAL", tv:"NASDAQ:UAL", name:"United Airlines", sector:"Airlines", direction:"BUY", thesis:"Same fuel cost thesis as DAL. High operating leverage to oil price decline.", confidence:"HIGH"},
-      {symbol:"QQQ", tv:"NASDAQ:QQQ", name:"Nasdaq 100 ETF", sector:"Broad Tech", direction:"BUY", thesis:"Lower oil = lower inflation = rate cut expectations return. Tech re-rates upward.", confidence:"HIGH"},
-      {symbol:"SPY", tv:"AMEX:SPY", name:"S&P 500 ETF", sector:"Broad Market", direction:"BUY", thesis:"Peace deal = risk-on. Broad market rallies as energy crisis risk premium unwinds.", confidence:"HIGH"},
-      {symbol:"XOM", tv:"NYSE:XOM", name:"Exxon Mobil", sector:"Energy", direction:"WATCH", thesis:"Oil drops on reopening — XOM loses near-term. Strong long-term at $35 breakeven. Watch for dip entry.", confidence:"MEDIUM"},
-      {symbol:"FRO", tv:"NYSE:FRO", name:"Frontline PLC", sector:"Tankers", direction:"WATCH", thesis:"Up 51% YTD on Hormuz closure. Ceasefire unwinds this trade fast. Monitor to exit or hedge.", confidence:"HIGH"},
+    id: "iran-stuck",
+    title: "Iran Deadlock",
+    statusColor: "#ef4444",
+    status: "CRITICAL",
+    timing: "June 30 deadline",
+    description: "The April 8 ceasefire holds but negotiations are stalled. Iran suspended talks on June 1 over Israel-Lebanon. Trump says talks continue at 'rapid pace' — Iran denies it. SPR at lowest since 1983 (357M barrels). Polymarket odds of June 30 deal collapsed from 72% to 16%.",
+    update: "⚠ STATUS CHANGE from previous version: Iran deal is NO LONGER IMMINENT. It is now a binary risk event. Market already priced in a deal — a breakdown now = oil spike + equity dip. Position for BOTH outcomes.",
+    trigger: "June 30 deadline: confirmed deal → airlines/tech spike, oil dip | Breakdown → energy/defense/gold spike",
+    tickers: [
+      { symbol: "DAL", tv: "NYSE:DAL", name: "Delta Air Lines", sector: "Airlines", direction: "BUY", thesis: "Deal confirms → oil collapses → fuel savings = direct margin expansion. Still the cleanest Iran peace trade.", confidence: "HIGH", isNew: false },
+      { symbol: "UAL", tv: "NASDAQ:UAL", name: "United Airlines", sector: "Airlines", direction: "BUY", thesis: "Mirror play to DAL. High operating leverage to any oil price drop on Hormuz reopening.", confidence: "HIGH", isNew: false },
+      { symbol: "QQQ", tv: "NASDAQ:QQQ", name: "Nasdaq 100 ETF", sector: "Broad Tech", direction: "BUY", thesis: "Peace deal removes inflation risk = rate cut odds return = tech re-rates up. S&P already up 33% since election.", confidence: "HIGH", isNew: false },
+      { symbol: "XOM", tv: "NYSE:XOM", name: "Exxon Mobil", sector: "Energy", direction: "BUY", thesis: "Breakdown scenario: oil spikes, XOM at $35 breakeven flows every $1 to bottom line. OBBBA also expands XOM drilling rights.", confidence: "HIGH", isNew: false },
+      { symbol: "CVX", tv: "NYSE:CVX", name: "Chevron", sector: "Energy", direction: "BUY", thesis: "Escalation hedge. $50/bbl dividend breakeven. Strong FCF at $100+ oil. Iran war = immediate rally.", confidence: "HIGH", isNew: false },
+      { symbol: "GLD", tv: "AMEX:GLD", name: "Gold ETF", sector: "Safe Haven", direction: "BUY", thesis: "Talks breakdown → stagflation fear + geopolitical risk = gold safe haven bid. Already at record highs.", confidence: "HIGH", isNew: false },
     ]
   },
   {
-    id:"china-sept", title:"China Summit", statusColor:"#3b82f6", status:"UPCOMING", timing:"Aug–Sep 2026",
-    description:"Xi confirmed to visit the US in September. Market pre-positions 3–4 weeks ahead. May summit playbook: anticipation rally, then announcement risk.",
-    trigger:"Summit date confirmed + pre-summit diplomatic signals or leaked deal terms",
-    tickers:[
-      {symbol:"BA", tv:"NYSE:BA", name:"Boeing", sector:"Aerospace", direction:"BUY", thesis:"200-plane order confirmed at May summit. September likely to expand delivery schedule.", confidence:"HIGH"},
-      {symbol:"QCOM", tv:"NASDAQ:QCOM", name:"Qualcomm", sector:"Semiconductors", direction:"BUY", thesis:"46% revenue from China. Any tariff reduction = direct earnings tailwind. Rallied 15% on April earnings.", confidence:"HIGH"},
-      {symbol:"NVDA", tv:"NASDAQ:NVDA", name:"Nvidia", sector:"Semiconductors", direction:"BUY", thesis:"H200 chip sales to China cleared at May summit. September could expand export licenses further.", confidence:"HIGH"},
-      {symbol:"AAPL", tv:"NASDAQ:AAPL", name:"Apple", sector:"Consumer Tech", direction:"BUY", thesis:"Tim Cook attended Beijing summit. Major China exposure. Tariff relief = margin recovery.", confidence:"MEDIUM"},
-      {symbol:"ADM", tv:"NYSE:ADM", name:"Archer-Daniels-Midland", sector:"Agriculture", direction:"BUY", thesis:"$17B/yr ag purchase commitment through 2028. ADM is primary US soybean/corn processor.", confidence:"MEDIUM"},
-      {symbol:"MP", tv:"NYSE:MP", name:"MP Materials", sector:"Rare Earths", direction:"BUY", thesis:"Only US rare earth miner. China rare earth supply deal = major stock catalyst.", confidence:"MEDIUM"},
+    id: "obbba",
+    title: "OBBBA Tailwinds",
+    statusColor: "#22c55e",
+    status: "ACTIVE NOW",
+    timing: "Kicking in Jan–Dec 2026",
+    description: "One Big Beautiful Bill Act signed July 4, 2025. Corporate tax rate to as low as 15%, $127B net consumer boost, $150B defense spending increase (US defense budget now >$1 trillion), 35% semiconductor CHIPS tax credit. SocGen identifies 30 stocks as top beneficiaries across defense, consumer, industrials, energy.",
+    update: "🆕 NEW CATALYST: OBBBA is the most underappreciated ongoing Trump trade. Most of the bill kicks in during 2026 — markets have NOT fully priced the earnings uplift yet, especially in cyclicals.",
+    trigger: "Quarterly earnings beats driven by OBBBA tax relief | Further executive orders expanding domestic manufacturing incentives",
+    tickers: [
+      { symbol: "GD", tv: "NYSE:GD", name: "General Dynamics", sector: "Defense", direction: "BUY", thesis: "$150B defense spending surge under OBBBA. GD covers shipbuilding, combat vehicles, IT systems — all front-loaded.", confidence: "HIGH", isNew: true },
+      { symbol: "NOC", tv: "NYSE:NOC", name: "Northrop Grumman", sector: "Defense", direction: "BUY", thesis: "Global aerospace & electronics. OBBBA defense modernization funding directly benefits advanced systems contracts.", confidence: "HIGH", isNew: true },
+      { symbol: "COST", tv: "NASDAQ:COST", name: "Costco", sector: "Consumer", direction: "BUY", thesis: "SocGen pick. $127B consumer boost from OBBBA tax relief. Membership model captures incremental discretionary spend.", confidence: "MEDIUM", isNew: true },
+      { symbol: "ULTA", tv: "NASDAQ:ULTA", name: "Ulta Beauty", sector: "Consumer", direction: "BUY", thesis: "SocGen pick. 'Front-loaded consumer tailwinds and higher-income spending' under OBBBA tax cuts.", confidence: "MEDIUM", isNew: true },
+      { symbol: "IWM", tv: "AMEX:IWM", name: "Russell 2000 ETF", sector: "Small Caps", direction: "BUY", thesis: "SocGen: OBBBA boosts 'the other half of the S&P 500' — cyclicals and small caps with avg 15% EPS growth in 2026–27.", confidence: "HIGH", isNew: false },
+      { symbol: "XLI", tv: "AMEX:XLI", name: "Industrials ETF", sector: "Industrials", direction: "BUY", thesis: "OBBBA capex incentives benefit industrial manufacturers. Caterpillar named explicitly by SocGen.", confidence: "HIGH", isNew: false },
     ]
   },
   {
-    id:"tariff-rollback", title:"Tariff Rollback", statusColor:"#8b5cf6", status:"ONGOING", timing:"Ongoing / unpredictable",
-    description:"Any credible tariff pause tweet → immediate broad rally. ~$30B goods framework still being negotiated.",
-    trigger:"Truth Social post about tariff pause, reduction, or new trade deal with any major partner",
-    tickers:[
-      {symbol:"IWM", tv:"AMEX:IWM", name:"Russell 2000 ETF", sector:"Small Caps", direction:"BUY", thesis:"Small caps most sensitive to tariff cost pressures. Biggest bounce on de-escalation.", confidence:"HIGH"},
-      {symbol:"XLI", tv:"AMEX:XLI", name:"Industrials ETF", sector:"Industrials", direction:"BUY", thesis:"Morgan Stanley's top pick for Hormuz reopening + tariff rollback. Trane Tech, Rockwell Automation.", confidence:"HIGH"},
-      {symbol:"XLY", tv:"AMEX:XLY", name:"Consumer Disc. ETF", sector:"Consumer", direction:"BUY", thesis:"Lower tariffs = lower goods prices = consumer spending recovery.", confidence:"MEDIUM"},
-      {symbol:"FCX", tv:"NYSE:FCX", name:"Freeport-McMoRan", sector:"Copper/Mining", direction:"WATCH", thesis:"Up 62% YoY on Hormuz copper disruption. Trade deal normalizes supply. Risky hold.", confidence:"MEDIUM"},
+    id: "ai-semis",
+    title: "AI & Semis EO",
+    statusColor: "#a855f7",
+    status: "JUST SIGNED",
+    timing: "Jun 2, 2026 EO",
+    description: "Trump signed a new AI executive order on June 2 requesting voluntary 30-day early government access to advanced AI models before release. Follows security concerns around frontier models. CHIPS Act restructured — loans converted to equity stakes. 35% semiconductor tax credit for new US fabs built before 2026.",
+    update: "🆕 NEW CATALYST: AI EO creates a regulatory signal market is watching closely. Micron hit all-time highs on June 1. Trump personally praised Micron at a New York rally, flagging CHIPS equity stake announcement incoming.",
+    trigger: "Trump CHIPS equity stake announcements for specific fabs | Further AI EO expansions | Micron/Intel fab groundbreakings",
+    tickers: [
+      { symbol: "MU", tv: "NASDAQ:MU", name: "Micron Technology", sector: "Semiconductors", direction: "BUY", thesis: "Hit all-time high June 1. Trump personally praised Micron. $6.1B CHIPS funding + new equity stake conversion expected. Idaho + NY fabs accelerating.", confidence: "HIGH", isNew: true },
+      { symbol: "NVDA", tv: "NASDAQ:NVDA", name: "Nvidia", sector: "Semiconductors", direction: "BUY", thesis: "H200 China export licenses confirmed at May summit. AI EO creates stable domestic policy framework. Blackwell demand insatiable.", confidence: "HIGH", isNew: false },
+      { symbol: "QCOM", tv: "NASDAQ:QCOM", name: "Qualcomm", sector: "Semiconductors", direction: "BUY", thesis: "46% China revenue. CHIPS 35% tax credit on new fabs + tariff relief from China summit = dual earnings tailwind.", confidence: "HIGH", isNew: false },
     ]
   },
   {
-    id:"escalation", title:"Escalation Hedge", statusColor:"#ef4444", status:"RISK", timing:"If deal falls through",
-    description:"If talks collapse — Trump ultimatum ignored, strikes resume — oil spikes again. Inverse plays if de-escalation fails.",
-    trigger:"Trump threatens renewed strikes / Iran rejects MOU / Hormuz attacks resume",
-    tickers:[
-      {symbol:"XOM", tv:"NYSE:XOM", name:"Exxon Mobil", sector:"Energy", direction:"BUY", thesis:"Permian breakeven ~$35/bbl. Every $1 oil increase flows directly to bottom line. WF PT: $183.", confidence:"HIGH"},
-      {symbol:"CVX", tv:"NYSE:CVX", name:"Chevron", sector:"Energy", direction:"BUY", thesis:"$50/bbl dividend breakeven. Strong FCF at $100+ oil. Hit 52-week high during Iran conflict.", confidence:"HIGH"},
-      {symbol:"COP", tv:"NYSE:COP", name:"ConocoPhillips", sector:"Energy", direction:"BUY", thesis:"Extra $1B FCF/yr at $70 oil. At $90–100, massive shareholder return via buybacks.", confidence:"HIGH"},
-      {symbol:"LMT", tv:"NYSE:LMT", name:"Lockheed Martin", sector:"Defense", direction:"BUY", thesis:"Geopolitical escalation = global defense spending surge. Iran war creates hardware demand shock.", confidence:"MEDIUM"},
-      {symbol:"GLD", tv:"AMEX:GLD", name:"Gold ETF", sector:"Safe Haven", direction:"BUY", thesis:"Gold surged to record highs on Iran war outbreak. Escalation = flight to safety trade activates.", confidence:"HIGH"},
+    id: "china-sept",
+    title: "China Summit",
+    statusColor: "#3b82f6",
+    status: "UPCOMING",
+    timing: "Aug–Sep 2026",
+    description: "Xi confirmed to visit Washington in September. May summit playbook established: market rallies 3–4 weeks ahead, sells off on vague outcomes. New dynamic: markets now more cynical after 'nothing of substance' in Beijing — anticipation window is the key entry point.",
+    update: "⚡ PATTERN UPDATE: Markets now explicitly distrust Trump announcements. XTB noted on May 19: 'after numerous instances where initial declarations failed to materialise, markets are wary.' This means the anticipation trade is SHORTER — move earlier, exit before the actual summit.",
+    trigger: "Xi Washington visit date confirmed | Pre-summit diplomatic leaks about tariff rollback or Boeing/ag deal expansion",
+    tickers: [
+      { symbol: "BA", tv: "NYSE:BA", name: "Boeing", sector: "Aerospace", direction: "BUY", thesis: "200-plane order confirmed May summit. September summit likely confirms delivery schedule. Position 4–5 weeks ahead, not 2.", confidence: "HIGH", isNew: false },
+      { symbol: "ADM", tv: "NYSE:ADM", name: "Archer-Daniels-Midland", sector: "Agriculture", direction: "BUY", thesis: "$17B/yr ag purchase commitment through 2028. September summit likely to formalize. ADM is primary US corn/soybean exporter.", confidence: "MEDIUM", isNew: false },
+      { symbol: "MP", tv: "NYSE:MP", name: "MP Materials", sector: "Rare Earths", direction: "BUY", thesis: "Only US rare earth miner. September summit expected to confirm rare earth supply framework agreed in Beijing.", confidence: "MEDIUM", isNew: false },
+      { symbol: "AAPL", tv: "NASDAQ:AAPL", name: "Apple", sector: "Consumer Tech", direction: "WATCH", thesis: "Tim Cook at Beijing summit. Tariff relief = margin recovery. But markets now skeptical of summit outcomes — watch for early exit.", confidence: "MEDIUM", isNew: false },
+    ]
+  },
+  {
+    id: "tariff-signals",
+    title: "Tariff Signals",
+    statusColor: "#8b5cf6",
+    status: "ONGOING",
+    timing: "Ongoing / unpredictable",
+    description: "~$30B goods framework still being negotiated. Pattern: credible tariff pause → immediate broad rally. But market credibility of Trump announcements is eroding — smaller pops, faster reversals. June executive orders on customs enforcement signal continued active use of tariffs as leverage.",
+    update: "⚡ PATTERN UPDATE: The 'buy the tweet' move is shrinking in magnitude as market learns to wait for confirmation. Still works but fade faster. Best expression now via ETFs not single stocks.",
+    trigger: "Truth Social tariff pause or reduction post | New trade deal announcement with EU, India, or any major partner",
+    tickers: [
+      { symbol: "SPY", tv: "AMEX:SPY", name: "S&P 500 ETF", sector: "Broad Market", direction: "BUY", thesis: "Broadest expression of tariff relief trade. S&P up 33% since election — any tariff de-escalation adds to that trend.", confidence: "HIGH", isNew: false },
+      { symbol: "XLY", tv: "AMEX:XLY", name: "Consumer Disc. ETF", sector: "Consumer", direction: "BUY", thesis: "Lower tariffs = lower goods costs = consumer spending recovery. OBBBA consumer boost compounds this.", confidence: "MEDIUM", isNew: false },
+      { symbol: "COP", tv: "NYSE:COP", name: "ConocoPhillips", sector: "Energy", direction: "BUY", thesis: "OBBBA expanded drilling rights + Iran escalation hedge. Extra $1B FCF/yr at $70 oil.", confidence: "MEDIUM", isNew: false },
     ]
   }
 ];
 
-let activeId = "iran-deal";
+let activeId = "iran-stuck";
 let buyOnly = false;
 
-// Build mini chart widget HTML — scripts placed statically so browser executes them on insert via range
 function miniChartHTML(tv, color) {
-  const trendColor = color === "#22c55e" ? "rgba(34,197,94,1)" : "rgba(245,158,11,1)";
-  const underColor = color === "#22c55e" ? "rgba(34,197,94,0.15)" : "rgba(245,158,11,0.15)";
+  const trend = color === "#22c55e" ? "rgba(34,197,94,1)" : "rgba(245,158,11,1)";
+  const under = color === "#22c55e" ? "rgba(34,197,94,0.15)" : "rgba(245,158,11,0.15)";
   return `
     <div class="tradingview-widget-container" style="height:150px">
       <div class="tradingview-widget-container__widget" style="height:150px"></div>
       <script type="text/javascript" src="https://s3.tradingview.com/external-embedding/embed-widget-mini-symbol-overview.js" async>
-      {
-        "symbol": "${tv}",
-        "width": "100%",
-        "height": 150,
-        "locale": "en",
-        "dateRange": "3M",
-        "colorTheme": "dark",
-        "trendLineColor": "${trendColor}",
-        "underLineColor": "${underColor}",
-        "underLineBottomColor": "rgba(0,0,0,0)",
-        "isTransparent": true,
-        "autosize": true,
-        "largeChartUrl": "https://www.tradingview.com/chart/?symbol=${encodeURIComponent(tv)}",
-        "chartOnly": false,
-        "noTimeScale": false
-      }
+      {"symbol":"${tv}","width":"100%","height":150,"locale":"en","dateRange":"3M","colorTheme":"dark",
+       "trendLineColor":"${trend}","underLineColor":"${under}","underLineBottomColor":"rgba(0,0,0,0)",
+       "isTransparent":true,"autosize":true,"largeChartUrl":"https://www.tradingview.com/chart/?symbol=${encodeURIComponent(tv)}",
+       "chartOnly":false,"noTimeScale":false}
       <\/script>
     </div>`;
 }
@@ -233,12 +261,12 @@ function renderDetail() {
       <span class="timing">⏱ ${c.timing}</span>
     </div>
     <p class="catalyst-desc">${c.description}</p>
-    <div class="trigger-box" style="border-left-color:${c.statusColor}">
+    <div class="update-banner">${c.update}</div>
+    <div class="trigger-box" style="border-left-color:${c.statusColor};margin-top:8px">
       <span class="trigger-label">TRIGGER → </span>${c.trigger}
     </div>`;
 }
 
-// Use document.createRange().createContextualFragment() to allow scripts to execute in innerHTML content
 function renderTickers() {
   const c = catalysts.find(x=>x.id===activeId);
   const tickers = buyOnly ? c.tickers.filter(t=>t.direction==="BUY") : c.tickers;
@@ -251,7 +279,7 @@ function renderTickers() {
   btn.style.color = buyOnly ? "#22c55e" : "#475569";
 
   const list = document.getElementById("tickerList");
-  list.innerHTML = ""; // clear
+  list.innerHTML = "";
 
   tickers.forEach(t => {
     const isBuy = t.direction === "BUY";
@@ -268,6 +296,7 @@ function renderTickers() {
             <span class="ticker-symbol" style="color:${color}">${t.symbol}</span>
             <span class="ticker-name">${t.name}</span>
             <span class="ticker-sector">${t.sector}</span>
+            ${t.isNew ? '<span class="ticker-new">NEW</span>' : ''}
           </div>
           <p class="ticker-thesis">${t.thesis}</p>
         </div>
@@ -281,16 +310,13 @@ function renderTickers() {
       </div>
       <div class="chart-section">
         <div class="chart-label">
-          <span>◉ INTERACTIVE CHART · 3M</span>
+          <span>◉ INTERACTIVE · 3M</span>
           <a href="https://www.tradingview.com/chart/?symbol=${encodeURIComponent(t.tv)}" target="_blank" rel="noopener">↗ FULL CHART</a>
         </div>
-        <div class="mini-chart-wrap">
-          ${miniChartHTML(t.tv, color)}
-        </div>
+        <div class="mini-chart-wrap">${miniChartHTML(t.tv, color)}</div>
       </div>
     </div>`;
 
-    // createContextualFragment executes scripts unlike innerHTML
     const frag = document.createRange().createContextualFragment(cardHTML);
     list.appendChild(frag);
   });
