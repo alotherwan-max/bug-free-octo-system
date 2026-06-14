@@ -31,6 +31,16 @@
   .tab-btn:hover{color:rgba(250,248,243,.75)}
   .tab-btn.active{background:var(--cream);color:var(--ink)}
 
+  /* Privacy toggle */
+  .privacy-toggle{position:absolute;bottom:1rem;right:3rem;display:flex;align-items:center;gap:8px;background:rgba(255,255,255,0.08);border:.5px solid rgba(255,255,255,0.15);border-radius:20px;padding:.35rem .85rem .35rem .6rem;cursor:pointer;transition:background .2s;user-select:none}
+  .privacy-toggle:hover{background:rgba(255,255,255,0.13)}
+  .privacy-toggle-label{font-size:11px;color:rgba(250,248,243,.6);font-weight:500;letter-spacing:.04em}
+  .toggle-pip{width:28px;height:16px;border-radius:20px;background:rgba(255,255,255,.2);position:relative;transition:background .2s;flex-shrink:0}
+  .toggle-pip::after{content:'';position:absolute;top:2px;left:2px;width:12px;height:12px;border-radius:50%;background:white;transition:transform .2s}
+  .toggle-pip.on{background:var(--accent)}
+  .toggle-pip.on::after{transform:translateX(12px)}
+  .masked{filter:blur(6px);user-select:none;pointer-events:none;transition:filter .2s}
+
   /* Tab panels */
   .tab-panel{display:none}.tab-panel.active{display:block}
   .main{padding:2.5rem 3rem;max-width:1200px}
@@ -206,6 +216,11 @@
   <h1>Personal Finance</h1>
   <p class="header-sub">Comprehensive overview · Singapore · Jun 2026</p>
   <div class="header-date">Updated<br>June 2026</div>
+  <div class="privacy-toggle" onclick="togglePrivacy()" id="privacyBtn">
+    <span style="font-size:14px">👁️</span>
+    <span class="privacy-toggle-label" id="privacyLabel">Show numbers</span>
+    <div class="toggle-pip" id="privacyPip"></div>
+  </div>
   <div class="tab-nav">
     <button class="tab-btn active" onclick="switchTab('overview',this)">Overview</button>
     <button class="tab-btn" onclick="switchTab('coverage',this)">Insurance Coverage</button>
@@ -217,25 +232,25 @@
 <div id="tab-overview" class="tab-panel active">
 <div class="main">
   <div class="kpi-row">
-    <div class="kpi kpi-green"><div class="kpi-accent"></div><div class="kpi-label">Monthly salary</div><div class="kpi-val">$8,000</div><div class="kpi-note">Take-home</div></div>
-    <div class="kpi kpi-red"><div class="kpi-accent"></div><div class="kpi-label">Total outgoings</div><div class="kpi-val">~$4,800</div><div class="kpi-note">Fixed + variable</div></div>
-    <div class="kpi kpi-green"><div class="kpi-accent"></div><div class="kpi-label">Monthly surplus</div><div class="kpi-val">~$3,200</div><div class="kpi-note">~40% savings rate</div></div>
-    <div class="kpi kpi-amber"><div class="kpi-accent"></div><div class="kpi-label">Insurance (annual)</div><div class="kpi-val">$2,559</div><div class="kpi-note">Active cash premiums only</div></div>
+    <div class="kpi kpi-green"><div class="kpi-accent"></div><div class="kpi-label">Monthly salary</div><div class="kpi-val maskable" data-amount="$8,000" data-pct="100%">$8,000</div><div class="kpi-note">Take-home</div></div>
+    <div class="kpi kpi-red"><div class="kpi-accent"></div><div class="kpi-label">Total outgoings</div><div class="kpi-val maskable" data-amount="~$4,800" data-pct="~60%">~$4,800</div><div class="kpi-note">Fixed + variable</div></div>
+    <div class="kpi kpi-green"><div class="kpi-accent"></div><div class="kpi-label">Monthly surplus</div><div class="kpi-val maskable" data-amount="~$3,200" data-pct="~40%">~$3,200</div><div class="kpi-note">~40% savings rate</div></div>
+    <div class="kpi kpi-amber"><div class="kpi-accent"></div><div class="kpi-label">Insurance (annual)</div><div class="kpi-val maskable" data-amount="$2,559" data-pct="~2.7%">$2,559</div><div class="kpi-note">Active cash premiums only</div></div>
   </div>
 
   <div class="grid-2">
     <div class="card">
       <div class="card-title">Monthly cash flow</div>
-      <div class="cf-row"><span class="cf-label">Salary</span><div class="cf-bar-bg"><div class="cf-bar" style="width:100%;background:#2d6a4f"></div></div><span class="cf-amt" style="color:var(--green)">+$8,000</span></div>
+      <div class="cf-row"><span class="cf-label">Salary</span><div class="cf-bar-bg"><div class="cf-bar" style="width:100%;background:#2d6a4f"></div></div><span class="cf-amt maskable" style="color:var(--green)" data-amount="+$8,000" data-pct="100%">+$8,000</span></div>
       <hr class="cf-divider">
-      <div class="cf-row"><span class="cf-label">Insurance</span><div class="cf-bar-bg"><div class="cf-bar" style="width:5%;background:var(--accent)"></div></div><span class="cf-amt">$213</span></div>
-      <div class="cf-row"><span class="cf-label">Car total</span><div class="cf-bar-bg"><div class="cf-bar" style="width:26%;background:#6b7db3"></div></div><span class="cf-amt">$1,044</span></div>
-      <div class="cf-row"><span class="cf-label">Helper</span><div class="cf-bar-bg"><div class="cf-bar" style="width:17%;background:#6b7db3"></div></div><span class="cf-amt">$700</span></div>
-      <div class="cf-row"><span class="cf-label">Groceries + baby</span><div class="cf-bar-bg"><div class="cf-bar" style="width:25%;background:#6b7db3"></div></div><span class="cf-amt">$1,000</span></div>
-      <div class="cf-row"><span class="cf-label">Utilities</span><div class="cf-bar-bg"><div class="cf-bar" style="width:10%;background:#6b7db3"></div></div><span class="cf-amt">$400</span></div>
-      <div class="cf-row"><span class="cf-label">Subscriptions</span><div class="cf-bar-bg"><div class="cf-bar" style="width:3%;background:#6b7db3"></div></div><span class="cf-amt">$119</span></div>
+      <div class="cf-row"><span class="cf-label">Insurance</span><div class="cf-bar-bg"><div class="cf-bar" style="width:5%;background:var(--accent)"></div></div><span class="cf-amt maskable" data-amount="$213" data-pct="2.7%">$213</span></div>
+      <div class="cf-row"><span class="cf-label">Car total</span><div class="cf-bar-bg"><div class="cf-bar" style="width:26%;background:#6b7db3"></div></div><span class="cf-amt maskable" data-amount="$1,044" data-pct="13%">$1,044</span></div>
+      <div class="cf-row"><span class="cf-label">Helper</span><div class="cf-bar-bg"><div class="cf-bar" style="width:17%;background:#6b7db3"></div></div><span class="cf-amt maskable" data-amount="$700" data-pct="8.8%">$700</span></div>
+      <div class="cf-row"><span class="cf-label">Groceries + baby</span><div class="cf-bar-bg"><div class="cf-bar" style="width:25%;background:#6b7db3"></div></div><span class="cf-amt maskable" data-amount="$1,000" data-pct="12.5%">$1,000</span></div>
+      <div class="cf-row"><span class="cf-label">Utilities</span><div class="cf-bar-bg"><div class="cf-bar" style="width:10%;background:#6b7db3"></div></div><span class="cf-amt maskable" data-amount="$400" data-pct="5%">$400</span></div>
+      <div class="cf-row"><span class="cf-label">Subscriptions</span><div class="cf-bar-bg"><div class="cf-bar" style="width:3%;background:#6b7db3"></div></div><span class="cf-amt maskable" data-amount="$119" data-pct="1.5%">$119</span></div>
       <hr class="cf-divider">
-      <div class="cf-row"><span class="cf-label" style="font-weight:500;color:var(--ink)">Surplus</span><div class="cf-bar-bg"><div class="cf-bar" style="width:40%;background:var(--green)"></div></div><span class="cf-amt" style="color:var(--green);font-weight:600">~$3,200</span></div>
+      <div class="cf-row"><span class="cf-label" style="font-weight:500;color:var(--ink)">Surplus</span><div class="cf-bar-bg"><div class="cf-bar" style="width:40%;background:var(--green)"></div></div><span class="cf-amt maskable" style="color:var(--green);font-weight:600" data-amount="~$3,200" data-pct="~40%">~$3,200</span></div>
     </div>
     <div class="card">
       <div class="card-title">Spending breakdown</div>
@@ -255,10 +270,10 @@
     <div class="card">
       <div class="card-title">CC spend trend (monthly)</div>
       <div class="trend-row">
-        <div class="trend-col"><div class="trend-val">$2,634</div><div class="trend-bar" style="height:50%;background:#6b7db3"></div><div class="trend-label">Jan</div></div>
-        <div class="trend-col"><div class="trend-val" style="color:var(--red)">$10,606</div><div class="trend-bar" style="height:100%;background:var(--red);opacity:.7"></div><div class="trend-label">Feb ⚡</div></div>
-        <div class="trend-col"><div class="trend-val">$2,974</div><div class="trend-bar" style="height:56%;background:#6b7db3"></div><div class="trend-label">Mar</div></div>
-        <div class="trend-col"><div class="trend-val">$2,813</div><div class="trend-bar" style="height:53%;background:#6b7db3"></div><div class="trend-label">Apr</div></div>
+        <div class="trend-col"><div class="trend-val maskable" data-amount="$2,634" data-pct="33%">$2,634</div><div class="trend-bar" style="height:50%;background:#6b7db3"></div><div class="trend-label">Jan</div></div>
+        <div class="trend-col"><div class="trend-val maskable" style="color:var(--red)" data-amount="$10,606" data-pct="133%">$10,606</div><div class="trend-bar" style="height:100%;background:var(--red);opacity:.7"></div><div class="trend-label">Feb ⚡</div></div>
+        <div class="trend-col"><div class="trend-val maskable" data-amount="$2,974" data-pct="37%">$2,974</div><div class="trend-bar" style="height:56%;background:#6b7db3"></div><div class="trend-label">Mar</div></div>
+        <div class="trend-col"><div class="trend-val maskable" data-amount="$2,813" data-pct="35%">$2,813</div><div class="trend-bar" style="height:53%;background:#6b7db3"></div><div class="trend-label">Apr</div></div>
         <div class="trend-col"><div class="trend-val" style="color:var(--ink-muted)">—</div><div class="trend-bar" style="height:4%;background:#ddd"></div><div class="trend-label">May</div></div>
         <div class="trend-col"><div class="trend-val" style="color:var(--ink-muted)">—</div><div class="trend-bar" style="height:4%;background:#ddd"></div><div class="trend-label">Jun</div></div>
       </div>
@@ -266,12 +281,12 @@
     </div>
     <div class="card">
       <div class="card-title">Known asset snapshot</div>
-      <div class="nw-item"><span class="nw-label">Smart Invest ILPs (GE)</span><span class="nw-val" style="color:var(--green)">$41,123</span></div>
-      <div class="nw-item"><span class="nw-label">GE par policy surrender values</span><span class="nw-val" style="color:var(--green)">~$59,000</span></div>
-      <div class="nw-item"><span class="nw-label">AIA Guaranteed 10 (cash value)</span><span class="nw-val" style="color:var(--green)">$9,300</span></div>
+      <div class="nw-item"><span class="nw-label">Smart Invest ILPs (GE)</span><span class="nw-val maskable" style="color:var(--green)" data-amount="$41,123" data-pct="5.1× salary">$41,123</span></div>
+      <div class="nw-item"><span class="nw-label">GE par policy surrender values</span><span class="nw-val maskable" style="color:var(--green)" data-amount="~$59,000" data-pct="7.4× salary">~$59,000</span></div>
+      <div class="nw-item"><span class="nw-label">AIA Guaranteed 10 (cash value)</span><span class="nw-val maskable" style="color:var(--green)" data-amount="$9,300" data-pct="1.2× salary">$9,300</span></div>
       <div class="nw-item"><span class="nw-label">CPF (OA/SA/MA)</span><span class="nw-val" style="color:var(--ink-muted)">Not reviewed</span></div>
       <div class="nw-item"><span class="nw-label">Car (depreciating asset)</span><span class="nw-val" style="color:var(--ink-muted)">Not reviewed</span></div>
-      <div class="nw-total"><span class="nw-label">Visible assets (min.)</span><span class="nw-val">~$109,000+</span></div>
+      <div class="nw-total"><span class="nw-label">Visible assets (min.)</span><span class="nw-val maskable" data-amount="~$109,000+" data-pct="~13.6× salary">~$109,000+</span></div>
     </div>
   </div>
 
@@ -672,6 +687,33 @@ function renderChart() {
   });
 }
 window.addEventListener('DOMContentLoaded', () => { renderChart(); window._chartDone=true; });
+
+// ── Privacy toggle ──
+let privacyOn = false;
+function togglePrivacy() {
+  privacyOn = !privacyOn;
+  document.getElementById('privacyPip').classList.toggle('on', privacyOn);
+  document.getElementById('privacyLabel').textContent = privacyOn ? 'Hide numbers' : 'Show numbers';
+  document.querySelectorAll('.maskable').forEach(el => {
+    if (privacyOn) {
+      el.dataset.orig = el.textContent;
+      el.textContent = el.dataset.pct || '—';
+    } else {
+      el.textContent = el.dataset.amount || el.dataset.orig || el.textContent;
+    }
+  });
+  // Update donut chart labels too
+  if (window._chartDone) {
+    const chart = Chart.getChart('spendChart');
+    if (chart) {
+      chart.options.plugins.tooltip.callbacks.label = privacyOn
+        ? ctx => ` ${((ctx.parsed / 4633) * 100).toFixed(1)}% of salary`
+        : ctx => ` S$${ctx.parsed.toLocaleString()} / mo`;
+      chart.update();
+    }
+  }
+}
+
 
 // ── Retirement Planner ──
 let rpChart = null;
