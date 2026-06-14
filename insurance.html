@@ -32,14 +32,13 @@
   .tab-btn.active{background:var(--cream);color:var(--ink)}
 
   /* Privacy toggle */
-  .privacy-toggle{position:absolute;bottom:1rem;right:3rem;display:flex;align-items:center;gap:8px;background:rgba(255,255,255,0.08);border:.5px solid rgba(255,255,255,0.15);border-radius:20px;padding:.35rem .85rem .35rem .6rem;cursor:pointer;transition:background .2s;user-select:none}
-  .privacy-toggle:hover{background:rgba(255,255,255,0.13)}
-  .privacy-toggle-label{font-size:11px;color:rgba(250,248,243,.6);font-weight:500;letter-spacing:.04em}
-  .toggle-pip{width:28px;height:16px;border-radius:20px;background:rgba(255,255,255,.2);position:relative;transition:background .2s;flex-shrink:0}
-  .toggle-pip::after{content:'';position:absolute;top:2px;left:2px;width:12px;height:12px;border-radius:50%;background:white;transition:transform .2s}
+  .privacy-toggle{display:inline-flex;align-items:center;gap:10px;background:white;border:1px solid var(--border);border-radius:24px;padding:.5rem .5rem .5rem 1rem;cursor:pointer;transition:border-color .2s,box-shadow .2s;user-select:none;margin-bottom:1.5rem}
+  .privacy-toggle:hover{border-color:var(--accent);box-shadow:0 2px 8px rgba(0,0,0,0.04)}
+  .privacy-toggle-label{font-size:12px;color:var(--ink-light);font-weight:500;letter-spacing:.02em}
+  .toggle-pip{width:36px;height:20px;border-radius:20px;background:var(--border);position:relative;transition:background .2s;flex-shrink:0}
+  .toggle-pip::after{content:'';position:absolute;top:2px;left:2px;width:16px;height:16px;border-radius:50%;background:white;box-shadow:0 1px 3px rgba(0,0,0,0.15);transition:transform .2s}
   .toggle-pip.on{background:var(--accent)}
-  .toggle-pip.on::after{transform:translateX(12px)}
-  .masked{filter:blur(6px);user-select:none;pointer-events:none;transition:filter .2s}
+  .toggle-pip.on::after{transform:translateX(16px)}
 
   /* Tab panels */
   .tab-panel{display:none}.tab-panel.active{display:block}
@@ -216,11 +215,6 @@
   <h1>Personal Finance</h1>
   <p class="header-sub">Comprehensive overview · Singapore · Jun 2026</p>
   <div class="header-date">Updated<br>June 2026</div>
-  <div class="privacy-toggle" onclick="togglePrivacy()" id="privacyBtn">
-    <span style="font-size:14px">👁️</span>
-    <span class="privacy-toggle-label" id="privacyLabel">Show numbers</span>
-    <div class="toggle-pip" id="privacyPip"></div>
-  </div>
   <div class="tab-nav">
     <button class="tab-btn active" onclick="switchTab('overview',this)">Overview</button>
     <button class="tab-btn" onclick="switchTab('coverage',this)">Insurance Coverage</button>
@@ -231,6 +225,11 @@
 <!-- ══ TAB 1: OVERVIEW ══ -->
 <div id="tab-overview" class="tab-panel active">
 <div class="main">
+  <div class="privacy-toggle" onclick="togglePrivacy()" id="privacyBtn">
+    <span class="privacy-toggle-label" id="privacyLabel">Show actual figures</span>
+    <div class="toggle-pip" id="privacyPip"></div>
+    <span style="font-size:15px">🔒</span>
+  </div>
   <div class="kpi-row">
     <div class="kpi kpi-green"><div class="kpi-accent"></div><div class="kpi-label">Monthly salary</div><div class="kpi-val maskable" data-amount="$8,000" data-pct="100%">$8,000</div><div class="kpi-note">Take-home</div></div>
     <div class="kpi kpi-red"><div class="kpi-accent"></div><div class="kpi-label">Total outgoings</div><div class="kpi-val maskable" data-amount="~$4,800" data-pct="~60%">~$4,800</div><div class="kpi-note">Fixed + variable</div></div>
@@ -689,28 +688,29 @@ function renderChart() {
 window.addEventListener('DOMContentLoaded', () => { renderChart(); window._chartDone=true; });
 
 // ── Privacy toggle ──
-let privacyOn = false;
+let privacyOn = false; // false = showing real $ figures, true = masked as %
 function togglePrivacy() {
   privacyOn = !privacyOn;
-  document.getElementById('privacyPip').classList.toggle('on', privacyOn);
-  document.getElementById('privacyLabel').textContent = privacyOn ? 'Hide numbers' : 'Show numbers';
+  const pip = document.getElementById('privacyPip');
+  const label = document.getElementById('privacyLabel');
+  if (pip) pip.classList.toggle('on', privacyOn);
+  if (label) label.textContent = privacyOn ? 'Showing percentages — click to reveal' : 'Show actual figures';
+
   document.querySelectorAll('.maskable').forEach(el => {
     if (privacyOn) {
-      el.dataset.orig = el.textContent;
       el.textContent = el.dataset.pct || '—';
     } else {
-      el.textContent = el.dataset.amount || el.dataset.orig || el.textContent;
+      el.textContent = el.dataset.amount || el.textContent;
     }
   });
+
   // Update donut chart labels too
-  if (window._chartDone) {
-    const chart = Chart.getChart('spendChart');
-    if (chart) {
-      chart.options.plugins.tooltip.callbacks.label = privacyOn
-        ? ctx => ` ${((ctx.parsed / 4633) * 100).toFixed(1)}% of salary`
-        : ctx => ` S$${ctx.parsed.toLocaleString()} / mo`;
-      chart.update();
-    }
+  const chart = Chart.getChart('spendChart');
+  if (chart) {
+    chart.options.plugins.tooltip.callbacks.label = privacyOn
+      ? ctx => ` ${((ctx.parsed / 4633) * 100).toFixed(1)}% of salary`
+      : ctx => ` S$${ctx.parsed.toLocaleString()} / mo`;
+    chart.update();
   }
 }
 
