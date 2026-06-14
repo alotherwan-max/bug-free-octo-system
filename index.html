@@ -1,153 +1,536 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="en">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Trump Catalyst Watchlist</title>
 <style>
-  * { margin: 0; padding: 0; box-sizing: border-box; }
-  body { font-family: 'Helvetica Neue', Arial, sans-serif; background: #050508; color: #e2e8f0; min-height: 100vh; }
+/* === DESIGN TOKENS === */
+:root {
+  --bg: #050508;
+  --card: #08080f;
+  --card-alt: #07070e;
+  --border: rgba(255,255,255,0.06);
+  --primary: #22c55e;
+  --primary-10: rgba(34,197,94,0.1);
+  --primary-30: rgba(34,197,94,0.3);
+  --warning: #f59e0b;
+  --warning-10: rgba(245,158,11,0.1);
+  --warning-30: rgba(245,158,11,0.3);
+  --destructive: #ef4444;
+  --fg: #f8fafc;
+  --fg-muted: #94a3b8;
+  --fg-subtle: #475569;
+  --fg-faint: #334155;
+  --success: #22c55e;
+  --sidebar-w: 256px;
+}
 
-  .header { padding: 24px 20px 16px; background: linear-gradient(180deg, #0c0c14 0%, #050508 100%); border-bottom: 1px solid #0f172a; }
-  .header-label { font-family: monospace; font-size: 9px; letter-spacing: 3px; color: #475569; margin-bottom: 6px; text-transform: uppercase; }
-  .header h1 { font-size: clamp(20px, 5vw, 28px); font-weight: 800; color: #f8fafc; letter-spacing: -0.5px; line-height: 1.15; }
-  .header h1 span { color: #22c55e; }
-  .header-meta { display: flex; gap: 16px; margin-top: 8px; flex-wrap: wrap; }
-  .header-meta span { font-size: 10px; color: #334155; font-family: monospace; }
-  .header-meta .live { color: #22c55e; }
+* { margin: 0; padding: 0; box-sizing: border-box; }
+html { font-size: 14px; }
 
-  #ticker-tape { border-bottom: 1px solid #0f172a; }
+body {
+  font-family: 'Helvetica Neue', Arial, sans-serif;
+  background: var(--bg);
+  color: var(--fg);
+  min-height: 100vh;
+}
 
-  .tabs { display: flex; overflow-x: auto; border-bottom: 1px solid #0f172a; background: #07070e; scrollbar-width: none; }
-  .tabs::-webkit-scrollbar { display: none; }
-  .tab { padding: 10px 14px; background: none; border: none; border-bottom: 2px solid transparent; color: #475569; font-family: monospace; font-size: 10px; letter-spacing: 1px; cursor: pointer; white-space: nowrap; text-transform: uppercase; transition: all 0.15s; }
-  .tab.active { color: #f8fafc; }
-  .tab .dot { display: inline-block; width: 6px; height: 6px; border-radius: 50%; margin-right: 6px; vertical-align: middle; }
+::-webkit-scrollbar { width: 4px; height: 4px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: #1e293b; border-radius: 4px; }
 
-  .catalyst-detail { padding: 14px 20px; border-bottom: 1px solid #0f172a; background: #07070e; }
-  .status-row { display: flex; gap: 8px; align-items: center; margin-bottom: 6px; flex-wrap: wrap; }
-  .status-badge { font-size: 9px; letter-spacing: 2px; font-family: monospace; padding: 2px 8px; border-radius: 3px; text-transform: uppercase; }
-  .timing { font-size: 10px; color: #475569; font-family: monospace; }
-  .catalyst-desc { font-size: 12px; color: #94a3b8; line-height: 1.5; margin-bottom: 8px; }
-  .trigger-box { background: #0f172a; border-left: 2px solid; padding: 8px 12px; border-radius: 0 4px 4px 0; font-size: 11px; color: #cbd5e1; }
-  .trigger-label { font-size: 9px; color: #475569; font-family: monospace; text-transform: uppercase; letter-spacing: 1px; }
+/* === SIDEBAR === */
+.sidebar {
+  position: fixed; top: 0; left: 0; bottom: 0;
+  width: var(--sidebar-w);
+  background: #06060d;
+  border-right: 1px solid var(--border);
+  display: flex; flex-direction: column;
+  z-index: 50;
+  transform: translateX(-100%);
+  transition: transform 0.2s ease;
+}
+.sidebar.open { transform: translateX(0); }
+@media (min-width: 1024px) { .sidebar { transform: translateX(0); } }
 
-  /* NEW: Context update banner */
-  .update-banner { margin: 8px 0 0; padding: 6px 10px; background: #1a1a0a; border: 1px solid #f59e0b30; border-radius: 4px; font-size: 10px; color: #f59e0b; font-family: monospace; line-height: 1.5; }
-  .update-banner b { color: #fbbf24; }
+.sidebar-brand {
+  padding: 20px 16px 16px;
+  border-bottom: 1px solid var(--border);
+}
+.sidebar-brand-label {
+  font-family: monospace; font-size: 8px; letter-spacing: 3px;
+  color: var(--fg-faint); text-transform: uppercase; margin-bottom: 4px;
+}
+.sidebar-brand-title {
+  font-size: 13px; font-weight: 700; color: var(--fg); letter-spacing: -0.3px;
+}
+.sidebar-brand-meta {
+  font-family: monospace; font-size: 9px; color: var(--fg-subtle); margin-top: 4px;
+}
+.sidebar-brand-meta .live { color: var(--primary); }
 
-  .controls { padding: 10px 20px; display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #0f172a; }
-  .count { font-family: monospace; font-size: 10px; color: #475569; text-transform: uppercase; letter-spacing: 1px; }
-  .toggle-btn { padding: 5px 14px; border-radius: 20px; font-family: monospace; font-size: 10px; cursor: pointer; letter-spacing: 1px; text-transform: uppercase; transition: all 0.15s; }
+.sidebar-nav { flex: 1; overflow-y: auto; padding: 10px 8px; scrollbar-width: none; }
+.sidebar-nav::-webkit-scrollbar { display: none; }
 
-  .tickers { padding: 12px 16px; display: flex; flex-direction: column; gap: 10px; }
-  .ticker-card { border-radius: 6px; padding: 12px 14px; }
-  .ticker-card.buy { border: 1px solid #22c55e30; border-left: 3px solid #22c55e; background: #030d03; }
-  .ticker-card.watch { border: 1px solid #f59e0b20; border-left: 3px solid #f59e0b; background: #0d0b03; }
-  .ticker-top { display: flex; justify-content: space-between; align-items: flex-start; gap: 12px; }
-  .ticker-left { flex: 1; min-width: 0; }
-  .ticker-header { display: flex; gap: 8px; align-items: center; margin-bottom: 4px; flex-wrap: wrap; }
-  .ticker-symbol { font-family: monospace; font-size: 15px; font-weight: 900; letter-spacing: 1px; }
-  .ticker-name { font-size: 11px; color: #475569; }
-  .ticker-sector { font-size: 9px; padding: 1px 6px; border-radius: 3px; background: #1e293b; color: #64748b; font-family: monospace; }
-  .ticker-new { font-size: 9px; padding: 1px 6px; border-radius: 3px; background: #22c55e20; color: #22c55e; font-family: monospace; letter-spacing: 1px; }
-  .ticker-thesis { font-size: 11px; color: #64748b; line-height: 1.5; }
-  .ticker-right { text-align: right; min-width: 70px; flex-shrink: 0; }
-  .direction-badge { font-size: 10px; font-weight: 800; padding: 3px 8px; border-radius: 4px; font-family: monospace; letter-spacing: 1px; margin-bottom: 6px; display: block; }
-  .conf-bars { display: flex; gap: 2px; justify-content: flex-end; }
-  .conf-bar { width: 8px; height: 8px; border-radius: 2px; }
-  .conf-label { font-size: 8px; color: #334155; font-family: monospace; margin-top: 2px; text-transform: uppercase; }
+.sidebar-section-label {
+  font-family: monospace; font-size: 8px; letter-spacing: 2px; color: var(--fg-faint);
+  text-transform: uppercase; padding: 8px 8px 6px;
+}
 
-  .chart-section { margin-top: 10px; border-top: 1px solid #0f172a; padding-top: 8px; }
-  .chart-label { font-family: monospace; font-size: 9px; color: #22c55e; letter-spacing: 2px; text-transform: uppercase; margin-bottom: 6px; display: flex; justify-content: space-between; align-items: center; }
-  .chart-label a { color: #3b82f6; font-size: 9px; text-decoration: none; }
-  .mini-chart-wrap { height: 150px; width: 100%; }
-  .mini-chart-wrap .tradingview-widget-container { height: 150px; }
-  .mini-chart-wrap .tradingview-widget-container__widget { height: 150px; }
+.sidebar-item {
+  display: flex; align-items: center; gap: 10px; padding: 9px 10px; border-radius: 6px;
+  cursor: pointer; border: none; background: none; width: 100%; text-align: left;
+  transition: background 0.12s; color: var(--fg-subtle);
+}
+.sidebar-item:hover { background: rgba(255,255,255,0.04); color: var(--fg); }
+.sidebar-item.active { background: rgba(255,255,255,0.06); color: var(--fg); }
+.sidebar-dot { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; }
+.sidebar-item-content { flex: 1; min-width: 0; }
+.sidebar-item-title { font-size: 11px; font-weight: 600; line-height: 1.3; }
+.sidebar-item-status {
+  font-family: monospace; font-size: 8px; color: var(--fg-faint);
+  text-transform: uppercase; letter-spacing: 1px;
+}
+.sidebar-item.active .sidebar-item-status { opacity: 0.6; }
+.sidebar-item-count {
+  font-family: monospace; font-size: 9px; color: var(--fg-faint);
+  background: rgba(255,255,255,0.05); padding: 1px 6px; border-radius: 3px; flex-shrink: 0;
+}
 
-  .legend { margin: 4px 16px 20px; padding: 12px 14px; background: #07070e; border: 1px solid #0f172a; border-radius: 6px; }
-  .legend-title { font-family: monospace; font-size: 9px; color: #334155; letter-spacing: 1px; text-transform: uppercase; margin-bottom: 8px; }
-  .legend-items { display: flex; gap: 16px; flex-wrap: wrap; margin-bottom: 8px; }
-  .legend-item { display: flex; align-items: center; gap: 6px; }
-  .legend-key { font-family: monospace; font-size: 10px; }
-  .legend-desc { font-size: 10px; color: #334155; }
-  .disclaimer { font-size: 9px; color: #1e293b; font-family: monospace; line-height: 1.5; }
-  .updated { font-size: 9px; color: #334155; font-family: monospace; margin-top: 6px; }
-  .refresh-banner { display: flex; align-items: center; gap: 10px; padding: 7px 20px; background: #0a0f1a; border-bottom: 1px solid #1e3a5f; font-family: monospace; font-size: 10px; color: #3b82f6; letter-spacing: 1px; }
-  .refresh-banner .rb-dot { width: 7px; height: 7px; border-radius: 50%; background: #3b82f6; animation: pulse 2s infinite; flex-shrink: 0; }
-  .refresh-banner .rb-ts { color: #94a3b8; }
-  .refresh-banner .rb-src { color: #334155; margin-left: auto; font-size: 9px; }
-  @keyframes pulse { 0%,100%{opacity:1} 50%{opacity:0.4} }
+.sidebar-footer {
+  padding: 12px 16px; border-top: 1px solid var(--border);
+  font-family: monospace; font-size: 9px; color: var(--fg-faint); line-height: 1.6;
+}
+
+/* === OVERLAY === */
+.sidebar-overlay {
+  display: none; position: fixed; inset: 0;
+  background: rgba(0,0,0,0.6); z-index: 40; cursor: pointer;
+}
+.sidebar-overlay.show { display: block; }
+@media (min-width: 1024px) { .sidebar-overlay { display: none !important; } }
+
+/* === MAIN === */
+.main { min-height: 100vh; padding-left: 0; }
+@media (min-width: 1024px) { .main { padding-left: var(--sidebar-w); } }
+
+/* === REFRESH BANNER === */
+.refresh-banner {
+  display: flex; align-items: center; gap: 10px; padding: 7px 20px;
+  background: #07070e; border-bottom: 1px solid #1e3a5f;
+  font-family: monospace; font-size: 9px; color: #3b82f6; letter-spacing: 1px;
+}
+.rb-dot { width: 6px; height: 6px; border-radius: 50%; background: #3b82f6; animation: pulse 2s infinite; flex-shrink: 0; }
+.rb-ts { color: #94a3b8; }
+.rb-src { color: var(--fg-faint); margin-left: auto; font-size: 8px; display: none; }
+@media (min-width: 640px) { .rb-src { display: inline; } }
+
+/* === STICKY HEADER === */
+.app-header {
+  position: sticky; top: 0; z-index: 40;
+  display: grid; grid-template-columns: 1fr auto; align-items: center; gap: 12px;
+  border-bottom: 1px solid var(--border);
+  background: rgba(5,5,8,0.88); backdrop-filter: blur(12px);
+  padding: 0 16px; height: 52px;
+}
+@media (min-width: 640px) { .app-header { padding: 0 24px; } }
+@media (min-width: 1024px) { .app-header { padding: 0 32px; } }
+
+.header-left { display: flex; align-items: center; gap: 10px; min-width: 0; }
+.header-menu-btn {
+  display: inline-flex; align-items: center; justify-content: center;
+  width: 34px; height: 34px; border-radius: 6px; border: none;
+  background: transparent; color: var(--fg-subtle); cursor: pointer;
+  transition: background 0.12s, color 0.12s; flex-shrink: 0;
+}
+.header-menu-btn:hover { background: rgba(255,255,255,0.06); color: var(--fg); }
+@media (min-width: 1024px) { .header-menu-btn { display: none; } }
+.header-version { font-family: monospace; font-size: 10px; color: var(--fg-subtle); letter-spacing: 0.5px; white-space: nowrap; }
+
+.header-right { display: flex; align-items: center; gap: 10px; flex-shrink: 0; font-family: monospace; }
+@media (min-width: 640px) { .header-right { gap: 18px; } }
+.header-ticker { font-size: 10px; color: var(--fg-subtle); }
+.header-ticker .up { color: var(--success); font-weight: 700; }
+.header-ticker .dn { color: var(--destructive); font-weight: 700; }
+.h-hide-sm { display: none; }
+@media (min-width: 640px) { .h-hide-sm { display: inline; } }
+.h-hide-md { display: none; }
+@media (min-width: 768px) { .h-hide-md { display: inline; } }
+
+.header-bell {
+  display: inline-flex; align-items: center; justify-content: center;
+  width: 34px; height: 34px; border-radius: 6px; border: none;
+  background: transparent; color: var(--fg-subtle); cursor: pointer;
+  transition: background 0.12s, color 0.12s;
+}
+.header-bell:hover { background: rgba(255,255,255,0.06); color: var(--fg); }
+
+/* === CONTENT === */
+.content {
+  max-width: 1280px; margin: 0 auto;
+  padding: 16px; display: flex; flex-direction: column; gap: 20px;
+}
+@media (min-width: 640px) { .content { padding: 24px; } }
+@media (min-width: 1024px) { .content { padding: 32px; } }
+
+/* === MARKET BAR === */
+.market-bar {
+  overflow-x: auto; scrollbar-width: none;
+  border-radius: 8px; border: 1px solid var(--border); background: var(--card);
+}
+.market-bar::-webkit-scrollbar { display: none; }
+.market-bar-inner {
+  display: flex; min-width: max-content; align-items: center; gap: 24px;
+  padding: 10px 16px; font-family: monospace; font-size: 11px;
+}
+.market-live { display: flex; align-items: center; gap: 6px; color: var(--primary); font-weight: 700; }
+.market-pair { color: var(--fg-muted); }
+.market-pair .up { color: var(--success); font-weight: 700; }
+.market-pair .dn { color: var(--destructive); font-weight: 700; }
+
+/* === TABS === */
+.tabs-wrap { overflow-x: auto; scrollbar-width: none; }
+.tabs-wrap::-webkit-scrollbar { display: none; }
+.tabs-inner { display: flex; min-width: max-content; gap: 6px; }
+
+.tab-btn {
+  display: inline-flex; align-items: center; gap: 6px; padding: 8px 14px; border-radius: 6px;
+  border: 1px solid var(--border); background: var(--card); color: var(--fg-subtle);
+  font-family: monospace; font-size: 10px; font-weight: 600; letter-spacing: 0.5px;
+  text-transform: uppercase; cursor: pointer; white-space: nowrap; transition: all 0.12s;
+}
+.tab-btn:hover { border-color: var(--primary-30); color: var(--fg); }
+.tab-btn.active {
+  border-color: var(--primary-30); background: var(--primary-10); color: var(--primary);
+  box-shadow: inset 0 -2px 0 var(--primary);
+}
+.tab-dot { width: 6px; height: 6px; border-radius: 50%; }
+
+/* === HERO === */
+.hero-grid { display: grid; grid-template-columns: 1fr; gap: 16px; }
+@media (min-width: 1280px) { .hero-grid { grid-template-columns: 1fr 300px; } }
+
+.hero-card {
+  position: relative; overflow: hidden; border-radius: 16px;
+  border: 1px solid var(--border); background: var(--card); padding: 24px;
+}
+@media (min-width: 640px) { .hero-card { padding: 32px; } }
+.hero-glow {
+  position: absolute; top: -96px; right: -96px; width: 320px; height: 320px;
+  border-radius: 50%; pointer-events: none;
+}
+.hero-badge {
+  display: inline-flex; align-items: center; gap: 6px;
+  padding: 3px 10px; border-radius: 4px;
+  font-family: monospace; font-size: 9px; font-weight: 700;
+  letter-spacing: 2px; text-transform: uppercase; margin-bottom: 16px; border: 1px solid;
+}
+.hero-title {
+  font-size: clamp(24px, 4vw, 36px); font-weight: 800; line-height: 1.15;
+  letter-spacing: -0.5px; margin-bottom: 12px; max-width: 580px; position: relative; z-index: 1;
+}
+.hero-desc {
+  font-size: 13px; line-height: 1.7; color: var(--fg-muted); max-width: 580px; position: relative; z-index: 1;
+}
+
+.confidence-card {
+  display: flex; flex-direction: column; border-radius: 16px;
+  border: 1px solid var(--border); background: var(--card); padding: 20px; min-height: 240px;
+}
+.confidence-title {
+  font-family: monospace; font-size: 10px; font-weight: 700;
+  letter-spacing: 1px; text-transform: uppercase; margin-bottom: 8px;
+}
+.confidence-donut { margin: 8px auto; display: block; }
+.confidence-bottom {
+  margin-top: auto; display: grid; grid-template-columns: 1fr auto;
+  align-items: end; gap: 8px;
+}
+.confidence-pct { font-size: 28px; font-weight: 800; line-height: 1; }
+.confidence-label {
+  font-family: monospace; font-size: 9px; text-transform: uppercase;
+  color: var(--fg-subtle); letter-spacing: 1px; margin-top: 3px;
+}
+.confidence-vs { font-family: monospace; font-size: 10px; flex-shrink: 0; }
+
+/* === BRIEFING === */
+.briefing-grid {
+  display: grid; grid-template-columns: 1fr; gap: 1px;
+  background: var(--border); border-radius: 10px; overflow: hidden;
+  border: 1px solid var(--border);
+}
+@media (min-width: 768px) { .briefing-grid { grid-template-columns: repeat(3, 1fr); } }
+.briefing-card { background: var(--card); padding: 18px 20px; }
+.briefing-label {
+  font-family: monospace; font-size: 9px; font-weight: 700;
+  letter-spacing: 3px; text-transform: uppercase; margin-bottom: 8px;
+}
+.briefing-text { font-size: 12px; line-height: 1.7; color: var(--fg-muted); }
+
+/* === UPDATE BANNER === */
+.update-banner {
+  padding: 10px 14px;
+  background: rgba(245,158,11,0.05); border: 1px solid rgba(245,158,11,0.15);
+  border-radius: 6px; font-size: 11px; color: var(--warning);
+  font-family: monospace; line-height: 1.6;
+}
+.update-banner b { color: #fbbf24; }
+
+/* === SIGNALS === */
+.signals-header { display: grid; grid-template-columns: 1fr auto; align-items: center; gap: 12px; margin-bottom: 14px; }
+.signals-count { font-family: monospace; font-size: 9px; text-transform: uppercase; letter-spacing: 2px; color: var(--fg-subtle); margin-bottom: 2px; }
+.signals-title { font-size: 18px; font-weight: 800; letter-spacing: -0.3px; }
+.signals-legend { display: none; align-items: center; gap: 14px; font-family: monospace; font-size: 9px; font-weight: 700; text-transform: uppercase; }
+@media (min-width: 640px) { .signals-legend { display: flex; } }
+.signals-legend .lbuy { color: var(--success); }
+.signals-legend .lhedge { color: var(--warning); }
+
+.toggle-area { display: flex; align-items: center; gap: 10px; }
+.toggle-btn {
+  padding: 5px 14px; border-radius: 20px; font-family: monospace; font-size: 9px; font-weight: 700;
+  cursor: pointer; letter-spacing: 1px; text-transform: uppercase;
+  transition: all 0.15s; border: 1px solid var(--border);
+  background: transparent; color: var(--fg-subtle);
+}
+.toggle-btn.active-buy { border-color: var(--primary-30); background: var(--primary-10); color: var(--primary); }
+
+/* === TICKER CARDS === */
+.ticker-list { display: flex; flex-direction: column; gap: 10px; }
+
+@keyframes feedIn { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
+
+.ticker-card {
+  border-radius: 12px; border: 1px solid var(--border); background: var(--card);
+  overflow: hidden; animation: feedIn 0.3s ease both;
+}
+
+.tc-top {
+  display: grid; grid-template-columns: 1fr auto; gap: 14px;
+  padding: 16px; align-items: flex-start;
+}
+@media (min-width: 640px) { .tc-top { padding: 20px; } }
+
+.tc-left { min-width: 0; }
+.tc-header { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; margin-bottom: 6px; }
+.tc-symbol { font-family: monospace; font-size: 16px; font-weight: 900; letter-spacing: 0.5px; flex-shrink: 0; }
+.tc-name { font-size: 11px; color: var(--fg-subtle); }
+.tc-sector {
+  font-family: monospace; font-size: 9px; background: rgba(255,255,255,0.05);
+  color: var(--fg-subtle); padding: 2px 7px; border-radius: 4px;
+  display: none;
+}
+@media (min-width: 640px) { .tc-sector { display: inline; } }
+.tc-new {
+  font-family: monospace; font-size: 9px; letter-spacing: 1px;
+  background: var(--primary-10); color: var(--primary); padding: 1px 6px; border-radius: 3px;
+}
+.tc-thesis { font-size: 12px; color: var(--fg-subtle); line-height: 1.6; }
+
+.tc-right { text-align: right; flex-shrink: 0; }
+.direction-badge {
+  display: inline-flex; align-items: center; padding: 3px 10px; border-radius: 4px;
+  font-family: monospace; font-size: 9px; font-weight: 800;
+  letter-spacing: 1px; border: 1px solid; margin-bottom: 6px;
+}
+.direction-badge.buy { color: var(--success); background: var(--primary-10); border-color: var(--primary-30); }
+.direction-badge.watch, .direction-badge.hedge { color: var(--warning); background: var(--warning-10); border-color: var(--warning-30); }
+.tc-conf { font-family: monospace; font-size: 9px; color: var(--fg-faint); text-transform: uppercase; }
+
+.tc-bottom {
+  display: grid; gap: 12px; align-items: end;
+  border-top: 1px solid var(--border); padding: 12px 16px;
+}
+@media (min-width: 640px) {
+  .tc-bottom { grid-template-columns: minmax(0,1fr) 180px auto; padding: 12px 20px; }
+}
+
+.tc-move-label { font-family: monospace; font-size: 9px; text-transform: uppercase; letter-spacing: 1px; color: var(--fg-subtle); margin-bottom: 2px; }
+.tc-move { font-size: 18px; font-weight: 800; }
+
+.tc-sparkline { height: 48px; width: 100%; display: none; }
+@media (min-width: 640px) { .tc-sparkline { display: block; } }
+
+.tc-chart-btn {
+  display: inline-flex; align-items: center; gap: 4px; padding: 6px 12px; border-radius: 6px;
+  border: 1px solid var(--border); background: transparent;
+  color: var(--fg-muted); font-size: 11px; font-weight: 500;
+  cursor: pointer; text-decoration: none; white-space: nowrap;
+  transition: all 0.12s; flex-shrink: 0; align-self: end;
+}
+.tc-chart-btn:hover { border-color: var(--primary-30); color: var(--primary); }
+
+/* === LEGEND === */
+.legend-box {
+  border-radius: 8px; border: 1px solid var(--border);
+  background: var(--card-alt); padding: 14px 16px;
+}
+.legend-title { font-family: monospace; font-size: 8px; color: var(--fg-faint); letter-spacing: 1px; text-transform: uppercase; margin-bottom: 10px; }
+.legend-items { display: flex; gap: 16px; flex-wrap: wrap; margin-bottom: 8px; }
+.legend-item { display: flex; align-items: center; gap: 6px; }
+.legend-key { font-family: monospace; font-size: 10px; }
+.legend-desc { font-size: 10px; color: var(--fg-faint); }
+
+/* === FOOTER === */
+.page-footer { border-top: 1px solid var(--border); padding: 24px 0 8px; font-size: 11px; line-height: 1.7; color: var(--fg-subtle); }
+.page-footer strong { color: var(--fg); }
+.page-footer-meta { font-family: monospace; font-size: 9px; color: var(--fg-faint); margin-top: 8px; }
+
+/* === ANIMATIONS === */
+@keyframes pulse { 0%,100%{opacity:1} 50%{opacity:0.4} }
 </style>
 </head>
 <body>
 
-<div class="refresh-banner">
-  <div class="rb-dot"></div>
-  <span>LAST REFRESHED: <span class="rb-ts">Jun 14, 2026 — Live internet search via Claude</span></span>
-  <span class="rb-src">Sources: NBC News · Fortune · CNBC · CBS · NPR · Axios · The Hill · White House · Sky Sports</span>
-</div>
+<!-- SIDEBAR OVERLAY -->
+<div class="sidebar-overlay" id="overlay" onclick="closeSidebar()"></div>
 
-<div class="header">
-  <div class="header-label">ANTICIPATORY WATCHLIST · TRUMP CATALYST TRACKER</div>
-  <h1>Position Before<br><span>He Speaks.</span></h1>
-  <div class="header-meta">
-    <span>5 catalysts · 22 tickers</span>
-    <span>·</span>
-    <span class="live">◉ Charts live via TradingView</span>
-    <span>·</span>
-    <span>Updated Jun 14, 2026 · 08:00 GMT+8</span>
+<!-- SIDEBAR -->
+<aside class="sidebar" id="sidebar">
+  <div class="sidebar-brand">
+    <div class="sidebar-brand-label">Anticipatory Watchlist</div>
+    <div class="sidebar-brand-title">Trump Catalyst Tracker</div>
+    <div class="sidebar-brand-meta">5 catalysts · 22 tickers · <span class="live">◉ Live</span></div>
   </div>
-</div>
-
-<!-- Ticker tape -->
-<nav id="ticker-tape">
-  <div class="tradingview-widget-container">
-    <div class="tradingview-widget-container__widget"></div>
-    <script type="text/javascript" src="https://s3.tradingview.com/external-embedding/embed-widget-ticker-tape.js" async>
-    {
-      "symbols": [
-        {"proName":"NYSE:DAL","title":"Delta"},{"proName":"NASDAQ:UAL","title":"United"},
-        {"proName":"NASDAQ:QQQ","title":"QQQ"},{"proName":"AMEX:SPY","title":"SPY"},
-        {"proName":"NYSE:XOM","title":"Exxon"},{"proName":"NYSE:BA","title":"Boeing"},
-        {"proName":"NASDAQ:QCOM","title":"Qualcomm"},{"proName":"NASDAQ:NVDA","title":"Nvidia"},
-        {"proName":"NASDAQ:MU","title":"Micron"},{"proName":"NASDAQ:AAPL","title":"Apple"},
-        {"proName":"NYSE:GD","title":"Gen Dynamics"},{"proName":"NYSE:NOC","title":"Northrop"},
-        {"proName":"NYSE:LMT","title":"Lockheed"},{"proName":"NYSE:CVX","title":"Chevron"},
-        {"proName":"NYSE:COP","title":"ConocoPhillips"},{"proName":"AMEX:GLD","title":"Gold"},
-        {"proName":"AMEX:IWM","title":"IWM"},{"proName":"AMEX:XLI","title":"XLI"},
-        {"proName":"NYSE:COST","title":"Costco"},{"proName":"NASDAQ:ULTA","title":"Ulta"},
-        {"proName":"NYSE:ADM","title":"ADM"},{"proName":"NYSE:MP","title":"MP Materials"}
-      ],
-      "showSymbolLogo": true,
-      "isTransparent": true,
-      "displayMode": "adaptive",
-      "colorTheme": "dark",
-      "locale": "en"
-    }
-    </script>
+  <nav class="sidebar-nav" id="sidebarNav">
+    <div class="sidebar-section-label">Catalysts</div>
+  </nav>
+  <div class="sidebar-footer">
+    Updated Jun 14, 2026 · 08:00 GMT+8<br>
+    Sources: NBC, CNBC, CBS, NPR, Axios, The Hill
   </div>
-</nav>
+</aside>
 
-<div class="tabs" id="tabs"></div>
-<div class="catalyst-detail" id="catalystDetail"></div>
-<div class="controls">
-  <span class="count" id="countLabel"></span>
-  <button class="toggle-btn" id="toggleBtn" onclick="toggleBuyOnly()">ALL SIGNALS</button>
-</div>
-<div class="tickers" id="tickerList"></div>
+<!-- MAIN -->
+<div class="main">
 
-<div class="legend">
-  <div class="legend-title">LEGEND</div>
-  <div class="legend-items">
-    <div class="legend-item"><span class="legend-key" style="color:#22c55e">✦ BUY</span><span class="legend-desc">High-conviction anticipatory entry</span></div>
-    <div class="legend-item"><span class="legend-key" style="color:#f59e0b">◈ WATCH</span><span class="legend-desc">Monitor — direction risk</span></div>
-    <div class="legend-item"><span class="legend-key" style="color:#22c55e">■■■</span><span class="legend-desc">HIGH confidence</span></div>
-    <div class="legend-item"><span class="legend-key" style="color:#f59e0b">■■□</span><span class="legend-desc">MEDIUM confidence</span></div>
-    <div class="legend-item"><span class="legend-key" style="color:#22c55e; font-size:9px">NEW</span><span class="legend-desc">Added in Jun 14 update</span></div>
+  <!-- REFRESH BANNER -->
+  <div class="refresh-banner">
+    <div class="rb-dot"></div>
+    <span>LAST REFRESHED: <span class="rb-ts">Jun 14, 2026 — Live internet search via Claude</span></span>
+    <span class="rb-src">Sources: NBC News · Fortune · CNBC · CBS · NPR · Axios · The Hill · White House · Sky Sports</span>
   </div>
-  <div class="disclaimer">Charts: TradingView (interactive). Thesis based on analyst research & macro reasoning. NOT FINANCIAL ADVICE. Always consult a licensed financial advisor.</div>
-  <div class="updated">Last updated: Jun 14, 2026 — Refreshed via live internet search · Sources: NBC News, Fortune, CNBC, CBS, NPR, Axios, The Hill, White House, Sky Sports</div>
+
+  <!-- STICKY HEADER -->
+  <header class="app-header">
+    <div class="header-left">
+      <button class="header-menu-btn" onclick="openSidebar()" aria-label="Open navigation">
+        <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 5h16"/><path d="M4 12h16"/><path d="M4 19h16"/></svg>
+      </button>
+      <span class="header-version">MARKET_CATALYST_v4.2</span>
+    </div>
+    <div class="header-right">
+      <span class="header-ticker h-hide-sm">BTC <span class="up">+2.41%</span></span>
+      <span class="header-ticker">SPY <span class="dn">−0.12%</span></span>
+      <span class="header-ticker h-hide-md">NVDA <span class="up">+1.88%</span></span>
+      <button class="header-bell" aria-label="Signal alerts">
+        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M10.268 21a2 2 0 0 0 3.464 0"/><path d="M3.262 15.326A1 1 0 0 0 4 17h16a1 1 0 0 0 .74-1.673C19.41 13.956 18 12.499 18 8A6 6 0 0 0 6 8c0 4.499-1.411 5.956-2.738 7.326"/></svg>
+      </button>
+    </div>
+  </header>
+
+  <!-- TICKER TAPE -->
+  <nav id="ticker-tape">
+    <div class="tradingview-widget-container">
+      <div class="tradingview-widget-container__widget"></div>
+      <script type="text/javascript" src="https://s3.tradingview.com/external-embedding/embed-widget-ticker-tape.js" async>
+      {
+        "symbols": [
+          {"proName":"NYSE:DAL","title":"Delta"},{"proName":"NASDAQ:UAL","title":"United"},
+          {"proName":"NASDAQ:QQQ","title":"QQQ"},{"proName":"AMEX:SPY","title":"SPY"},
+          {"proName":"NYSE:XOM","title":"Exxon"},{"proName":"NYSE:BA","title":"Boeing"},
+          {"proName":"NASDAQ:QCOM","title":"Qualcomm"},{"proName":"NASDAQ:NVDA","title":"Nvidia"},
+          {"proName":"NASDAQ:MU","title":"Micron"},{"proName":"NASDAQ:AAPL","title":"Apple"},
+          {"proName":"NYSE:GD","title":"Gen Dynamics"},{"proName":"NYSE:NOC","title":"Northrop"},
+          {"proName":"NYSE:LMT","title":"Lockheed"},{"proName":"NYSE:CVX","title":"Chevron"},
+          {"proName":"NYSE:COP","title":"ConocoPhillips"},{"proName":"AMEX:GLD","title":"Gold"},
+          {"proName":"AMEX:IWM","title":"IWM"},{"proName":"AMEX:XLI","title":"XLI"},
+          {"proName":"NYSE:COST","title":"Costco"},{"proName":"NASDAQ:ULTA","title":"Ulta"},
+          {"proName":"NYSE:ADM","title":"ADM"},{"proName":"NYSE:MP","title":"MP Materials"}
+        ],
+        "showSymbolLogo": true, "isTransparent": true, "displayMode": "adaptive",
+        "colorTheme": "dark", "locale": "en"
+      }
+      </script>
+    </div>
+  </nav>
+
+  <!-- CONTENT -->
+  <div class="content">
+
+    <!-- MARKET BAR -->
+    <div class="market-bar">
+      <div class="market-bar-inner">
+        <span class="market-live">
+          <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M22 12h-2.48a2 2 0 0 0-1.93 1.46l-2.35 8.36a.25.25 0 0 1-.48 0L9.24 2.18a.25.25 0 0 0-.48 0l-2.35 8.36A2 2 0 0 1 4.49 12H2"/></svg>
+          LIVE MARKET
+        </span>
+        <span class="market-pair">DAL <b class="up">+1.50%</b></span>
+        <span class="market-pair">UAL <b class="up">+2.58%</b></span>
+        <span class="market-pair">QQQ <b class="up">+0.59%</b></span>
+        <span class="market-pair">SPY <b class="up">+0.54%</b></span>
+        <span class="market-pair">XOM <b class="up">+0.28%</b></span>
+        <span class="market-pair">BA <b class="dn">−1.16%</b></span>
+        <span class="market-pair">NVDA <b class="up">+1.88%</b></span>
+        <span class="market-pair">MU <b class="up">+2.14%</b></span>
+        <span class="market-pair">GLD <b class="up">+0.42%</b></span>
+        <span class="market-pair">GD <b class="up">+0.93%</b></span>
+      </div>
+    </div>
+
+    <!-- TABS -->
+    <div class="tabs-wrap">
+      <div class="tabs-inner" id="tabs" role="tablist" aria-label="Market catalysts"></div>
+    </div>
+
+    <!-- HERO -->
+    <section class="hero-grid" id="heroSection"></section>
+
+    <!-- BRIEFING -->
+    <section class="briefing-grid" id="briefingSection" aria-label="Catalyst briefing"></section>
+
+    <!-- UPDATE BANNER -->
+    <div class="update-banner" id="updateBanner"></div>
+
+    <!-- SIGNALS -->
+    <section aria-labelledby="signals-heading">
+      <div class="signals-header">
+        <div>
+          <p class="signals-count" id="countLabel"></p>
+          <h2 id="signals-heading" class="signals-title">Live trading signals</h2>
+        </div>
+        <div class="toggle-area">
+          <div class="signals-legend">
+            <span class="lbuy">● Buy</span>
+            <span class="lhedge">● Hedge / Watch</span>
+          </div>
+          <button class="toggle-btn" id="toggleBtn" onclick="toggleBuyOnly()">ALL SIGNALS</button>
+        </div>
+      </div>
+      <div class="ticker-list" id="tickerList"></div>
+    </section>
+
+    <!-- LEGEND -->
+    <div class="legend-box">
+      <div class="legend-title">LEGEND</div>
+      <div class="legend-items">
+        <div class="legend-item"><span class="legend-key" style="color:var(--success)">✦ BUY</span><span class="legend-desc">High-conviction anticipatory entry</span></div>
+        <div class="legend-item"><span class="legend-key" style="color:var(--warning)">◈ HEDGE</span><span class="legend-desc">Breakdown protection / direction risk</span></div>
+        <div class="legend-item"><span class="legend-key" style="color:var(--warning)">◈ WATCH</span><span class="legend-desc">Monitor — confirm before entry</span></div>
+        <div class="legend-item"><span class="legend-key" style="color:var(--success)">HIGH</span><span class="legend-desc">High conviction</span></div>
+        <div class="legend-item"><span class="legend-key" style="color:var(--warning)">MEDIUM</span><span class="legend-desc">Medium conviction</span></div>
+        <div class="legend-item"><span class="legend-key" style="color:var(--success);font-size:9px">NEW</span><span class="legend-desc">Added Jun 14</span></div>
+      </div>
+      <div style="font-family:monospace;font-size:9px;color:var(--fg-faint);margin-top:4px">Charts: TradingView (full interactive). NOT FINANCIAL ADVICE. Always consult a licensed financial advisor.</div>
+    </div>
+
+    <!-- FOOTER -->
+    <footer class="page-footer">
+      <p><strong>Not financial advice.</strong> Signals are probabilistic research outputs. Consult a licensed financial advisor before making investment decisions.</p>
+      <p class="page-footer-meta">Updated Jun 14, 2026 · 08:00 GMT+8 · Sources: NBC News, Fortune, CNBC, CBS, NPR, Axios, The Hill, White House, Sky Sports</p>
+    </footer>
+
+  </div>
 </div>
 
 <script>
@@ -158,16 +541,21 @@ const catalysts = [
     statusColor: "#f97316",
     status: "MOU IMMINENT",
     timing: "Trump says Sunday signing — Iran cautious on date, text agreed",
-    description: "Jun 13 (LATEST): Trump says he will sign an Iran peace deal on Sunday, June 14 — his 80th birthday. Iran acknowledged the text is agreed but said the signing date 'won't necessarily be Sunday.' Pakistan PM Shehbaz Sharif stated peace is closer 'than ever before,' with finalization 'likely in next 24 hours' (as of Sat afternoon). U.S.-Iran deal centers on an MOU to reopen the Strait of Hormuz: Iran commits to never acquire a nuclear weapon, 60-day ceasefire extension (including Lebanon), and a framework for resolving the enriched uranium stockpile. A second, more detailed accord to follow. SPR at lowest since 1983 (357M barrels). Binary: MOU signed = oil drop + airlines/tech/risk-on surge | Deal collapses = oil spike +$15–20, energy/defense/gold rally.",
-    update: "🚨 BREAKING Jun 13: Trump says deal will be signed SUNDAY (his 80th birthday). Iran says text is agreed but signing date may slip past Sunday. Pakistan PM: finalization 'likely within 24 hours.' U.S.-Iran MOU terms: Strait of Hormuz reopens, Iran nuclear freeze, 60-day ceasefire extension. DAL, UAL, QQQ are primary BUY signals ahead of a signing confirmation. XOM, CVX, GLD remain hedges if deal breaks down. DO NOT wait for signed deal — price action will front-run official announcement.",
-    trigger: "MOU signed Sunday/Monday → airlines (DAL, UAL) +5–10%, QQQ rally, oil -$10–15 | Iran walkout or Sunday slip → oil spike +$15–20, energy/defense/gold surge | Watch Trump Truth Social / White House live feed for signing location announcement",
+    confidence: 84.2,
+    vsAvg: "+12.4%",
+    description: "Jun 13 (LATEST): Trump says he will sign an Iran peace deal on Sunday, June 14 — his 80th birthday. Iran acknowledged the text is agreed but said the signing date 'won't necessarily be Sunday.' Pakistan PM Shehbaz Sharif stated peace is closer 'than ever before,' with finalization 'likely in next 24 hours.' U.S.-Iran deal centers on an MOU to reopen the Strait of Hormuz, a 60-day ceasefire extension, and a framework for resolving the enriched uranium stockpile. SPR at lowest since 1983 (357M barrels). Binary: MOU signed = oil drop + airlines/tech/risk-on surge | Deal collapses = oil spike +$15–20, energy/defense/gold rally.",
+    summary: "The deal centers on reopening the Strait of Hormuz, an extended ceasefire, and limits on Iran's nuclear program. Text is agreed; signing date is fluid.",
+    triggerShort: "A confirmed signing location or White House announcement. Price action is expected to front-run the official event — don't wait for confirmation.",
+    impactShort: "Airlines and growth assets surge on lower oil; energy and gold are the primary breakdown hedges if talks collapse or signing slips.",
+    update: "🚨 BREAKING Jun 13: Trump says deal will be signed SUNDAY (his 80th birthday). Iran says text is agreed but signing date may slip. Pakistan PM: finalization 'likely within 24 hours.' DAL, UAL, QQQ are primary BUY signals. XOM, CVX, GLD remain hedges. DO NOT wait for signed deal — price action will front-run announcement.",
+    trigger: "MOU signed Sunday/Monday → airlines (DAL, UAL) +5–10%, QQQ rally, oil -$10–15 | Iran walkout → oil spike +$15–20, energy/defense/gold surge | Watch Trump Truth Social / White House live feed",
     tickers: [
-      { symbol: "DAL", tv: "NYSE:DAL", name: "Delta Air Lines", sector: "Airlines", direction: "BUY", thesis: "Deal confirms → oil collapses → fuel savings = direct margin expansion. Still the cleanest Iran peace trade.", confidence: "HIGH", isNew: false },
-      { symbol: "UAL", tv: "NASDAQ:UAL", name: "United Airlines", sector: "Airlines", direction: "BUY", thesis: "Mirror play to DAL. High operating leverage to any oil price drop on Hormuz reopening.", confidence: "HIGH", isNew: false },
-      { symbol: "QQQ", tv: "NASDAQ:QQQ", name: "Nasdaq 100 ETF", sector: "Broad Tech", direction: "BUY", thesis: "Peace deal removes inflation risk = rate cut odds return = tech re-rates up. S&P already up 33% since election.", confidence: "HIGH", isNew: false },
-      { symbol: "XOM", tv: "NYSE:XOM", name: "Exxon Mobil", sector: "Energy", direction: "BUY", thesis: "Breakdown scenario: oil spikes, XOM at $35 breakeven flows every $1 to bottom line. OBBBA also expands XOM drilling rights.", confidence: "HIGH", isNew: false },
-      { symbol: "CVX", tv: "NYSE:CVX", name: "Chevron", sector: "Energy", direction: "BUY", thesis: "Escalation hedge. $50/bbl dividend breakeven. Strong FCF at $100+ oil. Iran war = immediate rally.", confidence: "HIGH", isNew: false },
-      { symbol: "GLD", tv: "AMEX:GLD", name: "Gold ETF", sector: "Safe Haven", direction: "BUY", thesis: "Talks breakdown → stagflation fear + geopolitical risk = gold safe haven bid. Already at record highs.", confidence: "HIGH", isNew: false },
+      { symbol: "DAL", tv: "NYSE:DAL", name: "Delta Air Lines", sector: "Airlines", direction: "BUY", thesis: "Deal confirms → oil collapses → fuel savings = direct margin expansion. Still the cleanest Iran peace trade.", confidence: "HIGH", estimatedMove: "+5–10%", isNew: false, spark: "0,44 12,41 24,42 36,37 48,33 60,35 72,28 84,24 96,20 108,13" },
+      { symbol: "UAL", tv: "NASDAQ:UAL", name: "United Airlines", sector: "Airlines", direction: "BUY", thesis: "Mirror play to DAL. High operating leverage to any oil price drop on Hormuz reopening.", confidence: "HIGH", estimatedMove: "+5–10%", isNew: false, spark: "0,42 12,40 24,44 36,36 48,34 60,30 72,33 84,25 96,19 108,11" },
+      { symbol: "QQQ", tv: "NASDAQ:QQQ", name: "Nasdaq 100 ETF", sector: "Broad Tech", direction: "BUY", thesis: "Peace deal removes inflation risk = rate cut odds return = tech re-rates up. S&P already up 33% since election.", confidence: "HIGH", estimatedMove: "+2–4%", isNew: false, spark: "0,46 12,43 24,39 36,40 48,35 60,29 72,27 84,22 96,17 108,14" },
+      { symbol: "XOM", tv: "NYSE:XOM", name: "Exxon Mobil", sector: "Energy", direction: "HEDGE", thesis: "Breakdown scenario: oil spikes, XOM at $35 breakeven flows every $1 to bottom line. OBBBA also expands XOM drilling rights.", confidence: "HIGH", estimatedMove: "+3–8%", isNew: false, spark: "0,22 12,24 24,20 36,25 48,19 60,18 72,21 84,15 96,17 108,12" },
+      { symbol: "CVX", tv: "NYSE:CVX", name: "Chevron", sector: "Energy", direction: "HEDGE", thesis: "Escalation hedge. $50/bbl dividend breakeven. Strong FCF at $100+ oil. Iran conflict = immediate rally.", confidence: "HIGH", estimatedMove: "+3–8%", isNew: false, spark: "0,33 12,30 24,32 36,26 48,28 60,22 72,23 84,19 96,16 108,13" },
+      { symbol: "GLD", tv: "AMEX:GLD", name: "Gold ETF", sector: "Safe Haven", direction: "HEDGE", thesis: "Talks breakdown → stagflation fear + geopolitical risk = gold safe haven bid. Already at record highs.", confidence: "HIGH", estimatedMove: "+2–5%", isNew: false, spark: "0,36 12,32 24,33 36,29 48,25 60,26 72,21 84,18 96,19 108,14" }
     ]
   },
   {
@@ -176,16 +564,21 @@ const catalysts = [
     statusColor: "#22c55e",
     status: "ACTIVE NOW",
     timing: "Kicking in Jan–Dec 2026",
-    description: "One Big Beautiful Bill Act signed July 4, 2025. Corporate tax rate to as low as 15%, $127B net consumer boost, $150B defense spending increase (US defense budget now >$1 trillion), 35% semiconductor CHIPS tax credit. SocGen identifies 30 stocks as top beneficiaries across defense, consumer, industrials, energy.",
-    update: "🆕 Jun 14: TrumpRx expansion announced — 160 additional prescription drugs added to the platform under Most Favored Nation pricing. Deals confirmed with Pfizer, Novo Nordisk, Eli Lilly, AstraZeneca. Negative for pharma margins (none in current watchlist) but neutral-to-positive for consumer discretionary as lower drug costs free up household spending — supports COST, ULTA thesis. Q2 earnings season beginning — watch for first wave of OBBBA tax uplift in corporate guidance. Markets still have NOT fully priced cyclical earnings uplift.",
+    confidence: 91.5,
+    vsAvg: "+19.7%",
+    description: "One Big Beautiful Bill Act signed July 4, 2025. Corporate tax rate to as low as 15%, $127B net consumer boost, $150B defense spending increase (US defense budget now >$1 trillion), 35% semiconductor CHIPS tax credit. SocGen identifies 30 stocks as top beneficiaries across defense, consumer, industrials, energy. Q2 earnings season beginning — first wave of OBBBA tax uplift expected in corporate guidance.",
+    summary: "The OBBBA delivers a $127B consumer boost, $150B in new defense spending, and a 35% semiconductor CHIPS tax credit — all flowing through to earnings in 2026.",
+    triggerShort: "Quarterly earnings beats driven by OBBBA tax relief. Watch for guidance upgrades citing lower effective tax rates across defense and consumer names.",
+    impactShort: "Defense, consumer, industrials, and small caps are the primary beneficiaries. Markets have NOT yet fully priced the cyclical earnings uplift from OBBBA.",
+    update: "🆕 Jun 14: TrumpRx expansion announced — 160 additional prescription drugs added to the platform under Most Favored Nation pricing. Supports COST, ULTA thesis as lower drug costs free up household spending. Q2 earnings season beginning — watch for first wave of OBBBA tax uplift in corporate guidance.",
     trigger: "Quarterly earnings beats driven by OBBBA tax relief | Further executive orders expanding domestic manufacturing incentives",
     tickers: [
-      { symbol: "GD", tv: "NYSE:GD", name: "General Dynamics", sector: "Defense", direction: "BUY", thesis: "$150B defense spending surge under OBBBA. GD covers shipbuilding, combat vehicles, IT systems — all front-loaded.", confidence: "HIGH", isNew: false },
-      { symbol: "NOC", tv: "NYSE:NOC", name: "Northrop Grumman", sector: "Defense", direction: "BUY", thesis: "Global aerospace & electronics. OBBBA defense modernization funding directly benefits advanced systems contracts.", confidence: "HIGH", isNew: false },
-      { symbol: "COST", tv: "NASDAQ:COST", name: "Costco", sector: "Consumer", direction: "BUY", thesis: "SocGen pick. $127B consumer boost from OBBBA tax relief. Membership model captures incremental discretionary spend.", confidence: "MEDIUM", isNew: false },
-      { symbol: "ULTA", tv: "NASDAQ:ULTA", name: "Ulta Beauty", sector: "Consumer", direction: "BUY", thesis: "SocGen pick. 'Front-loaded consumer tailwinds and higher-income spending' under OBBBA tax cuts.", confidence: "MEDIUM", isNew: false },
-      { symbol: "IWM", tv: "AMEX:IWM", name: "Russell 2000 ETF", sector: "Small Caps", direction: "BUY", thesis: "SocGen: OBBBA boosts 'the other half of the S&P 500' — cyclicals and small caps with avg 15% EPS growth in 2026–27.", confidence: "HIGH", isNew: false },
-      { symbol: "XLI", tv: "AMEX:XLI", name: "Industrials ETF", sector: "Industrials", direction: "BUY", thesis: "OBBBA capex incentives benefit industrial manufacturers. Caterpillar named explicitly by SocGen.", confidence: "HIGH", isNew: false },
+      { symbol: "GD", tv: "NYSE:GD", name: "General Dynamics", sector: "Defense", direction: "BUY", thesis: "$150B defense spending surge under OBBBA. GD covers shipbuilding, combat vehicles, IT systems — all front-loaded.", confidence: "HIGH", estimatedMove: "+4–8%", isNew: false, spark: "0,50 12,45 24,42 36,38 48,36 60,30 72,28 84,22 96,17 108,12" },
+      { symbol: "NOC", tv: "NYSE:NOC", name: "Northrop Grumman", sector: "Defense", direction: "BUY", thesis: "Global aerospace & electronics. OBBBA defense modernization funding directly benefits advanced systems contracts.", confidence: "HIGH", estimatedMove: "+4–8%", isNew: false, spark: "0,48 12,44 24,40 36,42 48,35 60,30 72,26 84,22 96,18 108,14" },
+      { symbol: "COST", tv: "NASDAQ:COST", name: "Costco", sector: "Consumer", direction: "BUY", thesis: "SocGen pick. $127B consumer boost from OBBBA tax relief. Membership model captures incremental discretionary spend.", confidence: "MEDIUM", estimatedMove: "+2–5%", isNew: false, spark: "0,44 12,42 24,40 36,38 48,35 60,33 72,30 84,28 96,22 108,17" },
+      { symbol: "ULTA", tv: "NASDAQ:ULTA", name: "Ulta Beauty", sector: "Consumer", direction: "BUY", thesis: "SocGen pick. 'Front-loaded consumer tailwinds and higher-income spending' under OBBBA tax cuts.", confidence: "MEDIUM", estimatedMove: "+3–6%", isNew: false, spark: "0,46 12,44 24,42 36,38 48,36 60,32 72,28 84,24 96,20 108,16" },
+      { symbol: "IWM", tv: "AMEX:IWM", name: "Russell 2000 ETF", sector: "Small Caps", direction: "BUY", thesis: "SocGen: OBBBA boosts 'the other half of the S&P 500' — cyclicals and small caps with avg 15% EPS growth in 2026–27.", confidence: "HIGH", estimatedMove: "+3–7%", isNew: false, spark: "0,50 12,46 24,44 36,40 48,36 60,32 72,28 84,24 96,19 108,14" },
+      { symbol: "XLI", tv: "AMEX:XLI", name: "Industrials ETF", sector: "Industrials", direction: "BUY", thesis: "OBBBA capex incentives benefit industrial manufacturers. Caterpillar named explicitly by SocGen.", confidence: "HIGH", estimatedMove: "+3–6%", isNew: false, spark: "0,48 12,45 24,42 36,39 48,36 60,31 72,27 84,23 96,19 108,15" }
     ]
   },
   {
@@ -194,13 +587,18 @@ const catalysts = [
     statusColor: "#a855f7",
     status: "ACTIVE",
     timing: "Jun 2 EO — implementation phase",
+    confidence: 88.7,
+    vsAvg: "+16.9%",
     description: "Trump's June 2 AI EO requests voluntary 30-day early government access to frontier AI models. CHIPS Act restructured — loans converted to equity stakes. 35% semiconductor tax credit for new US fabs. Nvidia raised quarterly dividend from $0.01 to $0.25/share (payment June 26) and added $80B to share buyback authorization. H200 export license posture shifted from denial to case-by-case review as of May. Blackwell demand remains insatiable.",
-    update: "🆕 Jun 12 update: Nvidia raised dividend 25x ($0.01→$0.25, paid Jun 26) and added $80B in buybacks — largest capital return in company history. H200 China exports now case-by-case approved (aided by Jun 11 US-China trade framework). June 2 AI EO in active implementation — no new EO actions today.",
+    summary: "The June 2 AI EO accelerates government AI adoption while CHIPS Act restructuring converts loans to equity stakes, creating a 35% tax credit for new US semiconductor fabs.",
+    triggerShort: "Trump CHIPS equity stake announcements for specific fabs. Further AI EO expansions, or Micron/Intel fab groundbreakings.",
+    impactShort: "Micron, Nvidia, and Qualcomm are the primary beneficiaries. The 35% fab tax credit and H200 export approvals are dual tailwinds not yet fully priced.",
+    update: "🆕 Jun 12: Nvidia raised dividend 25x ($0.01→$0.25, paid Jun 26) and added $80B in buybacks — largest capital return in company history. H200 China exports now case-by-case approved (aided by Jun 11 US-China trade framework). June 2 AI EO in active implementation.",
     trigger: "Trump CHIPS equity stake announcements for specific fabs | Further AI EO expansions | Micron/Intel fab groundbreakings",
     tickers: [
-      { symbol: "MU", tv: "NASDAQ:MU", name: "Micron Technology", sector: "Semiconductors", direction: "BUY", thesis: "Hit all-time high June 1. Trump personally praised Micron. $6.1B CHIPS funding + new equity stake conversion expected. Idaho + NY fabs accelerating.", confidence: "HIGH", isNew: false },
-      { symbol: "NVDA", tv: "NASDAQ:NVDA", name: "Nvidia", sector: "Semiconductors", direction: "BUY", thesis: "Dividend raised 25x ($0.01→$0.25, Jun 26 payment) + $80B new buyback. H200 China exports case-by-case approved. AI EO = stable domestic policy. Blackwell demand insatiable.", confidence: "HIGH", isNew: false },
-      { symbol: "QCOM", tv: "NASDAQ:QCOM", name: "Qualcomm", sector: "Semiconductors", direction: "BUY", thesis: "46% China revenue. CHIPS 35% tax credit on new fabs + tariff relief from China summit = dual earnings tailwind.", confidence: "HIGH", isNew: false },
+      { symbol: "MU", tv: "NASDAQ:MU", name: "Micron Technology", sector: "Semiconductors", direction: "BUY", thesis: "Hit all-time high June 1. Trump personally praised Micron. $6.1B CHIPS funding + new equity stake conversion expected. Idaho + NY fabs accelerating.", confidence: "HIGH", estimatedMove: "+5–12%", isNew: false, spark: "0,52 12,47 24,45 36,40 48,36 60,31 72,27 84,22 96,16 108,10" },
+      { symbol: "NVDA", tv: "NASDAQ:NVDA", name: "Nvidia", sector: "Semiconductors", direction: "BUY", thesis: "Dividend raised 25x ($0.01→$0.25, Jun 26 payment) + $80B new buyback. H200 China exports case-by-case approved. Blackwell demand insatiable.", confidence: "HIGH", estimatedMove: "+4–8%", isNew: false, spark: "0,48 12,44 24,42 36,37 48,33 60,29 72,25 84,21 96,17 108,12" },
+      { symbol: "QCOM", tv: "NASDAQ:QCOM", name: "Qualcomm", sector: "Semiconductors", direction: "BUY", thesis: "46% China revenue. CHIPS 35% tax credit on new fabs + tariff relief from China summit = dual earnings tailwind.", confidence: "HIGH", estimatedMove: "+3–7%", isNew: false, spark: "0,46 12,43 24,40 36,37 48,33 60,30 72,27 84,23 96,19 108,15" }
     ]
   },
   {
@@ -209,14 +607,19 @@ const catalysts = [
     statusColor: "#3b82f6",
     status: "UPCOMING",
     timing: "Fall 2026 — Xi visits Washington",
+    confidence: 72.3,
+    vsAvg: "+0.5%",
     description: "May 14–15 Beijing summit complete: Trump-Xi announced $17B/yr US ag purchases through 2028, Boeing 200-plane delivery schedule confirmed, 'board of trade' + 'board of investment' institutions established. Xi confirmed to visit Washington in fall 2026, no specific date set. Post-summit market pattern: rallied 3–4 weeks ahead, sold on vague outcomes. Markets now more cynical — anticipation window is shorter, entry point is earlier.",
-    update: "⚡ Jun 11–12 UPDATE: US-China announced trade framework — 30% total tariffs (20% fentanyl + 10% reciprocal) maintained, but higher tariffs paused for 60 days. Xi Washington visit still confirmed for fall but no date set. Next catalyst: specific Xi visit date leak or pre-summit tariff concession signal. Pattern: trade earlier in the anticipation window — exit BEFORE the summit, not after.",
+    summary: "Xi's confirmed Washington visit and the May summit's $17B ag deal and Boeing 200-plane order create a multi-week anticipatory window for positioning before the event.",
+    triggerShort: "Xi Washington visit date confirmed, or a pre-summit diplomatic leak about tariff rollbacks or deal expansion beyond the May framework.",
+    impactShort: "Boeing, ADM, and MP Materials are the primary plays. The pattern favors entry 4–5 weeks ahead and exit before the summit, not after.",
+    update: "⚡ Jun 11–12: US-China announced trade framework — 30% total tariffs (20% fentanyl + 10% reciprocal) maintained, but higher tariffs paused for 60 days. Xi Washington visit still confirmed for fall but no date set. Pattern: trade earlier in the anticipation window.",
     trigger: "Xi Washington visit date confirmed | Pre-summit diplomatic leaks about tariff rollback or Boeing/ag deal expansion",
     tickers: [
-      { symbol: "BA", tv: "NYSE:BA", name: "Boeing", sector: "Aerospace", direction: "BUY", thesis: "200-plane order confirmed May summit. September summit likely confirms delivery schedule. Position 4–5 weeks ahead, not 2.", confidence: "HIGH", isNew: false },
-      { symbol: "ADM", tv: "NYSE:ADM", name: "Archer-Daniels-Midland", sector: "Agriculture", direction: "BUY", thesis: "$17B/yr ag purchase commitment through 2028. September summit likely to formalize. ADM is primary US corn/soybean exporter.", confidence: "MEDIUM", isNew: false },
-      { symbol: "MP", tv: "NYSE:MP", name: "MP Materials", sector: "Rare Earths", direction: "BUY", thesis: "Only US rare earth miner. September summit expected to confirm rare earth supply framework agreed in Beijing.", confidence: "MEDIUM", isNew: false },
-      { symbol: "AAPL", tv: "NASDAQ:AAPL", name: "Apple", sector: "Consumer Tech", direction: "WATCH", thesis: "Tim Cook at Beijing summit. Tariff relief = margin recovery. But markets now skeptical of summit outcomes — watch for early exit.", confidence: "MEDIUM", isNew: false },
+      { symbol: "BA", tv: "NYSE:BA", name: "Boeing", sector: "Aerospace", direction: "BUY", thesis: "200-plane order confirmed May summit. September summit likely confirms delivery schedule. Position 4–5 weeks ahead, not 2.", confidence: "HIGH", estimatedMove: "+4–8%", isNew: false, spark: "0,40 12,44 24,41 36,38 48,42 60,36 72,32 84,29 96,25 108,20" },
+      { symbol: "ADM", tv: "NYSE:ADM", name: "Archer-Daniels-Midland", sector: "Agriculture", direction: "BUY", thesis: "$17B/yr ag purchase commitment through 2028. September summit likely to formalize. ADM is primary US corn/soybean exporter.", confidence: "MEDIUM", estimatedMove: "+2–5%", isNew: false, spark: "0,42 12,40 24,38 36,42 48,37 60,35 72,31 84,28 96,24 108,20" },
+      { symbol: "MP", tv: "NYSE:MP", name: "MP Materials", sector: "Rare Earths", direction: "BUY", thesis: "Only US rare earth miner. September summit expected to confirm rare earth supply framework agreed in Beijing.", confidence: "MEDIUM", estimatedMove: "+5–15%", isNew: false, spark: "0,50 12,47 24,43 36,39 48,44 60,38 72,33 84,28 96,22 108,16" },
+      { symbol: "AAPL", tv: "NASDAQ:AAPL", name: "Apple", sector: "Consumer Tech", direction: "WATCH", thesis: "Tim Cook at Beijing summit. Tariff relief = margin recovery. But markets now skeptical of summit outcomes — watch for early exit.", confidence: "MEDIUM", estimatedMove: "+2–4%", isNew: false, spark: "0,38 12,36 24,34 36,38 48,33 60,31 72,35 84,30 96,27 108,23" }
     ]
   },
   {
@@ -225,13 +628,18 @@ const catalysts = [
     statusColor: "#8b5cf6",
     status: "ACTIVE",
     timing: "Jun 1–3 tariff wave — ongoing",
+    confidence: 68.9,
+    vsAvg: "−2.9%",
     description: "June 1: Section 232 metals duties raised to 50% on aluminum, copper, and steel. June 2: USTR proposed new Section 301 tariffs on 59 countries + EU at 10–12.5%, with public comment through July 6. June 3: Customs Enforcement EO tightens foreign import requirements and penalties. Pattern: credibility of Trump tariff announcements eroding — smaller pops, faster reversals. Best expression now via ETFs not single stocks.",
-    update: "⚡ Jun 14: World Cup 2026 kicks off on US soil — Trump made Oval Office announcement backing the tournament. Travel/tourism spending boost expected through July; DAL benefits. TrumpRx expansion (160 drugs, MFN pricing) drags pharma margins — not in watchlist but note sector headwind. Jun 11 US-China deal: 30% total tariffs maintained, higher tariffs paused 60 days. Jun 1–3 TARIFF WAVE still active: Metals to 50%, Section 301 tariffs on 60 countries (10–12.5%), Customs EO signed. Global 10% base tariff runs until Jul 24, 2026. Volatility risk remains through July 6 comment period.",
+    summary: "The Jun 1–3 tariff wave (metals to 50%, Section 301 on 60 countries) creates directional risk through the July 6 comment period. ETF expressions are preferred over single-name bets.",
+    triggerShort: "A Truth Social tariff pause post or a new trade deal with the EU, India, or another major partner confirmed via official channels.",
+    impactShort: "SPY and XLY capture broad tariff relief. COP provides an oil and drilling rights hedge under OBBBA's expanded drilling framework.",
+    update: "⚡ Jun 14: World Cup 2026 kicks off on US soil — Trump made Oval Office announcement backing the tournament. Travel/tourism spending boost expected through July; DAL benefits. Jun 11 US-China deal: 30% total tariffs maintained, higher tariffs paused 60 days. Volatility risk remains through July 6 comment period.",
     trigger: "Truth Social tariff pause or reduction post | New trade deal announcement with EU, India, or any major partner",
     tickers: [
-      { symbol: "SPY", tv: "AMEX:SPY", name: "S&P 500 ETF", sector: "Broad Market", direction: "BUY", thesis: "Broadest expression of tariff relief trade. S&P up 33% since election — any tariff de-escalation adds to that trend.", confidence: "HIGH", isNew: false },
-      { symbol: "XLY", tv: "AMEX:XLY", name: "Consumer Disc. ETF", sector: "Consumer", direction: "BUY", thesis: "Lower tariffs = lower goods costs = consumer spending recovery. OBBBA consumer boost compounds this.", confidence: "MEDIUM", isNew: false },
-      { symbol: "COP", tv: "NYSE:COP", name: "ConocoPhillips", sector: "Energy", direction: "BUY", thesis: "OBBBA expanded drilling rights + Iran escalation hedge. Extra $1B FCF/yr at $70 oil.", confidence: "MEDIUM", isNew: false },
+      { symbol: "SPY", tv: "AMEX:SPY", name: "S&P 500 ETF", sector: "Broad Market", direction: "BUY", thesis: "Broadest expression of tariff relief trade. S&P up 33% since election — any tariff de-escalation adds to that trend.", confidence: "HIGH", estimatedMove: "+2–4%", isNew: false, spark: "0,46 12,43 24,40 36,38 48,34 60,31 72,29 84,25 96,21 108,17" },
+      { symbol: "XLY", tv: "AMEX:XLY", name: "Consumer Disc. ETF", sector: "Consumer", direction: "BUY", thesis: "Lower tariffs = lower goods costs = consumer spending recovery. OBBBA consumer boost compounds this.", confidence: "MEDIUM", estimatedMove: "+2–5%", isNew: false, spark: "0,48 12,45 24,42 36,40 48,36 60,33 72,30 84,26 96,22 108,18" },
+      { symbol: "COP", tv: "NYSE:COP", name: "ConocoPhillips", sector: "Energy", direction: "BUY", thesis: "OBBBA expanded drilling rights + Iran escalation hedge. Extra $1B FCF/yr at $70 oil.", confidence: "MEDIUM", estimatedMove: "+3–7%", isNew: false, spark: "0,44 12,41 24,38 36,42 48,37 60,34 72,30 84,26 96,22 108,17" }
     ]
   }
 ];
@@ -239,98 +647,159 @@ const catalysts = [
 let activeId = "iran-stuck";
 let buyOnly = false;
 
-function miniChartHTML(tv, color) {
-  const trend = color === "#22c55e" ? "rgba(34,197,94,1)" : "rgba(245,158,11,1)";
-  const under = color === "#22c55e" ? "rgba(34,197,94,0.15)" : "rgba(245,158,11,0.15)";
-  return `
-    <div class="tradingview-widget-container" style="height:150px">
-      <div class="tradingview-widget-container__widget" style="height:150px"></div>
-      <script type="text/javascript" src="https://s3.tradingview.com/external-embedding/embed-widget-mini-symbol-overview.js" async>
-      {"symbol":"${tv}","width":"100%","height":150,"locale":"en","dateRange":"3M","colorTheme":"dark",
-       "trendLineColor":"${trend}","underLineColor":"${under}","underLineBottomColor":"rgba(0,0,0,0)",
-       "isTransparent":true,"autosize":true,"largeChartUrl":"https://www.tradingview.com/chart/?symbol=${encodeURIComponent(tv)}",
-       "chartOnly":false,"noTimeScale":false}
-      <\/script>
-    </div>`;
+function openSidebar() {
+  document.getElementById('sidebar').classList.add('open');
+  document.getElementById('overlay').classList.add('show');
+}
+function closeSidebar() {
+  document.getElementById('sidebar').classList.remove('open');
+  document.getElementById('overlay').classList.remove('show');
 }
 
-function render() { renderTabs(); renderDetail(); renderTickers(); }
+function donutSVG(pct, color) {
+  const r = 48, cx = 56, cy = 56;
+  const circ = 2 * Math.PI * r;
+  const dash = (pct / 100) * circ;
+  const gap = circ - dash;
+  return `<svg class="confidence-donut" width="112" height="112" viewBox="0 0 112 112" aria-label="${pct}% catalyst confidence">
+    <circle cx="${cx}" cy="${cy}" r="${r}" fill="none" stroke="rgba(255,255,255,0.05)" stroke-width="9"/>
+    <circle cx="${cx}" cy="${cy}" r="${r}" fill="none" stroke="${color}" stroke-width="9"
+      stroke-dasharray="${dash.toFixed(1)} ${gap.toFixed(1)}" stroke-linecap="round"
+      transform="rotate(-90 ${cx} ${cy})"/>
+    <text x="${cx}" y="${cy + 6}" text-anchor="middle" fill="${color}" font-family="monospace" font-size="17" font-weight="800">${pct}%</text>
+  </svg>`;
+}
+
+function renderSidebar() {
+  document.getElementById('sidebarNav').innerHTML =
+    '<div class="sidebar-section-label">Catalysts</div>' +
+    catalysts.map(c => `
+      <button class="sidebar-item${c.id === activeId ? ' active' : ''}" onclick="setActive('${c.id}');closeSidebar()">
+        <div class="sidebar-dot" style="background:${c.statusColor}"></div>
+        <div class="sidebar-item-content">
+          <div class="sidebar-item-title">${c.title}</div>
+          <div class="sidebar-item-status">${c.status}</div>
+        </div>
+        <span class="sidebar-item-count">${c.tickers.length}</span>
+      </button>`).join('');
+}
 
 function renderTabs() {
-  document.getElementById("tabs").innerHTML = catalysts.map(c => `
-    <button class="tab ${c.id===activeId?'active':''}" onclick="setActive('${c.id}')"
-      style="border-bottom-color:${c.id===activeId?c.statusColor:'transparent'}">
-      <span class="dot" style="background:${c.statusColor}"></span>${c.title}
+  document.getElementById('tabs').innerHTML = catalysts.map(c => `
+    <button class="tab-btn${c.id === activeId ? ' active' : ''}"
+      role="tab" aria-selected="${c.id === activeId}" onclick="setActive('${c.id}')">
+      <span class="tab-dot" style="background:${c.statusColor}"></span>${c.title}
     </button>`).join('');
 }
 
-function renderDetail() {
-  const c = catalysts.find(x=>x.id===activeId);
-  document.getElementById("catalystDetail").innerHTML = `
-    <div class="status-row">
-      <span class="status-badge" style="color:${c.statusColor};background:${c.statusColor}20">${c.status}</span>
-      <span class="timing">⏱ ${c.timing}</span>
-    </div>
-    <p class="catalyst-desc">${c.description}</p>
-    <div class="update-banner">${c.update}</div>
-    <div class="trigger-box" style="border-left-color:${c.statusColor};margin-top:8px">
-      <span class="trigger-label">TRIGGER → </span>${c.trigger}
-    </div>`;
+function renderHero() {
+  const c = catalysts.find(x => x.id === activeId);
+  const glowStyle = `background: radial-gradient(circle, ${c.statusColor}15, transparent 70%)`;
+  const vsColor = c.vsAvg.startsWith('-') ? 'var(--destructive)' : 'var(--success)';
+  document.getElementById('heroSection').innerHTML = `
+    <article class="hero-card">
+      <div style="position:relative;z-index:1">
+        <div class="hero-badge" style="color:${c.statusColor};background:${c.statusColor}18;border-color:${c.statusColor}40">
+          <svg xmlns="http://www.w3.org/2000/svg" width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M16.247 7.761a6 6 0 0 1 0 8.478"/><path d="M19.075 4.933a10 10 0 0 1 0 14.134"/><path d="M4.925 19.067a10 10 0 0 1 0-14.134"/><path d="M7.753 16.239a6 6 0 0 1 0-8.478"/><circle cx="12" cy="12" r="2"/></svg>
+          ${c.status} · active catalyst
+        </div>
+        <h1 class="hero-title">Position Before<br><span style="color:${c.statusColor}">He Speaks.</span></h1>
+        <p class="hero-desc">${c.description}</p>
+      </div>
+      <div class="hero-glow" style="${glowStyle}"></div>
+    </article>
+    <aside class="confidence-card">
+      <h2 class="confidence-title">Catalyst Confidence</h2>
+      ${donutSVG(c.confidence, c.statusColor)}
+      <div class="confidence-bottom">
+        <div>
+          <p class="confidence-pct" style="color:${c.statusColor}">${c.confidence}%</p>
+          <p class="confidence-label">Signal strength</p>
+        </div>
+        <span class="confidence-vs" style="color:${vsColor}">${c.vsAvg} vs avg</span>
+      </div>
+    </aside>`;
+}
+
+function renderBriefing() {
+  const c = catalysts.find(x => x.id === activeId);
+  document.getElementById('briefingSection').innerHTML = `
+    <article class="briefing-card">
+      <p class="briefing-label" style="color:${c.statusColor}">Summary</p>
+      <p class="briefing-text">${c.summary}</p>
+    </article>
+    <article class="briefing-card">
+      <p class="briefing-label" style="color:${c.statusColor}">Trigger</p>
+      <p class="briefing-text">${c.triggerShort}</p>
+    </article>
+    <article class="briefing-card">
+      <p class="briefing-label" style="color:${c.statusColor}">Impact</p>
+      <p class="briefing-text">${c.impactShort}</p>
+    </article>`;
+  document.getElementById('updateBanner').innerHTML = c.update;
 }
 
 function renderTickers() {
-  const c = catalysts.find(x=>x.id===activeId);
-  const tickers = buyOnly ? c.tickers.filter(t=>t.direction==="BUY") : c.tickers;
+  const c = catalysts.find(x => x.id === activeId);
+  const tickers = buyOnly ? c.tickers.filter(t => t.direction === 'BUY') : c.tickers;
 
-  document.getElementById("countLabel").textContent = tickers.length + " tickers shown";
-  const btn = document.getElementById("toggleBtn");
-  btn.textContent = buyOnly ? "✦ BUY ONLY" : "ALL SIGNALS";
-  btn.style.border = buyOnly ? "1px solid #22c55e" : "1px solid #1e293b";
-  btn.style.background = buyOnly ? "#22c55e18" : "transparent";
-  btn.style.color = buyOnly ? "#22c55e" : "#475569";
+  document.getElementById('countLabel').textContent = tickers.length + ' tickers shown';
+  const btn = document.getElementById('toggleBtn');
+  btn.textContent = buyOnly ? '✦ BUY ONLY' : 'ALL SIGNALS';
+  btn.className = 'toggle-btn' + (buyOnly ? ' active-buy' : '');
 
-  const list = document.getElementById("tickerList");
-  list.innerHTML = "";
+  const list = document.getElementById('tickerList');
+  list.innerHTML = '';
 
-  tickers.forEach(t => {
-    const isBuy = t.direction === "BUY";
-    const color = isBuy ? "#22c55e" : "#f59e0b";
-    const bars = t.confidence === "HIGH" ? 3 : 2;
-    const barsHtml = [1,2,3].map(n =>
-      `<div class="conf-bar" style="background:${n<=bars?color:'#1e293b'}"></div>`).join('');
+  tickers.forEach((t, i) => {
+    const isBuy = t.direction === 'BUY';
+    const color = isBuy ? 'var(--success)' : 'var(--warning)';
+    const sparkColor = isBuy ? '#22c55e' : '#f59e0b';
+    const badgeClass = t.direction.toLowerCase();
+    const badgeLabel = isBuy ? '✦ BUY' : t.direction === 'HEDGE' ? '◈ HEDGE' : '◈ WATCH';
 
-    const cardHTML = `
-    <div class="ticker-card ${isBuy?'buy':'watch'}">
-      <div class="ticker-top">
-        <div class="ticker-left">
-          <div class="ticker-header">
-            <span class="ticker-symbol" style="color:${color}">${t.symbol}</span>
-            <span class="ticker-name">${t.name}</span>
-            <span class="ticker-sector">${t.sector}</span>
-            ${t.isNew ? '<span class="ticker-new">NEW</span>' : ''}
+    const html = `
+      <article class="ticker-card" style="animation-delay:${i * 45}ms">
+        <div class="tc-top">
+          <div class="tc-left">
+            <div class="tc-header">
+              <h3 class="tc-symbol" style="color:${color}">${t.symbol}</h3>
+              <span class="tc-name">${t.name}</span>
+              <span class="tc-sector">${t.sector}</span>
+              ${t.isNew ? '<span class="tc-new">NEW</span>' : ''}
+            </div>
+            <p class="tc-thesis">${t.thesis}</p>
           </div>
-          <p class="ticker-thesis">${t.thesis}</p>
+          <div class="tc-right">
+            <span class="direction-badge ${badgeClass}">${badgeLabel}</span>
+            <p class="tc-conf">${t.confidence}</p>
+          </div>
         </div>
-        <div class="ticker-right">
-          <span class="direction-badge" style="color:${color};background:${color}18;border:1px solid ${color}40">
-            ${isBuy?'✦ BUY':'◈ WATCH'}
-          </span>
-          <div class="conf-bars">${barsHtml}</div>
-          <div class="conf-label">${t.confidence}</div>
+        <div class="tc-bottom">
+          <div>
+            <p class="tc-move-label">Estimated move</p>
+            <p class="tc-move" style="color:${color}">${t.estimatedMove}</p>
+          </div>
+          <svg class="tc-sparkline" viewBox="0 0 108 64" role="img" aria-label="${t.symbol} price trend" preserveAspectRatio="none">
+            <polyline points="${t.spark}" fill="none" stroke="${sparkColor}" stroke-width="1.5" vector-effect="non-scaling-stroke"/>
+          </svg>
+          <a class="tc-chart-btn" href="https://www.tradingview.com/chart/?symbol=${encodeURIComponent(t.tv)}" target="_blank" rel="noopener">
+            Full chart
+            <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m9 18 6-6-6-6"/></svg>
+          </a>
         </div>
-      </div>
-      <div class="chart-section">
-        <div class="chart-label">
-          <span>◉ INTERACTIVE · 3M</span>
-          <a href="https://www.tradingview.com/chart/?symbol=${encodeURIComponent(t.tv)}" target="_blank" rel="noopener">↗ FULL CHART</a>
-        </div>
-        <div class="mini-chart-wrap">${miniChartHTML(t.tv, color)}</div>
-      </div>
-    </div>`;
+      </article>`;
 
-    const frag = document.createRange().createContextualFragment(cardHTML);
-    list.appendChild(frag);
+    list.appendChild(document.createRange().createContextualFragment(html));
   });
+}
+
+function render() {
+  renderSidebar();
+  renderTabs();
+  renderHero();
+  renderBriefing();
+  renderTickers();
 }
 
 function setActive(id) { activeId = id; render(); }
@@ -340,4 +809,3 @@ render();
 </script>
 </body>
 </html>
-
