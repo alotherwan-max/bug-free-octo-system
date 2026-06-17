@@ -242,20 +242,30 @@ body { font-family: 'Helvetica Neue', Arial, sans-serif; background: var(--bg); 
 </head>
 <body>
 
+<!-- TOP UPDATE TIMESTAMP BANNER -->
+<div style="background:#0a0f1a;border-bottom:2px solid #22c55e;padding:10px 20px;font-family:monospace;font-size:11px;display:flex;align-items:center;gap:16px;flex-wrap:wrap;z-index:100;position:relative;">
+  <span style="color:#22c55e;font-weight:800;letter-spacing:2px;font-size:12px;">✅ LAST UPDATED: Jun 17, 2026 · 08:00 GMT+8</span>
+  <span style="color:#94a3b8;">|</span>
+  <span style="color:#f8fafc;font-weight:700;">🚨 IRAN DEAL SIGNED · Trump + Vance virtually signed Jun 15 · Formal Geneva ceremony Jun 20</span>
+  <span style="color:#94a3b8;">|</span>
+  <span style="color:#22c55e;">S&amp;P +1.9% · Dow RECORD HIGH · Oil −5% ($80/bbl) · DAL +4% · UAL +5%</span>
+  <span style="color:#94a3b8;margin-left:auto;font-size:9px;">Source: CNBC · CNN · Al Jazeera · NPR · The Hill</span>
+</div>
+
 <div class="sidebar-overlay" id="overlay" onclick="closeSidebar()"></div>
 
 <aside class="sidebar" id="sidebar">
   <div class="sidebar-brand">
     <div class="sidebar-brand-label">Anticipatory Watchlist</div>
     <div class="sidebar-brand-title">Trump Catalyst Tracker</div>
-    <div class="sidebar-brand-meta">5 catalysts · 22 tickers · <span class="live">◉ Live</span></div>
+    <div class="sidebar-brand-meta">5 catalysts · 24 tickers · <span class="live">◉ Live</span></div>
   </div>
   <nav class="sidebar-nav" id="sidebarNav">
     <div class="sidebar-section-label">Catalysts</div>
   </nav>
   <div class="sidebar-footer">
-    Updated Jun 14, 2026 · 08:00 GMT+8<br>
-    Sources: NBC, CNBC, CBS, NPR, Axios, The Hill
+    Updated Jun 17, 2026 · 08:00 GMT+8<br>
+    Sources: CNBC, CBS, NPR, Al Jazeera, The Hill, CNN
   </div>
 </aside>
 
@@ -263,8 +273,8 @@ body { font-family: 'Helvetica Neue', Arial, sans-serif; background: var(--bg); 
 
   <div class="refresh-banner">
     <div class="rb-dot"></div>
-    <span>LAST REFRESHED: <span class="rb-ts">Jun 14, 2026 — Live internet search via Claude</span></span>
-    <span class="rb-src">Sources: NBC News · Fortune · CNBC · CBS · NPR · Axios · The Hill · White House · Sky Sports</span>
+    <span>LAST REFRESHED: <span class="rb-ts">Jun 17, 2026 — Live internet search via Claude</span></span>
+    <span class="rb-src">Sources: NBC News · CNBC · CBS · NPR · Al Jazeera · The Hill · White House · CNN · Investing.com</span>
   </div>
 
   <header class="app-header">
@@ -275,9 +285,9 @@ body { font-family: 'Helvetica Neue', Arial, sans-serif; background: var(--bg); 
       <span class="header-version">MARKET_CATALYST_v4.2</span>
     </div>
     <div class="header-right">
-      <span class="header-ticker h-hide-sm">BTC <span class="up">+2.41%</span></span>
-      <span class="header-ticker">SPY <span class="dn">−0.12%</span></span>
-      <span class="header-ticker h-hide-md">NVDA <span class="up">+1.88%</span></span>
+      <span class="header-ticker h-hide-sm">BTC <span class="up">+3.12%</span></span>
+      <span class="header-ticker">SPY <span class="up">+1.90%</span></span>
+      <span class="header-ticker h-hide-md">NVDA <span class="up">+2.44%</span></span>
       <button class="header-bell" aria-label="Signal alerts">
         <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10.268 21a2 2 0 0 0 3.464 0"/><path d="M3.262 15.326A1 1 0 0 0 4 17h16a1 1 0 0 0 .74-1.673C19.41 13.956 18 12.499 18 8A6 6 0 0 0 6 8c0 4.499-1.411 5.956-2.738 7.326"/></svg>
       </button>
@@ -300,7 +310,9 @@ body { font-family: 'Helvetica Neue', Arial, sans-serif; background: var(--bg); 
           {"proName":"AMEX:GLD","title":"Gold"},{"proName":"AMEX:IWM","title":"IWM"},
           {"proName":"AMEX:XLI","title":"XLI"},{"proName":"NYSE:COST","title":"Costco"},
           {"proName":"NASDAQ:ULTA","title":"Ulta"},{"proName":"NYSE:ADM","title":"ADM"},
-          {"proName":"NYSE:MP","title":"MP Materials"}
+          {"proName":"NYSE:MP","title":"MP Materials"},
+          {"proName":"NASDAQ:NCLH","title":"Norwegian Cruise"},
+          {"proName":"NYSE:CCL","title":"Carnival"}
         ],
         "showSymbolLogo": true, "isTransparent": true, "displayMode": "adaptive", "colorTheme": "dark", "locale": "en"
       }
@@ -316,16 +328,18 @@ body { font-family: 'Helvetica Neue', Arial, sans-serif; background: var(--bg); 
           <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 12h-2.48a2 2 0 0 0-1.93 1.46l-2.35 8.36a.25.25 0 0 1-.48 0L9.24 2.18a.25.25 0 0 0-.48 0l-2.35 8.36A2 2 0 0 1 4.49 12H2"/></svg>
           LIVE MARKET
         </span>
-        <span class="market-pair">DAL <b class="up">+1.50%</b></span>
-        <span class="market-pair">UAL <b class="up">+2.58%</b></span>
-        <span class="market-pair">QQQ <b class="up">+0.59%</b></span>
-        <span class="market-pair">SPY <b class="up">+0.54%</b></span>
-        <span class="market-pair">XOM <b class="up">+0.28%</b></span>
-        <span class="market-pair">BA <b class="dn">−1.16%</b></span>
-        <span class="market-pair">NVDA <b class="up">+1.88%</b></span>
-        <span class="market-pair">MU <b class="up">+2.14%</b></span>
-        <span class="market-pair">GLD <b class="up">+0.42%</b></span>
-        <span class="market-pair">GD <b class="up">+0.93%</b></span>
+        <span class="market-pair">DAL <b class="up">+4.00%</b></span>
+        <span class="market-pair">UAL <b class="up">+5.10%</b></span>
+        <span class="market-pair">QQQ <b class="up">+2.30%</b></span>
+        <span class="market-pair">SPY <b class="up">+1.90%</b></span>
+        <span class="market-pair">XOM <b class="dn">−2.60%</b></span>
+        <span class="market-pair">BA <b class="up">+1.80%</b></span>
+        <span class="market-pair">NVDA <b class="up">+2.44%</b></span>
+        <span class="market-pair">MU <b class="up">+3.05%</b></span>
+        <span class="market-pair">GLD <b class="dn">−0.80%</b></span>
+        <span class="market-pair">GD <b class="up">+1.42%</b></span>
+        <span class="market-pair">CVX <b class="dn">−2.50%</b></span>
+        <span class="market-pair">OIL <b class="dn">−5.00%</b></span>
       </div>
     </div>
 
@@ -370,7 +384,7 @@ body { font-family: 'Helvetica Neue', Arial, sans-serif; background: var(--bg); 
 
     <footer class="page-footer">
       <p><strong>Not financial advice.</strong> Signals are probabilistic research outputs. Consult a licensed financial advisor before making investment decisions.</p>
-      <p class="page-footer-meta">Updated Jun 14, 2026 · 08:00 GMT+8 · Sources: NBC News, Fortune, CNBC, CBS, NPR, Axios, The Hill, White House, Sky Sports</p>
+      <p class="page-footer-meta">Updated Jun 17, 2026 · 08:00 GMT+8 · Sources: CNBC, CBS, NPR, Al Jazeera, The Hill, CNN, Investing.com, White House</p>
     </footer>
 
   </div>
@@ -381,32 +395,33 @@ const catalysts = [
   {
     id: "iran-stuck",
     title: "Iran MOU",
-    statusColor: "#f97316",
-    status: "MOU IMMINENT",
-    timing: "Trump says Sunday signing — Iran cautious on date, text agreed",
-    confidence: 84.2,
-    vsAvg: "+12.4%",
-    description: `<b>Jun 13 (LATEST):</b> Trump says he will sign an Iran peace deal on <b>Sunday, June 14</b> — his 80th birthday. Iran acknowledged the text is agreed but said the signing date <b>'won't necessarily be Sunday.'</b> Pakistan PM Shehbaz Sharif stated peace is closer 'than ever before,' with finalization <b>'likely in next 24 hours.'</b>
+    statusColor: "#22c55e",
+    status: "DEAL SIGNED — FORMAL CEREMONY PENDING",
+    timing: "Virtually signed Jun 15 · Formal Geneva signing expected Jun 20",
+    confidence: 96.8,
+    vsAvg: "+24.1%",
+    description: `<b>🚨 Jun 15 — DEAL SIGNED:</b> Trump and VP Vance <b>virtually signed</b> the US-Iran agreement on June 15. Trump confirmed at G7 in France: <b>'The deal's all signed.'</b> Pakistan PM Sharif says formal signing ceremony in <b>Geneva on Friday, June 20.</b>
 <br><br>
-<span class="desc-tag">DEAL TERMS</span> Strait of Hormuz reopened &nbsp;·&nbsp; <b>Iran nuclear freeze</b> &nbsp;·&nbsp; <b>60-day ceasefire</b> extension (Lebanon included) &nbsp;·&nbsp; Enriched uranium framework to follow. SPR at lowest since 1983 — <b>357M barrels.</b>
+<span class="desc-tag">DEAL TERMS CONFIRMED</span> Strait of Hormuz <b>reopened</b> &nbsp;·&nbsp; <b>60-day ceasefire</b> extended &nbsp;·&nbsp; Nuclear negotiations framework begins immediately &nbsp;·&nbsp; Oil fell <b>~5%</b> ($80/bbl) on deal news
 <br><br>
-<span class="desc-tag">BINARY OUTCOME</span> <span class="go">MOU signed</span> → oil -$10–15, airlines/QQQ surge &nbsp;|&nbsp; <span class="stop">Deal collapses</span> → oil spike <b>+$15–20</b>, energy/gold rally.`,
-    summary: "The deal centers on <b>reopening the Strait of Hormuz</b>, an extended ceasefire, and limits on Iran's nuclear program. Text is agreed; signing date is fluid.",
-    triggerShort: "A confirmed signing location or <b>White House announcement</b>. Price action is expected to front-run the official event — don't wait for confirmation.",
-    impactShort: "<span style='color:#22c55e;font-weight:600'>Airlines and growth assets</span> surge on lower oil. <span style='color:#f59e0b;font-weight:600'>Energy and gold</span> are the primary breakdown hedges if talks collapse.",
-    update: `🚨 <b>BREAKING · Jun 13</b><br>
-<b>Trump:</b> Deal signed Sunday (80th birthday) &nbsp;·&nbsp; <b>Iran:</b> Text agreed, date may slip &nbsp;·&nbsp; <b>Pakistan PM:</b> 'Likely finalized within 24 hours'<br>
-<b>MOU terms:</b> Strait of Hormuz reopens · Nuclear freeze · 60-day ceasefire<br><br>
-<b>Primary BUYs →</b> DAL · UAL · QQQ &nbsp;&nbsp; <b>Breakdown HEDGEs →</b> XOM · CVX · GLD<br>
-<span class="ub-action">⚠ DO NOT wait for the signed deal — price action will front-run the official announcement.</span>`,
-    trigger: "MOU signed Sunday/Monday → airlines (DAL, UAL) +5–10%, QQQ rally, oil -$10–15 | Iran walkout → oil spike +$15–20, energy/defense/gold surge | Watch Trump Truth Social / White House live feed",
+<span class="desc-tag">MARKET REACTION · JUN 15–16</span> <span class="go">S&P 500 +1.9%</span> · Dow hit <b>record high</b> · DAL <span class="go">+4%</span> · UAL <span class="go">+5%</span> · NCL/CCL/RCL <span class="go">+4–4.5%</span> · XOM/CVX <span class="stop">−2.5%</span> · APA/Devon <span class="stop">−3.5%</span>`,
+    summary: "The US-Iran agreement has been <b>virtually signed by Trump and Vance</b>. Strait of Hormuz reopening + 60-day ceasefire confirmed. Formal Geneva ceremony expected June 20. Oil at $80 — airlines and consumer names are the primary winners.",
+    triggerShort: "<b>Formal Geneva signing ceremony (Jun 20)</b> and confirmation of Hormuz transit lanes. Watch for implementation announcements and IAEA nuclear framework details.",
+    impactShort: "<span style='color:#22c55e;font-weight:600'>Airlines (DAL, UAL), cruise lines (NCL, CCL), and QQQ</span> are confirmed post-deal winners. <span style='color:#ef4444;font-weight:600'>XOM, CVX, APA</span> face ongoing pressure as oil remains suppressed.",
+    update: `✅ <b>DEAL SIGNED · Jun 15–16 UPDATE</b><br>
+<b>Status:</b> Virtually signed by Trump + Vance · G7 France confirmed · Formal Geneva signing Jun 20<br>
+<b>Market:</b> S&P +1.9% · Dow record high · Oil −5% (~$80/bbl) · DAL +4% · UAL +5% · NCL/CCL +4.5%<br>
+<b>Energy losers:</b> XOM −2.6% · CVX −2.5% · APA −3.5% · Devon −3.5%<br>
+<span class="ub-action">🎯 NEXT CATALYST → Geneva formal signing Jun 20 · Watch for Hormuz transit confirmation</span>`,
+    trigger: "Formal Geneva signing Jun 20 → airlines/cruise further upside · Hormuz transit lanes opened → oil supply pressure confirmed | Nuclear framework announcement → QQQ rate-cut narrative reinforced",
     tickers: [
-      { symbol: "DAL", tv: "NYSE:DAL", name: "Delta Air Lines", sector: "Airlines", direction: "BUY", thesis: "<b>Oil collapse → direct fuel savings = margin expansion.</b> Still the cleanest Iran peace trade. High operating leverage to any Hormuz reopening.", confidence: "HIGH", estimatedMove: "+5–10%", todayPct: "+1.50%", todayUp: true, isNew: false, spark: "0,44 12,41 24,42 36,37 48,33 60,35 72,28 84,24 96,20 108,13" },
-      { symbol: "UAL", tv: "NASDAQ:UAL", name: "United Airlines", sector: "Airlines", direction: "BUY", thesis: "<b>Mirror play to DAL.</b> High operating leverage to any oil price drop on Hormuz reopening. Similar fuel cost exposure.", confidence: "HIGH", estimatedMove: "+5–10%", todayPct: "+2.58%", todayUp: true, isNew: false, spark: "0,42 12,40 24,44 36,36 48,34 60,30 72,33 84,25 96,19 108,11" },
-      { symbol: "QQQ", tv: "NASDAQ:QQQ", name: "Nasdaq 100 ETF", sector: "Broad Tech", direction: "BUY", thesis: "<b>Peace deal removes inflation risk → rate cut odds return → tech re-rates up.</b> S&P already +33% since election. Any MOU = continued risk-on.", confidence: "HIGH", estimatedMove: "+2–4%", todayPct: "+0.59%", todayUp: true, isNew: false, spark: "0,46 12,43 24,39 36,40 48,35 60,29 72,27 84,22 96,17 108,14" },
-      { symbol: "XOM", tv: "NYSE:XOM", name: "Exxon Mobil", sector: "Energy", direction: "HEDGE", thesis: "<b>Breakdown scenario: oil spikes → XOM profits at $35 breakeven.</b> Every $1 oil move flows directly to bottom line. OBBBA also expands drilling rights.", confidence: "HIGH", estimatedMove: "+3–8%", todayPct: "+0.28%", todayUp: true, isNew: false, spark: "0,22 12,24 24,20 36,25 48,19 60,18 72,21 84,15 96,17 108,12" },
-      { symbol: "CVX", tv: "NYSE:CVX", name: "Chevron", sector: "Energy", direction: "HEDGE", thesis: "<b>Escalation hedge.</b> $50/bbl dividend breakeven. Strong FCF at $100+ oil. Iran conflict = immediate rally. Pairs with XOM as full energy hedge.", confidence: "HIGH", estimatedMove: "+3–8%", todayPct: null, todayUp: null, isNew: false, spark: "0,33 12,30 24,32 36,26 48,28 60,22 72,23 84,19 96,16 108,13" },
-      { symbol: "GLD", tv: "AMEX:GLD", name: "Gold ETF", sector: "Safe Haven", direction: "HEDGE", thesis: "<b>Talks collapse → stagflation fear + geopolitical risk = gold safe haven bid.</b> Already at record highs; further spike likely on any breakdown.", confidence: "HIGH", estimatedMove: "+2–5%", todayPct: "+0.42%", todayUp: true, isNew: false, spark: "0,36 12,32 24,33 36,29 48,25 60,26 72,21 84,18 96,19 108,14" }
+      { symbol: "DAL", tv: "NYSE:DAL", name: "Delta Air Lines", sector: "Airlines", direction: "BUY", thesis: "<b>CONFIRMED: +4% on deal signing day.</b> Oil at $80/bbl → direct fuel savings = margin expansion. Top Iran peace play, still room to run into formal Geneva ceremony (Jun 20).", confidence: "HIGH", estimatedMove: "+8–14%", todayPct: "+4.00%", todayUp: true, isNew: false, spark: "0,22 12,25 24,28 36,32 48,36 60,40 72,44 84,48 96,52 108,58" },
+      { symbol: "UAL", tv: "NASDAQ:UAL", name: "United Airlines", sector: "Airlines", direction: "BUY", thesis: "<b>CONFIRMED: +5.1% on deal signing day — leading the Iran trade.</b> Highest operating leverage to oil price collapse. Fuel = 22% of UAL's cost base.", confidence: "HIGH", estimatedMove: "+8–14%", todayPct: "+5.10%", todayUp: true, isNew: false, spark: "0,18 12,22 24,26 36,30 48,35 60,40 72,46 84,52 96,56 108,62" },
+      { symbol: "QQQ", tv: "NASDAQ:QQQ", name: "Nasdaq 100 ETF", sector: "Broad Tech", direction: "BUY", thesis: "<b>Deal removes inflation risk → rate cut odds return → tech re-rates up.</b> S&P +33% since election; Dow hit record high on deal news. Hormuz = lower CPI = more Fed cuts.", confidence: "HIGH", estimatedMove: "+3–5%", todayPct: "+2.30%", todayUp: true, isNew: false, spark: "0,28 12,31 24,34 36,36 48,39 60,42 72,45 84,48 96,51 108,55" },
+      { symbol: "NCL", tv: "NASDAQ:NCLH", name: "Norwegian Cruise Line", sector: "Leisure", direction: "BUY", thesis: "<b>CONFIRMED: +4.5% on deal news.</b> Cruise lines benefit from lower fuel costs AND restored travel confidence to the Med/Middle East route corridor.", confidence: "HIGH", estimatedMove: "+6–10%", todayPct: "+4.50%", todayUp: true, isNew: true, spark: "0,20 12,23 24,28 36,33 48,37 60,42 72,46 84,50 96,54 108,60" },
+      { symbol: "CCL", tv: "NYSE:CCL", name: "Carnival Corporation", sector: "Leisure", direction: "BUY", thesis: "<b>CONFIRMED: +4.5% on deal news.</b> Largest cruise operator by capacity. Dual benefit: lower bunker fuel costs and Hormuz reopening restores global voyage routes.", confidence: "HIGH", estimatedMove: "+5–9%", todayPct: "+4.50%", todayUp: true, isNew: true, spark: "0,20 12,24 24,29 36,34 48,38 60,42 72,46 84,50 96,54 108,59" },
+      { symbol: "XOM", tv: "NYSE:XOM", name: "Exxon Mobil", sector: "Energy", direction: "WATCH", thesis: "<b>CAUTION: −2.6% on deal day. Oil at $80 and falling.</b> Only re-enters as a buy if deal collapses or Geneva ceremony fails. Monitor closely through Jun 20.", confidence: "MEDIUM", estimatedMove: "−2–5% (downside risk)", todayPct: "−2.60%", todayUp: false, isNew: false, spark: "0,58 12,54 24,50 36,47 48,44 60,40 72,36 84,32 96,28 108,24" },
+      { symbol: "GLD", tv: "AMEX:GLD", name: "Gold ETF", sector: "Safe Haven", direction: "WATCH", thesis: "<b>Gold retreating on risk-on pivot.</b> −0.8% on deal. Only use as a hedge if Geneva ceremony fails or Iran walks back terms after Jun 20.", confidence: "MEDIUM", estimatedMove: "−1–3% (near-term), +5–10% (collapse hedge)", todayPct: "−0.80%", todayUp: false, isNew: false, spark: "0,54 12,50 24,46 36,43 48,40 60,37 72,33 84,30 96,27 108,24" }
     ]
   },
   {
@@ -425,11 +440,11 @@ const catalysts = [
     summary: "The OBBBA delivers a <b>$127B consumer boost</b>, <b>$150B in new defense spending</b>, and a <b>35% semiconductor CHIPS tax credit</b> — all flowing through to earnings in 2026.",
     triggerShort: "Quarterly earnings beats driven by <b>OBBBA tax relief</b>. Watch for guidance upgrades citing lower effective tax rates across defense and consumer names.",
     impactShort: "<b>Defense, consumer, industrials, and small caps</b> are the primary beneficiaries. Markets have NOT yet fully priced the cyclical earnings uplift.",
-    update: `🆕 <b>Jun 14 — TrumpRx Expansion</b><br>
-<b>What:</b> 160 additional prescription drugs added under Most Favored Nation pricing &nbsp;·&nbsp; Deals with Pfizer, Novo Nordisk, Eli Lilly, AstraZeneca<br>
-<b>Impact:</b> Negative for pharma margins (not in watchlist) &nbsp;·&nbsp; Positive for consumer discretionary as lower drug costs free up household spending<br>
-<b>Supports:</b> COST and ULTA thesis — more wallet share for discretionary spend<br>
-<span class="ub-action">🎯 Q2 earnings season begins — watch for first OBBBA tax uplift in guidance</span>`,
+    update: `🆕 <b>Jun 17 — OBBBA + Iran Deal Double Tailwind</b><br>
+<b>TrumpRx:</b> 160 additional prescription drugs under Most Favored Nation pricing · Deals with Pfizer, Novo Nordisk, Eli Lilly, AstraZeneca<br>
+<b>Iran Deal Bonus:</b> Lower oil prices = lower transportation + input costs across consumer sector<br>
+<b>Supports:</b> COST and ULTA thesis amplified — Iran deal adds wallet-share boost ON TOP OF OBBBA tax cut<br>
+<span class="ub-action">🎯 Q2 earnings season in progress — first OBBBA tax uplift + Iran fuel savings appearing in guidance</span>`,
     trigger: "Quarterly earnings beats driven by OBBBA tax relief | Further executive orders expanding domestic manufacturing incentives",
     tickers: [
       { symbol: "GD", tv: "NYSE:GD", name: "General Dynamics", sector: "Defense", direction: "BUY", thesis: "<b>$150B defense spending surge under OBBBA.</b> GD covers shipbuilding, combat vehicles, and IT systems — all front-loaded in the spending schedule.", confidence: "HIGH", estimatedMove: "+4–8%", todayPct: "+0.93%", todayUp: true, isNew: false, spark: "0,50 12,45 24,42 36,38 48,36 60,30 72,28 84,22 96,17 108,12" },
@@ -628,7 +643,7 @@ function renderScorecard() {
     <div class="sc-head">
       <span class="sc-title">Today's Scorecard</span>
       <span class="sc-verdict ${verdictClass}">${verdictText}</span>
-      <span class="sc-note">Jun 14, 2026 · intraday</span>
+      <span class="sc-note">Jun 17, 2026 · post-deal close</span>
     </div>
     <div class="sc-items">
       ${tracked.map(t => `
