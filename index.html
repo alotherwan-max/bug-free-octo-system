@@ -236,6 +236,19 @@ body { font-family: 'Helvetica Neue', Arial, sans-serif; background: var(--bg); 
 .page-footer strong { color: var(--fg); }
 .page-footer-meta { font-family: monospace; font-size: 9px; color: var(--fg-faint); margin-top: 8px; }
 
+/* === LATEST NEWS BANNER === */
+.latest-news-banner { border: 1px solid var(--primary-30); border-radius: 8px; background: rgba(34,197,94,0.03); overflow: hidden; }
+.lnb-header { display: flex; align-items: center; justify-content: space-between; padding: 8px 14px; background: rgba(34,197,94,0.07); border-bottom: 1px solid var(--primary-30); flex-wrap: wrap; gap: 6px; }
+.lnb-label { font-family: monospace; font-size: 9px; font-weight: 800; letter-spacing: 2px; color: var(--primary); text-transform: uppercase; }
+.lnb-ts { font-family: monospace; font-size: 9px; color: var(--fg-subtle); }
+.lnb-items { padding: 10px 14px; display: flex; flex-direction: column; gap: 8px; }
+.lnb-item { display: flex; align-items: flex-start; gap: 8px; font-size: 11px; color: var(--fg-muted); line-height: 1.5; }
+.lnb-tag { font-family: monospace; font-size: 8px; font-weight: 800; letter-spacing: 1px; padding: 2px 6px; border-radius: 3px; flex-shrink: 0; text-transform: uppercase; white-space: nowrap; margin-top: 1px; }
+.lnb-tag.signed { color: var(--success); background: var(--primary-10); border: 1px solid var(--primary-30); }
+.lnb-tag.semis { color: #a855f7; background: rgba(168,85,247,0.1); border: 1px solid rgba(168,85,247,0.3); }
+.lnb-tag.hawkish { color: var(--warning); background: var(--warning-10); border: 1px solid var(--warning-30); }
+.lnb-tag.g7 { color: #3b82f6; background: rgba(59,130,246,0.1); border: 1px solid rgba(59,130,246,0.3); }
+
 /* === ANIMATIONS === */
 @keyframes pulse { 0%,100%{opacity:1} 50%{opacity:0.4} }
 </style>
@@ -248,14 +261,14 @@ body { font-family: 'Helvetica Neue', Arial, sans-serif; background: var(--bg); 
   <div class="sidebar-brand">
     <div class="sidebar-brand-label">Anticipatory Watchlist</div>
     <div class="sidebar-brand-title">Trump Catalyst Tracker</div>
-    <div class="sidebar-brand-meta">5 catalysts · 22 tickers · <span class="live">◉ Live</span></div>
+    <div class="sidebar-brand-meta">5 catalysts · 23 tickers · <span class="live">◉ Live</span></div>
   </div>
   <nav class="sidebar-nav" id="sidebarNav">
     <div class="sidebar-section-label">Catalysts</div>
   </nav>
   <div class="sidebar-footer">
-    Updated Jun 14, 2026 · 08:00 GMT+8<br>
-    Sources: NBC, CNBC, CBS, NPR, Axios, The Hill
+    Updated Jun 20, 2026 · 08:15 GMT+8<br>
+    Sources: NBC, CNBC, CBS, NPR, Axios, Al Jazeera, Fortune
   </div>
 </aside>
 
@@ -263,8 +276,8 @@ body { font-family: 'Helvetica Neue', Arial, sans-serif; background: var(--bg); 
 
   <div class="refresh-banner">
     <div class="rb-dot"></div>
-    <span>LAST REFRESHED: <span class="rb-ts">Jun 14, 2026 — Live internet search via Claude</span></span>
-    <span class="rb-src">Sources: NBC News · Fortune · CNBC · CBS · NPR · Axios · The Hill · White House · Sky Sports</span>
+    <span>LAST REFRESHED: <span class="rb-ts">Jun 20, 2026 · 08:15 GMT+8 — Live internet search via Claude</span></span>
+    <span class="rb-src">Sources: NBC News · NPR · CNBC · CBS · Al Jazeera · Fortune · White House · Barchart · TradingEconomics</span>
   </div>
 
   <header class="app-header">
@@ -275,9 +288,9 @@ body { font-family: 'Helvetica Neue', Arial, sans-serif; background: var(--bg); 
       <span class="header-version">MARKET_CATALYST_v4.2</span>
     </div>
     <div class="header-right">
-      <span class="header-ticker h-hide-sm">BTC <span class="up">+2.41%</span></span>
-      <span class="header-ticker">SPY <span class="dn">−0.12%</span></span>
-      <span class="header-ticker h-hide-md">NVDA <span class="up">+1.88%</span></span>
+      <span class="header-ticker h-hide-sm">BTC <span class="up">+3.52%</span></span>
+      <span class="header-ticker">SPY <span class="up">+0.88%</span></span>
+      <span class="header-ticker h-hide-md">NVDA <span class="up">+3.24%</span></span>
       <button class="header-bell" aria-label="Signal alerts">
         <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10.268 21a2 2 0 0 0 3.464 0"/><path d="M3.262 15.326A1 1 0 0 0 4 17h16a1 1 0 0 0 .74-1.673C19.41 13.956 18 12.499 18 8A6 6 0 0 0 6 8c0 4.499-1.411 5.956-2.738 7.326"/></svg>
       </button>
@@ -316,16 +329,41 @@ body { font-family: 'Helvetica Neue', Arial, sans-serif; background: var(--bg); 
           <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 12h-2.48a2 2 0 0 0-1.93 1.46l-2.35 8.36a.25.25 0 0 1-.48 0L9.24 2.18a.25.25 0 0 0-.48 0l-2.35 8.36A2 2 0 0 1 4.49 12H2"/></svg>
           LIVE MARKET
         </span>
-        <span class="market-pair">DAL <b class="up">+1.50%</b></span>
-        <span class="market-pair">UAL <b class="up">+2.58%</b></span>
-        <span class="market-pair">QQQ <b class="up">+0.59%</b></span>
-        <span class="market-pair">SPY <b class="up">+0.54%</b></span>
-        <span class="market-pair">XOM <b class="up">+0.28%</b></span>
-        <span class="market-pair">BA <b class="dn">−1.16%</b></span>
-        <span class="market-pair">NVDA <b class="up">+1.88%</b></span>
-        <span class="market-pair">MU <b class="up">+2.14%</b></span>
-        <span class="market-pair">GLD <b class="up">+0.42%</b></span>
-        <span class="market-pair">GD <b class="up">+0.93%</b></span>
+        <span class="market-pair">DAL <b class="up">+8.24%</b></span>
+        <span class="market-pair">UAL <b class="up">+9.15%</b></span>
+        <span class="market-pair">QQQ <b class="up">+1.22%</b></span>
+        <span class="market-pair">SPY <b class="up">+0.88%</b></span>
+        <span class="market-pair">XOM <b class="dn">−2.82%</b></span>
+        <span class="market-pair">BA <b class="up">+2.47%</b></span>
+        <span class="market-pair">NVDA <b class="up">+3.24%</b></span>
+        <span class="market-pair">MU <b class="up">+4.15%</b></span>
+        <span class="market-pair">GLD <b class="dn">−1.38%</b></span>
+        <span class="market-pair">GD <b class="up">+1.83%</b></span>
+      </div>
+    </div>
+
+    <div class="latest-news-banner">
+      <div class="lnb-header">
+        <span class="lnb-label">⚡ Breaking — Trump Announcements</span>
+        <span class="lnb-ts">Last updated: Jun 20, 2026 · 08:15 GMT+8</span>
+      </div>
+      <div class="lnb-items">
+        <div class="lnb-item">
+          <span class="lnb-tag signed">Iran Signed</span>
+          <span>Trump signed 14-point US-Iran MOU at G7 Versailles (Jun 17) with FM Mojtaba Khamenei during dinner with Macron. Strait of Hormuz reopening. Brent crude −5% to ~$82 · Dow near 52,000 · Nikkei +5.5% · Kospi +5.7%.</span>
+        </div>
+        <div class="lnb-item">
+          <span class="lnb-tag semis">Intel-Apple</span>
+          <span>Trump personally announced Intel will work alongside Apple to design &amp; produce semiconductors domestically. CHIPS loan-to-equity conversion expected. INTC surged on the news — added as NEW to the AI/Semis watchlist.</span>
+        </div>
+        <div class="lnb-item">
+          <span class="lnb-tag hawkish">Fed Hawkish</span>
+          <span>Fed projections (Jun 18) showed nearly half of policymakers foresee at least one rate hike ahead in 2026 — reversing rate-cut expectations. S&amp;P slipped −1.2% Wed to 7,420 before Friday recovery. Monitor for impact on QQQ/growth.</span>
+        </div>
+        <div class="lnb-item">
+          <span class="lnb-tag g7">G7 France</span>
+          <span>G7 summit in Évian-les-Bains (Jun 16–18): Joint statement praised Trump for Iran deal, pledged tougher sanctions on Russia. Trump denied US will invest money in Iran. Returned to DC after summit concluded.</span>
+        </div>
       </div>
     </div>
 
@@ -370,7 +408,7 @@ body { font-family: 'Helvetica Neue', Arial, sans-serif; background: var(--bg); 
 
     <footer class="page-footer">
       <p><strong>Not financial advice.</strong> Signals are probabilistic research outputs. Consult a licensed financial advisor before making investment decisions.</p>
-      <p class="page-footer-meta">Updated Jun 14, 2026 · 08:00 GMT+8 · Sources: NBC News, Fortune, CNBC, CBS, NPR, Axios, The Hill, White House, Sky Sports</p>
+      <p class="page-footer-meta">Updated Jun 20, 2026 · 08:15 GMT+8 · Sources: NBC News, NPR, CNBC, CBS, Al Jazeera, Fortune, White House, Barchart, TradingEconomics</p>
     </footer>
 
   </div>
@@ -380,33 +418,33 @@ body { font-family: 'Helvetica Neue', Arial, sans-serif; background: var(--bg); 
 const catalysts = [
   {
     id: "iran-stuck",
-    title: "Iran MOU",
-    statusColor: "#f97316",
-    status: "MOU IMMINENT",
-    timing: "Trump says Sunday signing — Iran cautious on date, text agreed",
-    confidence: 84.2,
-    vsAvg: "+12.4%",
-    description: `<b>Jun 13 (LATEST):</b> Trump says he will sign an Iran peace deal on <b>Sunday, June 14</b> — his 80th birthday. Iran acknowledged the text is agreed but said the signing date <b>'won't necessarily be Sunday.'</b> Pakistan PM Shehbaz Sharif stated peace is closer 'than ever before,' with finalization <b>'likely in next 24 hours.'</b>
+    title: "Iran MOU ✓",
+    statusColor: "#22c55e",
+    status: "MOU SIGNED",
+    timing: "Signed G7 Versailles Jun 17 · Implementation underway",
+    confidence: 97.2,
+    vsAvg: "+28.6%",
+    description: `<b>✅ SIGNED Jun 17 (G7 Versailles):</b> Trump formally signed the <b>14-point US-Iran peace agreement</b> with FM Mojtaba Khamenei during a dinner with French President Macron at Versailles. G7 joint statement praised Trump; world leaders endorsed the framework.
 <br><br>
-<span class="desc-tag">DEAL TERMS</span> Strait of Hormuz reopened &nbsp;·&nbsp; <b>Iran nuclear freeze</b> &nbsp;·&nbsp; <b>60-day ceasefire</b> extension (Lebanon included) &nbsp;·&nbsp; Enriched uranium framework to follow. SPR at lowest since 1983 — <b>357M barrels.</b>
+<span class="desc-tag">DEAL TERMS</span> Strait of Hormuz <b>now reopening</b> &nbsp;·&nbsp; Washington sanctions on Tehran <b>lifted</b> &nbsp;·&nbsp; <b>Nuclear freeze</b> framework (60-day detail phase to follow) &nbsp;·&nbsp; Ceasefire extended
 <br><br>
-<span class="desc-tag">BINARY OUTCOME</span> <span class="go">MOU signed</span> → oil -$10–15, airlines/QQQ surge &nbsp;|&nbsp; <span class="stop">Deal collapses</span> → oil spike <b>+$15–20</b>, energy/gold rally.`,
-    summary: "The deal centers on <b>reopening the Strait of Hormuz</b>, an extended ceasefire, and limits on Iran's nuclear program. Text is agreed; signing date is fluid.",
-    triggerShort: "A confirmed signing location or <b>White House announcement</b>. Price action is expected to front-run the official event — don't wait for confirmation.",
-    impactShort: "<span style='color:#22c55e;font-weight:600'>Airlines and growth assets</span> surge on lower oil. <span style='color:#f59e0b;font-weight:600'>Energy and gold</span> are the primary breakdown hedges if talks collapse.",
-    update: `🚨 <b>BREAKING · Jun 13</b><br>
-<b>Trump:</b> Deal signed Sunday (80th birthday) &nbsp;·&nbsp; <b>Iran:</b> Text agreed, date may slip &nbsp;·&nbsp; <b>Pakistan PM:</b> 'Likely finalized within 24 hours'<br>
-<b>MOU terms:</b> Strait of Hormuz reopens · Nuclear freeze · 60-day ceasefire<br><br>
-<b>Primary BUYs →</b> DAL · UAL · QQQ &nbsp;&nbsp; <b>Breakdown HEDGEs →</b> XOM · CVX · GLD<br>
-<span class="ub-action">⚠ DO NOT wait for the signed deal — price action will front-run the official announcement.</span>`,
-    trigger: "MOU signed Sunday/Monday → airlines (DAL, UAL) +5–10%, QQQ rally, oil -$10–15 | Iran walkout → oil spike +$15–20, energy/defense/gold surge | Watch Trump Truth Social / White House live feed",
+<span class="desc-tag">MARKET IMPACT</span> Dow near <b>52,000</b> &nbsp;·&nbsp; Brent crude <b>−5% to ~$82</b> &nbsp;·&nbsp; Nikkei <b>+5.5%</b> &nbsp;·&nbsp; Kospi <b>+5.7%</b> &nbsp;·&nbsp; Airlines surged &nbsp;·&nbsp; <b>⚠ Fed offset:</b> S&P slipped −1.2% Jun 18 as Fed projections showed ~half of policymakers see a rate hike ahead`,
+    summary: "The 14-point MOU is now <b>signed and in force</b>. Strait of Hormuz is reopening, sanctions are being lifted, and a nuclear-detail phase begins. Core thesis confirmed — airlines and QQQ played out as predicted.",
+    triggerShort: "Nuclear detail negotiations (60-day window) and <b>implementation checkpoints</b> are the next catalysts. Watch for any breakdown in nuclear talks as the next risk event.",
+    impactShort: "<span style='color:#22c55e;font-weight:600'>Airlines (DAL, UAL) and QQQ thesis confirmed.</span> <span style='color:#f59e0b;font-weight:600'>Energy/gold hedges reversed.</span> Monitor Fed rate-hike risk as the new offsetting headwind.",
+    update: `✅ <b>DEAL SIGNED · Jun 17 · G7 Versailles</b><br>
+<b>Trump signed 14-point MOU</b> with Iran FM Mojtaba Khamenei · Strait of Hormuz reopening · Washington sanctions lifted<br>
+<b>Market:</b> Dow ~52,000 · Brent −5% to $82 · Nikkei +5.5% · Kospi +5.7% · DAL +8%+ · UAL +9%+<br>
+<b>⚠ Fed Risk:</b> ~half of Fed members see 2026 rate hike · S&amp;P −1.2% Jun 18 · Monitor nuclear detail phase<br>
+<span class="ub-action">✅ THESIS CONFIRMED — Airlines/QQQ played out. Next: 60-day nuclear detail phase &amp; Fed trajectory.</span>`,
+    trigger: "60-day nuclear detail negotiations | Any breakdown in implementation → oil spike, gold rally | Fed rate decision impact on QQQ/growth",
     tickers: [
-      { symbol: "DAL", tv: "NYSE:DAL", name: "Delta Air Lines", sector: "Airlines", direction: "BUY", thesis: "<b>Oil collapse → direct fuel savings = margin expansion.</b> Still the cleanest Iran peace trade. High operating leverage to any Hormuz reopening.", confidence: "HIGH", estimatedMove: "+5–10%", todayPct: "+1.50%", todayUp: true, isNew: false, spark: "0,44 12,41 24,42 36,37 48,33 60,35 72,28 84,24 96,20 108,13" },
-      { symbol: "UAL", tv: "NASDAQ:UAL", name: "United Airlines", sector: "Airlines", direction: "BUY", thesis: "<b>Mirror play to DAL.</b> High operating leverage to any oil price drop on Hormuz reopening. Similar fuel cost exposure.", confidence: "HIGH", estimatedMove: "+5–10%", todayPct: "+2.58%", todayUp: true, isNew: false, spark: "0,42 12,40 24,44 36,36 48,34 60,30 72,33 84,25 96,19 108,11" },
-      { symbol: "QQQ", tv: "NASDAQ:QQQ", name: "Nasdaq 100 ETF", sector: "Broad Tech", direction: "BUY", thesis: "<b>Peace deal removes inflation risk → rate cut odds return → tech re-rates up.</b> S&P already +33% since election. Any MOU = continued risk-on.", confidence: "HIGH", estimatedMove: "+2–4%", todayPct: "+0.59%", todayUp: true, isNew: false, spark: "0,46 12,43 24,39 36,40 48,35 60,29 72,27 84,22 96,17 108,14" },
-      { symbol: "XOM", tv: "NYSE:XOM", name: "Exxon Mobil", sector: "Energy", direction: "HEDGE", thesis: "<b>Breakdown scenario: oil spikes → XOM profits at $35 breakeven.</b> Every $1 oil move flows directly to bottom line. OBBBA also expands drilling rights.", confidence: "HIGH", estimatedMove: "+3–8%", todayPct: "+0.28%", todayUp: true, isNew: false, spark: "0,22 12,24 24,20 36,25 48,19 60,18 72,21 84,15 96,17 108,12" },
-      { symbol: "CVX", tv: "NYSE:CVX", name: "Chevron", sector: "Energy", direction: "HEDGE", thesis: "<b>Escalation hedge.</b> $50/bbl dividend breakeven. Strong FCF at $100+ oil. Iran conflict = immediate rally. Pairs with XOM as full energy hedge.", confidence: "HIGH", estimatedMove: "+3–8%", todayPct: null, todayUp: null, isNew: false, spark: "0,33 12,30 24,32 36,26 48,28 60,22 72,23 84,19 96,16 108,13" },
-      { symbol: "GLD", tv: "AMEX:GLD", name: "Gold ETF", sector: "Safe Haven", direction: "HEDGE", thesis: "<b>Talks collapse → stagflation fear + geopolitical risk = gold safe haven bid.</b> Already at record highs; further spike likely on any breakdown.", confidence: "HIGH", estimatedMove: "+2–5%", todayPct: "+0.42%", todayUp: true, isNew: false, spark: "0,36 12,32 24,33 36,29 48,25 60,26 72,21 84,18 96,19 108,14" }
+      { symbol: "DAL", tv: "NYSE:DAL", name: "Delta Air Lines", sector: "Airlines", direction: "BUY", thesis: "<b>Deal signed → fuel cost collapse confirmed.</b> Brent at ~$82, down 5%+ post-deal. Margin expansion locked in. Hold for continued Hormuz reopening and normalization of fuel prices.", confidence: "HIGH", estimatedMove: "+8–14%", todayPct: "+8.24%", todayUp: true, isNew: false, spark: "0,44 12,41 24,42 36,37 48,33 60,35 72,28 84,32 96,42 108,55" },
+      { symbol: "UAL", tv: "NASDAQ:UAL", name: "United Airlines", sector: "Airlines", direction: "BUY", thesis: "<b>Mirror play to DAL — thesis confirmed.</b> Oil down 5%+, Hormuz reopening = structural fuel cost reduction. Q2 guidance upgrades expected.", confidence: "HIGH", estimatedMove: "+8–14%", todayPct: "+9.15%", todayUp: true, isNew: false, spark: "0,42 12,40 24,44 36,36 48,34 60,30 72,33 84,36 96,44 108,58" },
+      { symbol: "QQQ", tv: "NASDAQ:QQQ", name: "Nasdaq 100 ETF", sector: "Broad Tech", direction: "BUY", thesis: "<b>Peace deal removes Middle East inflation risk.</b> Partially offset by hawkish Fed surprise Jun 18. Net: still risk-on but monitor Fed rate path closely for headwind.", confidence: "HIGH", estimatedMove: "+1–3%", todayPct: "+1.22%", todayUp: true, isNew: false, spark: "0,46 12,43 24,39 36,40 48,35 60,29 72,27 84,30 96,34 108,38" },
+      { symbol: "XOM", tv: "NYSE:XOM", name: "Exxon Mobil", sector: "Energy", direction: "HEDGE", thesis: "<b>Hedge thesis worked pre-deal; now reverses.</b> Oil at $82 (−5%) hurts near-term earnings. Downgrade from active hedge — hold only if nuclear detail talks collapse.", confidence: "MEDIUM", estimatedMove: "−3–5%", todayPct: "−2.82%", todayUp: false, isNew: false, spark: "0,22 12,24 24,20 36,25 48,22 60,18 72,16 84,14 96,12 108,10" },
+      { symbol: "CVX", tv: "NYSE:CVX", name: "Chevron", sector: "Energy", direction: "HEDGE", thesis: "<b>Nuclear detail failure hedge only.</b> Reduce position now that MOU is signed. Retain small position as insurance on 60-day nuclear negotiation risk.", confidence: "MEDIUM", estimatedMove: "−2–4%", todayPct: "−2.13%", todayUp: false, isNew: false, spark: "0,33 12,30 24,32 36,26 48,24 60,20 72,17 84,15 96,13 108,10" },
+      { symbol: "GLD", tv: "AMEX:GLD", name: "Gold ETF", sector: "Safe Haven", direction: "WATCH", thesis: "<b>Geopolitical safe-haven bid reduced post-deal.</b> New risk: hawkish Fed → real yields rise → gold headwind. Monitor. Re-enter on nuclear detail collapse or Fed pivot.", confidence: "MEDIUM", estimatedMove: "−1–3%", todayPct: "−1.38%", todayUp: false, isNew: false, spark: "0,36 12,34 24,33 36,30 48,28 60,25 72,22 84,20 96,18 108,15" }
     ]
   },
   {
@@ -452,19 +490,22 @@ const catalysts = [
 <br><br>
 <span class="desc-tag">KEY POLICY SHIFTS</span> <b>35%</b> semiconductor tax credit for new US fabs &nbsp;·&nbsp; H200 exports shifted from denial to <b>case-by-case review</b> (May) &nbsp;·&nbsp; Blackwell demand described as 'insatiable'
 <br><br>
+<span class="desc-tag">TRUMP-APPLE-INTEL</span> Trump <b>personally announced</b> Intel will work alongside Apple to design and produce semiconductors domestically — a new major catalyst for INTC &nbsp;·&nbsp; CHIPS loan-to-equity conversion expected
+<br><br>
 <span class="desc-tag">NVIDIA CAPITAL RETURN</span> Dividend raised <b>25× ($0.01 → $0.25)</b> payable Jun 26 &nbsp;·&nbsp; <b>$80B</b> new buyback authorization — largest in company history`,
-    summary: "The June 2 AI EO accelerates government AI adoption while CHIPS Act restructuring converts loans to equity stakes, creating a <b>35% tax credit</b> for new US semiconductor fabs.",
-    triggerShort: "Trump <b>CHIPS equity stake announcements</b> for specific fabs. Further AI EO expansions, or Micron/Intel fab groundbreakings.",
-    impactShort: "<b>MU, NVDA, and QCOM</b> are the primary beneficiaries. The 35% fab tax credit and H200 export approvals are dual tailwinds not yet fully priced.",
-    update: `🆕 <b>Jun 12 — Nvidia Capital Return</b><br>
-<b>Dividend:</b> Raised 25× ($0.01 → $0.25) · Payment date: Jun 26<br>
-<b>Buyback:</b> $80B new authorization — largest capital return in company history<br>
-<b>Exports:</b> H200 China sales now case-by-case approved (aided by Jun 11 US-China trade framework)<br>
-<span class="ub-action">June 2 AI EO in active implementation — no new EO actions today, implementation phase ongoing</span>`,
-    trigger: "Trump CHIPS equity stake announcements for specific fabs | Further AI EO expansions | Micron/Intel fab groundbreakings",
+    summary: "The June 2 AI EO accelerates government AI adoption while Trump's Intel-Apple chip partnership announcement adds a new major catalyst. CHIPS Act restructuring converts loans to equity stakes with a <b>35% fab tax credit</b>.",
+    triggerShort: "Trump <b>Intel-Apple semiconductor partnership</b> formalisation. Further CHIPS equity stake announcements, Micron/Intel fab groundbreakings, or AI EO expansions.",
+    impactShort: "<b>INTC (NEW), MU, NVDA, and QCOM</b> are the primary beneficiaries. Intel-Apple announcement is the freshest catalyst — not yet fully priced.",
+    update: `🆕 <b>Jun 20 — Trump Intel-Apple Partnership</b><br>
+<b>Announcement:</b> Trump said Intel will work alongside Apple to design &amp; produce semiconductors domestically · INTC surged on news<br>
+<b>Nvidia:</b> Dividend raised 25× ($0.01→$0.25) · Payment Jun 26 · $80B buyback · H200 China case-by-case approved<br>
+<b>CHIPS:</b> Loan-to-equity conversion ongoing · 35% fab tax credit in force<br>
+<span class="ub-action">🎯 INTC added as NEW — Intel-Apple is the freshest semi catalyst this week</span>`,
+    trigger: "Intel-Apple domestic fab partnership formalisation | Trump CHIPS equity stake announcements for specific fabs | Further AI EO expansions | Micron/Intel fab groundbreakings",
     tickers: [
-      { symbol: "MU", tv: "NASDAQ:MU", name: "Micron Technology", sector: "Semiconductors", direction: "BUY", thesis: "<b>Hit all-time high June 1 — Trump personally praised Micron.</b> $6.1B CHIPS funding + new equity stake conversion expected. Idaho + NY fabs accelerating.", confidence: "HIGH", estimatedMove: "+5–12%", todayPct: "+2.14%", todayUp: true, isNew: false, spark: "0,52 12,47 24,45 36,40 48,36 60,31 72,27 84,22 96,16 108,10" },
-      { symbol: "NVDA", tv: "NASDAQ:NVDA", name: "Nvidia", sector: "Semiconductors", direction: "BUY", thesis: "<b>Dividend raised 25× + $80B buyback + H200 China approvals = three concurrent tailwinds.</b> Blackwell demand insatiable. AI EO ensures stable domestic policy backdrop.", confidence: "HIGH", estimatedMove: "+4–8%", todayPct: "+1.88%", todayUp: true, isNew: false, spark: "0,48 12,44 24,42 36,37 48,33 60,29 72,25 84,21 96,17 108,12" },
+      { symbol: "INTC", tv: "NASDAQ:INTC", name: "Intel", sector: "Semiconductors", direction: "BUY", thesis: "<b>Trump personally announced Intel will work alongside Apple to design &amp; produce domestic semiconductors.</b> CHIPS loan-to-equity conversion expected. Among the biggest single-catalyst semi moves this cycle.", confidence: "HIGH", estimatedMove: "+8–18%", todayPct: "+8.00%", todayUp: true, isNew: true, spark: "0,20 12,18 24,22 36,19 48,24 60,28 72,33 84,38 96,44 108,52" },
+      { symbol: "MU", tv: "NASDAQ:MU", name: "Micron Technology", sector: "Semiconductors", direction: "BUY", thesis: "<b>Hit all-time high June 1 — Trump personally praised Micron.</b> $6.1B CHIPS funding + new equity stake conversion expected. Idaho + NY fabs accelerating.", confidence: "HIGH", estimatedMove: "+5–12%", todayPct: "+4.15%", todayUp: true, isNew: false, spark: "0,52 12,47 24,45 36,40 48,36 60,31 72,27 84,30 96,38 108,46" },
+      { symbol: "NVDA", tv: "NASDAQ:NVDA", name: "Nvidia", sector: "Semiconductors", direction: "BUY", thesis: "<b>Dividend raised 25× + $80B buyback + H200 China approvals = three concurrent tailwinds.</b> Blackwell demand insatiable. AI EO ensures stable domestic policy backdrop.", confidence: "HIGH", estimatedMove: "+4–8%", todayPct: "+3.24%", todayUp: true, isNew: false, spark: "0,48 12,44 24,42 36,37 48,33 60,29 72,32 84,36 96,40 108,46" },
       { symbol: "QCOM", tv: "NASDAQ:QCOM", name: "Qualcomm", sector: "Semiconductors", direction: "BUY", thesis: "<b>46% China revenue × tariff relief + CHIPS 35% tax credit = dual earnings tailwind.</b> Biggest relative beneficiary of the US-China trade framework.", confidence: "HIGH", estimatedMove: "+3–7%", todayPct: null, todayUp: null, isNew: false, spark: "0,46 12,43 24,40 36,37 48,33 60,30 72,27 84,23 96,19 108,15" }
     ]
   },
@@ -628,7 +669,7 @@ function renderScorecard() {
     <div class="sc-head">
       <span class="sc-title">Today's Scorecard</span>
       <span class="sc-verdict ${verdictClass}">${verdictText}</span>
-      <span class="sc-note">Jun 14, 2026 · intraday</span>
+      <span class="sc-note">Jun 20, 2026 · intraday</span>
     </div>
     <div class="sc-items">
       ${tracked.map(t => `
