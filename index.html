@@ -3,911 +3,483 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Trump Catalyst Watchlist</title>
+<title>Catalyst Desk — Decision Board</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@500;600;700&family=IBM+Plex+Mono:wght@400;500;600&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
 <style>
-/* === DESIGN TOKENS === */
-:root {
-  --bg: #050508;
-  --card: #08080f;
-  --card-alt: #07070e;
-  --border: rgba(255,255,255,0.06);
-  --primary: #22c55e;
-  --primary-10: rgba(34,197,94,0.1);
-  --primary-30: rgba(34,197,94,0.3);
-  --warning: #f59e0b;
-  --warning-10: rgba(245,158,11,0.1);
-  --warning-30: rgba(245,158,11,0.3);
-  --destructive: #ef4444;
-  --fg: #f8fafc;
-  --fg-muted: #94a3b8;
-  --fg-subtle: #475569;
-  --fg-faint: #334155;
-  --success: #22c55e;
-  --sidebar-w: 256px;
+:root{
+  --bg:#0C1118; --surface:#131A24; --surface2:#0F151E; --line:#223041;
+  --text:#E8EDF2; --muted:#8FA0B3; --dim:#5C6B7D;
+  --buy:#35D07F; --watch:#FFB454; --hedge:#6EA8FE; --risk:#FF6B6B;
+  --buy-bg:rgba(53,208,127,.10); --watch-bg:rgba(255,180,84,.10);
+  --hedge-bg:rgba(110,168,254,.10); --risk-bg:rgba(255,107,107,.10);
 }
+*{box-sizing:border-box;margin:0;padding:0}
+html{scroll-behavior:smooth}
+@media (prefers-reduced-motion:reduce){html{scroll-behavior:auto}*{transition:none!important}}
+body{background:var(--bg);color:var(--text);font-family:'Inter',system-ui,sans-serif;font-size:15px;line-height:1.55;-webkit-font-smoothing:antialiased}
+.wrap{max-width:880px;margin:0 auto;padding:0 16px 80px}
+a{color:var(--hedge);text-decoration:none}
+a:hover,a:focus-visible{text-decoration:underline}
+:focus-visible{outline:2px solid var(--watch);outline-offset:2px;border-radius:2px}
 
-* { margin: 0; padding: 0; box-sizing: border-box; }
-html { font-size: 14px; }
+/* ============ header ============ */
+header{padding:26px 0 18px;border-bottom:1px solid var(--line)}
+.kicker{font-family:'IBM Plex Mono',monospace;font-size:11px;letter-spacing:.14em;color:var(--dim);text-transform:uppercase}
+h1{font-family:'Barlow Condensed',sans-serif;font-weight:700;font-size:clamp(30px,6vw,44px);letter-spacing:.02em;text-transform:uppercase;line-height:1.05;margin:6px 0 10px}
+h1 .accent{color:var(--watch)}
+.meta{display:flex;flex-wrap:wrap;gap:8px 18px;font-family:'IBM Plex Mono',monospace;font-size:12px;color:var(--muted)}
+.meta .status{color:var(--risk)}
+.snapshot-note{margin-top:10px;font-size:12.5px;color:var(--dim);border-left:2px solid var(--line);padding-left:10px}
 
-body { font-family: 'Helvetica Neue', Arial, sans-serif; background: var(--bg); color: var(--fg); min-height: 100vh; }
+/* ============ section headers ============ */
+h2{font-family:'Barlow Condensed',sans-serif;font-weight:600;font-size:22px;letter-spacing:.06em;text-transform:uppercase;margin:34px 0 4px;display:flex;align-items:baseline;gap:10px}
+h2 .n{font-family:'IBM Plex Mono',monospace;font-size:12px;color:var(--dim);letter-spacing:0}
+.sub{font-size:13px;color:var(--muted);margin-bottom:14px}
 
-::-webkit-scrollbar { width: 4px; height: 4px; }
-::-webkit-scrollbar-track { background: transparent; }
-::-webkit-scrollbar-thumb { background: #1e293b; border-radius: 4px; }
+/* ============ week strip ============ */
+.week{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:8px;margin-top:12px}
+.day{background:var(--surface);border:1px solid var(--line);border-radius:8px;padding:10px 12px}
+.day .d{font-family:'IBM Plex Mono',monospace;font-size:11px;color:var(--watch);letter-spacing:.08em;text-transform:uppercase}
+.day p{font-size:12.5px;color:var(--muted);margin-top:4px;line-height:1.45}
+.day.hot{border-color:rgba(255,180,84,.45)}
 
-/* === SIDEBAR === */
-.sidebar {
-  position: fixed; top: 0; left: 0; bottom: 0; width: var(--sidebar-w);
-  background: #06060d; border-right: 1px solid var(--border);
-  display: flex; flex-direction: column; z-index: 50;
-  transform: translateX(-100%); transition: transform 0.2s ease;
+/* ============ decision board ============ */
+.board{margin-top:12px;border:1px solid var(--line);border-radius:10px;overflow:hidden}
+.board-head{display:grid;grid-template-columns:86px 92px 70px 1fr;gap:0;background:var(--surface2);font-family:'IBM Plex Mono',monospace;font-size:10.5px;letter-spacing:.1em;text-transform:uppercase;color:var(--dim);padding:9px 14px;border-bottom:1px solid var(--line)}
+details.row{border-bottom:1px solid var(--line);background:var(--surface)}
+details.row:last-child{border-bottom:none}
+details.row summary{display:grid;grid-template-columns:86px 92px 70px 1fr;align-items:center;padding:12px 14px;cursor:pointer;list-style:none;gap:0}
+details.row summary::-webkit-details-marker{display:none}
+details.row summary:hover{background:var(--surface2)}
+details.row[open] summary{background:var(--surface2)}
+.tick{font-family:'IBM Plex Mono',monospace;font-weight:600;font-size:15px}
+.sig{font-family:'IBM Plex Mono',monospace;font-size:11px;font-weight:600;letter-spacing:.06em;padding:3px 8px;border-radius:4px;justify-self:start}
+.sig.buy{color:var(--buy);background:var(--buy-bg)}
+.sig.watch{color:var(--watch);background:var(--watch-bg)}
+.sig.hedge{color:var(--hedge);background:var(--hedge-bg)}
+.sig.wait{color:var(--dim);background:rgba(92,107,125,.12)}
+.conv{font-family:'IBM Plex Mono',monospace;font-size:12px;letter-spacing:2px}
+.conv .on{color:var(--text)}.conv .off{color:#2C3A4B}
+.changed{font-size:12.5px;color:var(--muted);line-height:1.4;padding-right:6px}
+.changed b{color:var(--text);font-weight:600}
+.detail{padding:4px 14px 16px;background:var(--surface2)}
+.levels{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:8px;margin:10px 0}
+.lvl{border:1px solid var(--line);border-radius:6px;padding:8px 10px}
+.lvl .lab{font-family:'IBM Plex Mono',monospace;font-size:10px;letter-spacing:.1em;text-transform:uppercase;color:var(--dim)}
+.lvl .val{font-size:13px;margin-top:3px;line-height:1.4}
+.lvl.entry .lab{color:var(--buy)} .lvl.stop .lab{color:var(--risk)} .lvl.tgt .lab{color:var(--hedge)}
+.thesis{font-size:13.5px;color:var(--muted);line-height:1.55}
+.thesis b{color:var(--text)}
+.riskline{font-size:12.5px;color:var(--risk);margin-top:8px}
+.chartlink{display:inline-block;margin-top:10px;font-family:'IBM Plex Mono',monospace;font-size:12px}
+.newchip{font-family:'IBM Plex Mono',monospace;font-size:9.5px;color:var(--bg);background:var(--watch);border-radius:3px;padding:1px 5px;margin-left:6px;vertical-align:2px;font-weight:600}
+
+/* ============ sizing box ============ */
+.sizing{margin-top:14px;background:var(--surface);border:1px solid var(--line);border-left:3px solid var(--buy);border-radius:8px;padding:14px 16px;font-size:13.5px;color:var(--muted)}
+.sizing b{color:var(--text)}
+
+/* ============ collapse sections ============ */
+details.section{margin-top:14px;border:1px solid var(--line);border-radius:10px;background:var(--surface)}
+details.section>summary{cursor:pointer;list-style:none;padding:14px 16px;font-family:'Barlow Condensed',sans-serif;font-weight:600;font-size:18px;letter-spacing:.06em;text-transform:uppercase;display:flex;justify-content:space-between;align-items:center}
+details.section>summary::-webkit-details-marker{display:none}
+details.section>summary .count{font-family:'IBM Plex Mono',monospace;font-size:11px;color:var(--dim);letter-spacing:0;text-transform:none}
+details.section>summary::after{content:"+";font-family:'IBM Plex Mono',monospace;color:var(--dim);margin-left:12px}
+details.section[open]>summary::after{content:"–"}
+.section-body{padding:0 16px 16px;font-size:13.5px;color:var(--muted)}
+.bench{display:grid;grid-template-columns:repeat(auto-fill,minmax(240px,1fr));gap:8px}
+.bench .b{border:1px solid var(--line);border-radius:6px;padding:10px 12px;background:var(--surface2)}
+.bench .b .t{font-family:'IBM Plex Mono',monospace;font-weight:600;color:var(--text);font-size:13px}
+.bench .b p{font-size:12.5px;margin-top:4px;line-height:1.45}
+
+/* ============ catalyst log ============ */
+.cat{border-bottom:1px solid var(--line);padding:14px 0}
+.cat:last-child{border-bottom:none}
+.cat h3{font-size:14.5px;font-weight:600;color:var(--text)}
+.cat .impact{font-size:12.5px;margin-top:6px;color:var(--muted)}
+.cat .impact b{color:var(--text)}
+.log{margin-top:8px;font-family:'IBM Plex Mono',monospace;font-size:11.5px;color:var(--dim);line-height:1.7}
+.log .d{color:var(--watch)}
+
+/* ============ history ============ */
+table.hist{width:100%;border-collapse:collapse;font-size:12.5px;margin-top:4px}
+table.hist th{font-family:'IBM Plex Mono',monospace;font-size:10px;letter-spacing:.1em;text-transform:uppercase;color:var(--dim);text-align:left;padding:8px 8px;border-bottom:1px solid var(--line)}
+table.hist td{padding:9px 8px;border-bottom:1px solid var(--line);color:var(--muted);vertical-align:top}
+table.hist td:first-child{font-family:'IBM Plex Mono',monospace;color:var(--text);font-weight:600}
+.up{color:var(--buy)} .dn{color:var(--risk)} .fl{color:var(--dim)}
+
+/* ============ footer ============ */
+footer{margin-top:40px;padding-top:18px;border-top:1px solid var(--line);font-size:12px;color:var(--dim);line-height:1.7}
+.legend{display:flex;flex-wrap:wrap;gap:14px;margin-bottom:10px;font-family:'IBM Plex Mono',monospace;font-size:11px}
+.legend span b{font-weight:600}
+
+/* ============ mobile ============ */
+@media (max-width:560px){
+  .board-head{grid-template-columns:70px 78px 1fr;padding:9px 12px}
+  .board-head .h-conv{display:none}
+  details.row summary{grid-template-columns:70px 78px 1fr;padding:12px}
+  .conv{display:none}
+  .changed{font-size:12px}
 }
-.sidebar.open { transform: translateX(0); }
-@media (min-width: 1024px) { .sidebar { transform: translateX(0); } }
-
-.sidebar-brand { padding: 20px 16px 16px; border-bottom: 1px solid var(--border); }
-.sidebar-brand-label { font-family: monospace; font-size: 8px; letter-spacing: 3px; color: var(--fg-faint); text-transform: uppercase; margin-bottom: 4px; }
-.sidebar-brand-title { font-size: 13px; font-weight: 700; color: var(--fg); letter-spacing: -0.3px; }
-.sidebar-brand-meta { font-family: monospace; font-size: 9px; color: var(--fg-subtle); margin-top: 4px; }
-.sidebar-brand-meta .live { color: var(--primary); }
-
-.sidebar-nav { flex: 1; overflow-y: auto; padding: 10px 8px; scrollbar-width: none; }
-.sidebar-nav::-webkit-scrollbar { display: none; }
-.sidebar-section-label { font-family: monospace; font-size: 8px; letter-spacing: 2px; color: var(--fg-faint); text-transform: uppercase; padding: 8px 8px 6px; }
-.sidebar-item { display: flex; align-items: center; gap: 10px; padding: 9px 10px; border-radius: 6px; cursor: pointer; border: none; background: none; width: 100%; text-align: left; transition: background 0.12s; color: var(--fg-subtle); }
-.sidebar-item:hover { background: rgba(255,255,255,0.04); color: var(--fg); }
-.sidebar-item.active { background: rgba(255,255,255,0.06); color: var(--fg); }
-.sidebar-dot { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; }
-.sidebar-item-content { flex: 1; min-width: 0; }
-.sidebar-item-title { font-size: 11px; font-weight: 600; line-height: 1.3; }
-.sidebar-item-status { font-family: monospace; font-size: 8px; color: var(--fg-faint); text-transform: uppercase; letter-spacing: 1px; }
-.sidebar-item.active .sidebar-item-status { opacity: 0.6; }
-.sidebar-item-count { font-family: monospace; font-size: 9px; color: var(--fg-faint); background: rgba(255,255,255,0.05); padding: 1px 6px; border-radius: 3px; flex-shrink: 0; }
-.sidebar-footer { padding: 12px 16px; border-top: 1px solid var(--border); font-family: monospace; font-size: 9px; color: var(--fg-faint); line-height: 1.6; }
-
-/* === OVERLAY === */
-.sidebar-overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.6); z-index: 40; cursor: pointer; }
-.sidebar-overlay.show { display: block; }
-@media (min-width: 1024px) { .sidebar-overlay { display: none !important; } }
-
-/* === MAIN === */
-.main { min-height: 100vh; padding-left: 0; }
-@media (min-width: 1024px) { .main { padding-left: var(--sidebar-w); } }
-
-/* === REFRESH BANNER === */
-.refresh-banner { display: flex; align-items: center; gap: 10px; padding: 7px 20px; background: #07070e; border-bottom: 1px solid #1e3a5f; font-family: monospace; font-size: 9px; color: #3b82f6; letter-spacing: 1px; }
-.rb-dot { width: 6px; height: 6px; border-radius: 50%; background: #3b82f6; animation: pulse 2s infinite; flex-shrink: 0; }
-.rb-ts { color: #94a3b8; }
-.rb-src { color: var(--fg-faint); margin-left: auto; font-size: 8px; display: none; }
-@media (min-width: 640px) { .rb-src { display: inline; } }
-
-/* === STICKY HEADER === */
-.app-header { position: sticky; top: 0; z-index: 40; display: grid; grid-template-columns: 1fr auto; align-items: center; gap: 12px; border-bottom: 1px solid var(--border); background: rgba(5,5,8,0.88); backdrop-filter: blur(12px); padding: 0 16px; height: 52px; }
-@media (min-width: 640px) { .app-header { padding: 0 24px; } }
-@media (min-width: 1024px) { .app-header { padding: 0 32px; } }
-.header-left { display: flex; align-items: center; gap: 10px; min-width: 0; }
-.header-menu-btn { display: inline-flex; align-items: center; justify-content: center; width: 34px; height: 34px; border-radius: 6px; border: none; background: transparent; color: var(--fg-subtle); cursor: pointer; transition: background 0.12s, color 0.12s; flex-shrink: 0; }
-.header-menu-btn:hover { background: rgba(255,255,255,0.06); color: var(--fg); }
-@media (min-width: 1024px) { .header-menu-btn { display: none; } }
-.header-version { font-family: monospace; font-size: 10px; color: var(--fg-subtle); letter-spacing: 0.5px; white-space: nowrap; }
-.header-right { display: flex; align-items: center; gap: 10px; flex-shrink: 0; font-family: monospace; }
-@media (min-width: 640px) { .header-right { gap: 18px; } }
-.header-ticker { font-size: 10px; color: var(--fg-subtle); }
-.header-ticker .up { color: var(--success); font-weight: 700; }
-.header-ticker .dn { color: var(--destructive); font-weight: 700; }
-.h-hide-sm { display: none; }
-@media (min-width: 640px) { .h-hide-sm { display: inline; } }
-.h-hide-md { display: none; }
-@media (min-width: 768px) { .h-hide-md { display: inline; } }
-.header-bell { display: inline-flex; align-items: center; justify-content: center; width: 34px; height: 34px; border-radius: 6px; border: none; background: transparent; color: var(--fg-subtle); cursor: pointer; transition: background 0.12s, color 0.12s; }
-.header-bell:hover { background: rgba(255,255,255,0.06); color: var(--fg); }
-
-/* === CONTENT === */
-.content { max-width: 1280px; margin: 0 auto; padding: 16px; display: flex; flex-direction: column; gap: 20px; }
-@media (min-width: 640px) { .content { padding: 24px; } }
-@media (min-width: 1024px) { .content { padding: 32px; } }
-
-/* === MARKET BAR === */
-.market-bar { overflow-x: auto; scrollbar-width: none; border-radius: 8px; border: 1px solid var(--border); background: var(--card); }
-.market-bar::-webkit-scrollbar { display: none; }
-.market-bar-inner { display: flex; min-width: max-content; align-items: center; gap: 24px; padding: 10px 16px; font-family: monospace; font-size: 11px; }
-.market-live { display: flex; align-items: center; gap: 6px; color: var(--primary); font-weight: 700; }
-.market-pair { color: var(--fg-muted); }
-.market-pair .up { color: var(--success); font-weight: 700; }
-.market-pair .dn { color: var(--destructive); font-weight: 700; }
-
-/* === TABS === */
-.tabs-wrap { overflow-x: auto; scrollbar-width: none; }
-.tabs-wrap::-webkit-scrollbar { display: none; }
-.tabs-inner { display: flex; min-width: max-content; gap: 6px; }
-.tab-btn { display: inline-flex; align-items: center; gap: 6px; padding: 8px 14px; border-radius: 6px; border: 1px solid var(--border); background: var(--card); color: var(--fg-subtle); font-family: monospace; font-size: 10px; font-weight: 600; letter-spacing: 0.5px; text-transform: uppercase; cursor: pointer; white-space: nowrap; transition: all 0.12s; }
-.tab-btn:hover { border-color: var(--primary-30); color: var(--fg); }
-.tab-btn.active { border-color: var(--primary-30); background: var(--primary-10); color: var(--primary); box-shadow: inset 0 -2px 0 var(--primary); }
-.tab-dot { width: 6px; height: 6px; border-radius: 50%; }
-
-/* === HERO === */
-.hero-grid { display: grid; grid-template-columns: 1fr; gap: 16px; }
-@media (min-width: 1280px) { .hero-grid { grid-template-columns: 1fr 300px; } }
-.hero-card { position: relative; overflow: hidden; border-radius: 16px; border: 1px solid var(--border); background: var(--card); padding: 24px; }
-@media (min-width: 640px) { .hero-card { padding: 32px; } }
-.hero-glow { position: absolute; top: -96px; right: -96px; width: 320px; height: 320px; border-radius: 50%; pointer-events: none; }
-.hero-badge { display: inline-flex; align-items: center; gap: 6px; padding: 3px 10px; border-radius: 4px; font-family: monospace; font-size: 9px; font-weight: 700; letter-spacing: 2px; text-transform: uppercase; margin-bottom: 16px; border: 1px solid; }
-.hero-title { font-size: clamp(24px, 4vw, 36px); font-weight: 800; line-height: 1.15; letter-spacing: -0.5px; margin-bottom: 12px; max-width: 580px; position: relative; z-index: 1; }
-.hero-desc { font-size: 13px; line-height: 1.9; color: var(--fg-muted); max-width: 580px; position: relative; z-index: 1; }
-.hero-desc b { color: var(--fg); font-weight: 600; }
-.hero-desc .desc-tag { display: inline-block; font-family: monospace; font-size: 8px; font-weight: 700; letter-spacing: 2px; text-transform: uppercase; color: var(--fg-faint); padding: 1px 6px; background: rgba(255,255,255,0.04); border-radius: 3px; margin-right: 4px; vertical-align: middle; }
-.hero-desc .go { color: var(--success); font-weight: 600; }
-.hero-desc .stop { color: var(--destructive); font-weight: 600; }
-
-.confidence-card { display: flex; flex-direction: column; border-radius: 16px; border: 1px solid var(--border); background: var(--card); padding: 20px; min-height: 240px; }
-.confidence-title { font-family: monospace; font-size: 10px; font-weight: 700; letter-spacing: 1px; text-transform: uppercase; margin-bottom: 8px; }
-.confidence-donut { margin: 8px auto; display: block; }
-.confidence-bottom { margin-top: auto; display: grid; grid-template-columns: 1fr auto; align-items: end; gap: 8px; }
-.confidence-pct { font-size: 28px; font-weight: 800; line-height: 1; }
-.confidence-label { font-family: monospace; font-size: 9px; text-transform: uppercase; color: var(--fg-subtle); letter-spacing: 1px; margin-top: 3px; }
-.confidence-vs { font-family: monospace; font-size: 10px; flex-shrink: 0; }
-
-/* === BRIEFING === */
-.briefing-grid { display: grid; grid-template-columns: 1fr; gap: 1px; background: var(--border); border-radius: 10px; overflow: hidden; border: 1px solid var(--border); }
-@media (min-width: 768px) { .briefing-grid { grid-template-columns: repeat(3, 1fr); } }
-.briefing-card { background: var(--card); padding: 18px 20px; }
-.briefing-label { font-family: monospace; font-size: 9px; font-weight: 700; letter-spacing: 3px; text-transform: uppercase; margin-bottom: 8px; }
-.briefing-text { font-size: 12px; line-height: 1.7; color: var(--fg-muted); }
-.briefing-text b { color: var(--fg); font-weight: 600; }
-
-/* === UPDATE BANNER === */
-.update-banner { padding: 12px 16px; background: rgba(245,158,11,0.05); border: 1px solid rgba(245,158,11,0.15); border-radius: 6px; font-size: 11px; color: var(--warning); font-family: monospace; line-height: 1.8; }
-.update-banner b { color: #fbbf24; }
-.update-banner .ub-row { display: flex; gap: 6px; margin-top: 4px; }
-.update-banner .ub-label { color: var(--fg-faint); font-size: 9px; flex-shrink: 0; padding-top: 1px; }
-.update-banner .ub-val { color: var(--warning); }
-.update-banner .ub-action { color: var(--fg); background: rgba(245,158,11,0.1); border-radius: 3px; padding: 2px 8px; margin-top: 6px; display: inline-block; font-size: 10px; }
-
-/* === SCORECARD === */
-.scorecard { background: var(--card); border: 1px solid var(--border); border-radius: 8px; padding: 14px 16px; }
-.sc-head { display: flex; align-items: center; gap: 10px; margin-bottom: 10px; flex-wrap: wrap; }
-.sc-title { font-family: monospace; font-size: 9px; font-weight: 700; letter-spacing: 2px; text-transform: uppercase; color: var(--fg-subtle); }
-.sc-verdict { font-family: monospace; font-size: 9px; padding: 2px 8px; border-radius: 3px; }
-.sc-verdict.good { color: var(--success); background: var(--primary-10); border: 1px solid var(--primary-30); }
-.sc-verdict.mixed { color: var(--warning); background: var(--warning-10); border: 1px solid var(--warning-30); }
-.sc-note { font-family: monospace; font-size: 9px; color: var(--fg-faint); margin-left: auto; }
-.sc-items { display: flex; flex-wrap: wrap; gap: 6px; }
-.sc-item { display: flex; align-items: center; gap: 5px; font-family: monospace; font-size: 10px; padding: 3px 9px; border-radius: 4px; border: 1px solid; }
-.sc-item.up { color: var(--success); border-color: var(--primary-30); background: var(--primary-10); }
-.sc-item.dn { color: var(--destructive); border-color: rgba(239,68,68,0.3); background: rgba(239,68,68,0.1); }
-.sc-item .sc-sym { font-weight: 800; }
-.sc-item .sc-dir { font-size: 8px; opacity: 0.7; }
-
-/* === SIGNALS === */
-.signals-header { display: grid; grid-template-columns: 1fr auto; align-items: center; gap: 12px; margin-bottom: 14px; }
-.signals-count { font-family: monospace; font-size: 9px; text-transform: uppercase; letter-spacing: 2px; color: var(--fg-subtle); margin-bottom: 2px; }
-.signals-title { font-size: 18px; font-weight: 800; letter-spacing: -0.3px; }
-.signals-legend { display: none; align-items: center; gap: 14px; font-family: monospace; font-size: 9px; font-weight: 700; text-transform: uppercase; }
-@media (min-width: 640px) { .signals-legend { display: flex; } }
-.signals-legend .lbuy { color: var(--success); }
-.signals-legend .lhedge { color: var(--warning); }
-.toggle-area { display: flex; align-items: center; gap: 10px; }
-.toggle-btn { padding: 5px 14px; border-radius: 20px; font-family: monospace; font-size: 9px; font-weight: 700; cursor: pointer; letter-spacing: 1px; text-transform: uppercase; transition: all 0.15s; border: 1px solid var(--border); background: transparent; color: var(--fg-subtle); }
-.toggle-btn.active-buy { border-color: var(--primary-30); background: var(--primary-10); color: var(--primary); }
-
-/* === TICKER CARDS === */
-.ticker-list { display: flex; flex-direction: column; gap: 10px; }
-@keyframes feedIn { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
-.ticker-card { border-radius: 12px; border: 1px solid var(--border); background: var(--card); overflow: hidden; animation: feedIn 0.3s ease both; }
-
-.tc-top { display: grid; grid-template-columns: 1fr auto; gap: 14px; padding: 16px; align-items: flex-start; }
-@media (min-width: 640px) { .tc-top { padding: 20px; } }
-.tc-left { min-width: 0; }
-.tc-header { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; margin-bottom: 6px; }
-.tc-symbol { font-family: monospace; font-size: 16px; font-weight: 900; letter-spacing: 0.5px; flex-shrink: 0; }
-.tc-name { font-size: 11px; color: var(--fg-subtle); }
-.tc-sector { font-family: monospace; font-size: 9px; background: rgba(255,255,255,0.05); color: var(--fg-subtle); padding: 2px 7px; border-radius: 4px; display: none; }
-@media (min-width: 640px) { .tc-sector { display: inline; } }
-.tc-new { font-family: monospace; font-size: 9px; letter-spacing: 1px; background: var(--primary-10); color: var(--primary); padding: 1px 6px; border-radius: 3px; }
-.tc-today { font-family: monospace; font-size: 9px; font-weight: 700; padding: 1px 7px; border-radius: 3px; }
-.tc-today.up { color: var(--success); background: var(--primary-10); }
-.tc-today.dn { color: var(--destructive); background: rgba(239,68,68,0.1); }
-.tc-thesis { font-size: 12px; color: var(--fg-subtle); line-height: 1.6; }
-.tc-thesis b { color: var(--fg-muted); font-weight: 600; }
-.tc-right { text-align: right; flex-shrink: 0; }
-.direction-badge { display: inline-flex; align-items: center; padding: 3px 10px; border-radius: 4px; font-family: monospace; font-size: 9px; font-weight: 800; letter-spacing: 1px; border: 1px solid; margin-bottom: 6px; }
-.direction-badge.buy { color: var(--success); background: var(--primary-10); border-color: var(--primary-30); }
-.direction-badge.watch, .direction-badge.hedge { color: var(--warning); background: var(--warning-10); border-color: var(--warning-30); }
-.tc-conf { font-family: monospace; font-size: 9px; color: var(--fg-faint); text-transform: uppercase; }
-.tc-bottom { display: grid; gap: 12px; align-items: end; border-top: 1px solid var(--border); padding: 12px 16px; }
-@media (min-width: 640px) { .tc-bottom { grid-template-columns: minmax(0,1fr) 180px auto; padding: 12px 20px; } }
-.tc-move-label { font-family: monospace; font-size: 9px; text-transform: uppercase; letter-spacing: 1px; color: var(--fg-subtle); margin-bottom: 2px; }
-.tc-move { font-size: 18px; font-weight: 800; }
-.tc-sparkline { height: 48px; width: 100%; display: none; }
-@media (min-width: 640px) { .tc-sparkline { display: block; } }
-.tc-chart-btn { display: inline-flex; align-items: center; gap: 4px; padding: 6px 12px; border-radius: 6px; border: 1px solid var(--border); background: transparent; color: var(--fg-muted); font-size: 11px; font-weight: 500; cursor: pointer; text-decoration: none; white-space: nowrap; transition: all 0.12s; flex-shrink: 0; align-self: end; }
-.tc-chart-btn:hover { border-color: var(--primary-30); color: var(--primary); }
-
-/* === LEGEND === */
-.legend-box { border-radius: 8px; border: 1px solid var(--border); background: var(--card-alt); padding: 14px 16px; }
-.legend-title { font-family: monospace; font-size: 8px; color: var(--fg-faint); letter-spacing: 1px; text-transform: uppercase; margin-bottom: 10px; }
-.legend-items { display: flex; gap: 16px; flex-wrap: wrap; margin-bottom: 8px; }
-.legend-item { display: flex; align-items: center; gap: 6px; }
-.legend-key { font-family: monospace; font-size: 10px; }
-.legend-desc { font-size: 10px; color: var(--fg-faint); }
-
-/* === FOOTER === */
-.page-footer { border-top: 1px solid var(--border); padding: 24px 0 8px; font-size: 11px; line-height: 1.7; color: var(--fg-subtle); }
-.page-footer strong { color: var(--fg); }
-.page-footer-meta { font-family: monospace; font-size: 9px; color: var(--fg-faint); margin-top: 8px; }
-
-/* === LATEST NEWS BANNER === */
-.latest-news-banner { border: 1px solid var(--primary-30); border-radius: 8px; background: rgba(34,197,94,0.03); overflow: hidden; }
-.lnb-header { display: flex; align-items: center; justify-content: space-between; padding: 8px 14px; background: rgba(34,197,94,0.07); border-bottom: 1px solid var(--primary-30); flex-wrap: wrap; gap: 6px; }
-.lnb-label { font-family: monospace; font-size: 9px; font-weight: 800; letter-spacing: 2px; color: var(--primary); text-transform: uppercase; }
-.lnb-ts { font-family: monospace; font-size: 9px; color: var(--fg-subtle); }
-.lnb-items { padding: 10px 14px; display: flex; flex-direction: column; gap: 8px; }
-.lnb-item { display: flex; align-items: flex-start; gap: 8px; font-size: 11px; color: var(--fg-muted); line-height: 1.5; }
-.lnb-tag { font-family: monospace; font-size: 8px; font-weight: 800; letter-spacing: 1px; padding: 2px 6px; border-radius: 3px; flex-shrink: 0; text-transform: uppercase; white-space: nowrap; margin-top: 1px; }
-.lnb-tag.signed { color: var(--success); background: var(--primary-10); border: 1px solid var(--primary-30); }
-.lnb-tag.semis { color: #a855f7; background: rgba(168,85,247,0.1); border: 1px solid rgba(168,85,247,0.3); }
-.lnb-tag.hawkish { color: var(--warning); background: var(--warning-10); border: 1px solid var(--warning-30); }
-.lnb-tag.g7 { color: #3b82f6; background: rgba(59,130,246,0.1); border: 1px solid rgba(59,130,246,0.3); }
-
-/* === ANIMATIONS === */
-@keyframes pulse { 0%,100%{opacity:1} 50%{opacity:0.4} }
 </style>
 </head>
 <body>
+<div class="wrap">
 
-<!-- TOP UPDATE TIMESTAMP BAR -->
-<div style="background:#020205;border-bottom:1px solid rgba(239,68,68,0.3);padding:6px 16px;display:flex;align-items:center;gap:10px;font-family:monospace;font-size:9px;letter-spacing:1px;flex-wrap:wrap;z-index:100;position:relative">
-  <span style="color:#ef4444;font-weight:800;letter-spacing:2px">⚡ LIVE UPDATE</span>
-  <span style="color:#94a3b8">Last refreshed:</span>
-  <span style="color:#f8fafc;font-weight:700">Jul 4, 2026 · 20:00 GMT+8</span>
-  <span style="color:#475569">·</span>
-  <span style="color:#ef4444;font-weight:700">NEW Jul 4: Trump Accounts officially launch — $1,000 gov't seed for kids born 2025–28, default-invested in SPYM; Robinhood (HOOD) + BNY Mellon built the app, HOOD +9–10% with analyst PT hikes (Cantor $110, Goldman $105) · NEW: Trump's "Salute to America" 250th rally underway — Mount Rushmore event, then a National Mall speech at the Lincoln Memorial with a Guinness-record ~850,000-shell fireworks show despite 107°F heat · NEW: Khamenei's public state funeral began Jul 4 at Tehran's Imam Khomeini Mosalla (24-hr farewell), delegations from 100+ countries; main procession set for Jul 6, burial in Mashhad Jul 9 — MOU talks remain paused until processions conclude · Markets CLOSED Jul 3–4 for the July 4th holiday weekend, reopen Jul 6</span>
-  <span style="color:#475569;margin-left:auto;display:none" class="h-hide-sm">Sources: White House · NPR · PBS NewsHour · Al Jazeera · CNBC · CBS News · NBC News · Bloomberg · Fox News · HousingWire · CNN Business · AP-NORC · Epoch Times · TheStreet · Time · The Hill · CNN · Washington Times · Reuters · Nasdaq · USTR · Financial Times · Seeking Alpha</span>
+<header>
+  <div class="kicker">Anticipatory Watchlist · Personal Research Desk</div>
+  <h1>Catalyst <span class="accent">Decision Board</span></h1>
+  <div class="meta">
+    <span>Snapshot: Jul 4, 2026 · 20:00 GMT+8</span>
+    <span class="status">Markets closed Jul 3–4 · Reopen Mon Jul 6</span>
+    <span>Capital: ~US$7.4k</span>
+  </div>
+  <p class="snapshot-note">Manually refreshed snapshot — not a live feed. Prices and signals reflect research as of the timestamp above. Not financial advice; consult a licensed financial advisor.</p>
+</header>
+
+<!-- ================= WEEK AHEAD ================= -->
+<h2>Next 7 Days <span class="n">the dates that decide the signals</span></h2>
+<div class="week">
+  <div class="day hot"><div class="d">Mon Jul 6</div><p>Markets reopen · index funds buy SPCX after close · USTR tariff comment period closes · Iran main funeral procession (Tehran)</p></div>
+  <div class="day hot"><div class="d">Tue Jul 7</div><p>SPCX joins Nasdaq-100 pre-open (~$4.3B passive inflow est.) · USTR Section 301 hearing</p></div>
+  <div class="day"><div class="d">Thu Jul 9</div><p>Khamenei burial (Mashhad) · Hormuz "war zone" shipping classification review · US-Iran MOU talks may resume after</p></div>
+  <div class="day"><div class="d">Fri Jul 24</div><p>10% global Section 122 tariff expires · Section 301 reinstatement risk peaks — volatility window</p></div>
 </div>
 
-<div class="sidebar-overlay" id="overlay" onclick="closeSidebar()"></div>
+<!-- ================= DECISION BOARD ================= -->
+<h2>Today's Desk <span class="n">tap a row for entry / stop / target</span></h2>
+<p class="sub">Top 3 actionable first. With ~US$7.4k, pick at most 3 of these — see sizing note below the board.</p>
 
-<aside class="sidebar" id="sidebar">
-  <div class="sidebar-brand">
-    <div class="sidebar-brand-label">Anticipatory Watchlist</div>
-    <div class="sidebar-brand-title">Trump Catalyst Tracker</div>
-    <div class="sidebar-brand-meta">5 catalysts · 24 tickers · <span class="live">◉ Live</span></div>
-  </div>
-  <nav class="sidebar-nav" id="sidebarNav">
-    <div class="sidebar-section-label">Catalysts</div>
-  </nav>
-  <div class="sidebar-footer">
-    Updated Jul 4, 2026 · 20:00 GMT+8<br>
-    Sources: White House, NPR, PBS NewsHour, Al Jazeera, CNBC, CBS News, NBC News, Bloomberg, CNN Business, HousingWire, Epoch Times, TheStreet, Time, The Hill, Washington Times, Financial Times
-  </div>
-</aside>
+<div class="board">
+  <div class="board-head"><span>Ticker</span><span>Signal</span><span class="h-conv">Conv.</span><span>What changed · trigger</span></div>
 
-<div class="main">
-
-  <div class="refresh-banner">
-    <div class="rb-dot"></div>
-    <span>LAST REFRESHED: <span class="rb-ts">Jul 4, 2026 · 20:00 GMT+8 — Live internet search via Claude</span></span>
-    <span class="rb-src">Sources: White House · NPR · PBS NewsHour · Al Jazeera · CNBC · CBS News · NBC News · Bloomberg · CNN Business · HousingWire · AP-NORC · Epoch Times · TheStreet · Time · Washington Times · Financial Times</span>
-  </div>
-
-  <header class="app-header">
-    <div class="header-left">
-      <button class="header-menu-btn" onclick="openSidebar()" aria-label="Open navigation">
-        <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 5h16"/><path d="M4 12h16"/><path d="M4 19h16"/></svg>
-      </button>
-      <span class="header-version">MARKET_CATALYST_v4.5</span>
-    </div>
-    <div class="header-right">
-      <span class="header-ticker h-hide-sm">DOW <span class="up">+1.14%</span></span>
-      <span class="header-ticker">SPY <span class="up">+0.88%</span></span>
-      <span class="header-ticker h-hide-md">TSLA <span class="dn">−8.30%</span></span>
-      <button class="header-bell" aria-label="Signal alerts">
-        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10.268 21a2 2 0 0 0 3.464 0"/><path d="M3.262 15.326A1 1 0 0 0 4 17h16a1 1 0 0 0 .74-1.673C19.41 13.956 18 12.499 18 8A6 6 0 0 0 6 8c0 4.499-1.411 5.956-2.738 7.326"/></svg>
-      </button>
-    </div>
-  </header>
-
-  <nav id="ticker-tape">
-    <div class="tradingview-widget-container">
-      <div class="tradingview-widget-container__widget"></div>
-      <script type="text/javascript" src="https://s3.tradingview.com/external-embedding/embed-widget-ticker-tape.js" async>
-      {
-        "symbols": [
-          {"proName":"NYSE:DAL","title":"Delta"},{"proName":"NASDAQ:UAL","title":"United"},
-          {"proName":"NASDAQ:QQQ","title":"QQQ"},{"proName":"AMEX:SPY","title":"SPY"},
-          {"proName":"NYSE:XOM","title":"Exxon"},{"proName":"NYSE:BA","title":"Boeing"},
-          {"proName":"NASDAQ:QCOM","title":"Qualcomm"},{"proName":"NASDAQ:NVDA","title":"Nvidia"},
-          {"proName":"NASDAQ:MU","title":"Micron"},{"proName":"NASDAQ:AAPL","title":"Apple"},
-          {"proName":"NYSE:GD","title":"Gen Dynamics"},{"proName":"NYSE:NOC","title":"Northrop"},
-          {"proName":"NYSE:CVX","title":"Chevron"},{"proName":"NYSE:COP","title":"ConocoPhillips"},
-          {"proName":"AMEX:GLD","title":"Gold"},{"proName":"AMEX:IWM","title":"IWM"},
-          {"proName":"AMEX:XLI","title":"XLI"},{"proName":"NYSE:COST","title":"Costco"},
-          {"proName":"NASDAQ:ULTA","title":"Ulta"},{"proName":"NYSE:ADM","title":"ADM"},
-          {"proName":"NYSE:MP","title":"MP Materials"}
-        ],
-        "showSymbolLogo": true, "isTransparent": true, "displayMode": "adaptive", "colorTheme": "dark", "locale": "en"
-      }
-      </script>
-    </div>
-  </nav>
-
-  <div class="content">
-
-    <div class="market-bar">
-      <div class="market-bar-inner">
-        <span class="market-live">
-          <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 12h-2.48a2 2 0 0 0-1.93 1.46l-2.35 8.36a.25.25 0 0 1-.48 0L9.24 2.18a.25.25 0 0 0-.48 0l-2.35 8.36A2 2 0 0 1 4.49 12H2"/></svg>
-          LIVE MARKET
-        </span>
-        <span class="market-pair">DOW <b class="up">+1.14% (record 52,900)</b></span>
-        <span class="market-pair">SPY <b class="up">+0.88%</b></span>
-        <span class="market-pair">QQQ <b class="dn">−0.80%</b></span>
-        <span class="market-pair">TSLA <b class="dn">−8.30%</b></span>
-        <span class="market-pair">MU <b class="dn">−3.10%</b></span>
-        <span class="market-pair">INTC <b class="dn">−2.90%</b></span>
-        <span class="market-pair">NVDA <b class="dn">−1.25%</b></span>
-        <span class="market-pair">XOM <b class="dn">−2.82%</b></span>
-        <span class="market-pair">GLD <b class="dn">−1.38%</b></span>
-        <span class="market-pair">GD <b class="up">+1.83%</b></span>
+  <!-- SPCX -->
+  <details class="row" open>
+    <summary>
+      <span class="tick">SPCX<span class="newchip">TIMED</span></span>
+      <span class="sig buy">BUY</span>
+      <span class="conv"><span class="on">●●</span><span class="off">●</span></span>
+      <span class="changed"><b>Nasdaq-100 inclusion Tue Jul 7</b> — funds buy after Mon's close. This trade expires this week.</span>
+    </summary>
+    <div class="detail">
+      <p class="thesis"><b>Thesis:</b> Mechanical, flow-driven trade. Nasdaq confirmed SPCX joins the Nasdaq-100 pre-open Jul 7 — fastest mega-cap inclusion on record, 17 days post-IPO. Est. ~$4.3B Nasdaq-100 + ~$3B Russell passive inflows. Independent of fundamentals; this is a market-structure event, not a Trump policy catalyst.</p>
+      <div class="levels">
+        <div class="lvl entry"><div class="lab">Entry</div><div class="val">Mon Jul 6 open, only if not gapping &gt;5% above Thu's close</div></div>
+        <div class="lvl stop"><div class="lab">Invalidation</div><div class="val">−7% from entry, or hold past Jul 8 — flow trades die after the event</div></div>
+        <div class="lvl tgt"><div class="lab">Exit</div><div class="val">Sell into strength Jul 7–8 as index buying completes. Time-boxed, not a hold</div></div>
       </div>
+      <p class="riskline">Risk: inclusion is fully public — much may already be priced in. IPO'd at $135, debuted ~$161; valuation is speculative. Smallest position of the three.</p>
+      <a class="chartlink" href="https://www.tradingview.com/symbols/SPCX/" target="_blank" rel="noopener">Chart → TradingView</a>
     </div>
+  </details>
 
-    <div class="latest-news-banner">
-      <div class="lnb-header">
-        <span class="lnb-label">⚡ Breaking — Trump Announcements</span>
-        <span class="lnb-ts">Last updated: Jul 4, 2026 · 20:00 GMT+8</span>
+  <!-- HOOD -->
+  <details class="row">
+    <summary>
+      <span class="tick">HOOD<span class="newchip">NEW</span></span>
+      <span class="sig buy">BUY</span>
+      <span class="conv"><span class="on">●●●</span></span>
+      <span class="changed"><b>Trump Accounts launched Jul 4</b> — HOOD is app + brokerage. +9–10%, PT hikes to $98–110. Enter Jul 6 if gains hold.</span>
+    </summary>
+    <div class="detail">
+      <p class="thesis"><b>Thesis:</b> Trump Accounts opened Jul 4 — every child born 2025–28 gets a $1,000 federal seed, families add up to $5k/yr. Robinhood builds the app and acts as brokerage/initial trustee (BNY Mellon custodian). A durable, policy-mandated account-growth flow, not a one-day pop. Analyst PT hikes: Cantor $110, Goldman $105, KeyBanc $100, Deutsche $98.</p>
+      <div class="levels">
+        <div class="lvl entry"><div class="lab">Entry</div><div class="val">Mon Jul 6 open if price holds ≥ Jul 2 post-news level; half-size if it gaps up further</div></div>
+        <div class="lvl stop"><div class="lab">Invalidation</div><div class="val">Close below the pre-announcement (Jul 1) price — thesis pop fully unwound</div></div>
+        <div class="lvl tgt"><div class="lab">Target</div><div class="val">Analyst PT band $98–110; reassess at first monthly Trump Account enrollment data</div></div>
       </div>
-      <div class="lnb-items">
-        <div class="lnb-item">
-          <span class="lnb-tag signed">🚨 NEW Jul 4: Trump Accounts Officially Launch — $1,000 Gov't Seed, Default-Invested in SPYM · Robinhood (HOOD) +9–10% as App/Custody Partner</span>
-          <span><b>Trump Accounts — the tax-advantaged children's savings vehicle created under the OBBBA — officially opened July 4, 2026</b>, the US Semiquincentennial. Every US citizen born <b>January 1, 2025 through December 31, 2028</b> receives a one-time <b>$1,000 federal contribution</b>; families can add up to $5,000/year. Treasury named <b>BNY Mellon (BK)</b> as financial agent, partnering with <b>Robinhood (HOOD)</b> to build the account app and serve as brokerage/initial trustee. Contributions default into the <b>State Street SPDR Portfolio S&amp;P 500 ETF (SPYM)</b> — chosen for its 0.02% expense ratio — with <b>IVV</b> and <b>VTI</b> also in the Treasury-approved lineup. <b>HOOD shares jumped roughly 9–10%</b> on the news with analyst price-target hikes (Cantor to $110, Goldman to $105, Deutsche Bank to $98, KeyBanc to $100). Trump plans to ring the Nasdaq/NYSE opening bell from his office to mark the launch. <b>New BUY signal: HOOD — direct distribution/custody beneficiary of a durable, policy-mandated savings flow; BK is the infrastructure/custody derivative play.</b></span>
-        </div>
-        <div class="lnb-item">
-          <span class="lnb-tag g7">⚡ NEW Jul 4: Trump's "Salute to America" 250th Rally — Mount Rushmore Event, National Mall Speech, Guinness-Record ~850,000-Shell Fireworks Show</span>
-          <span><b>Trump is marking the US Semiquincentennial with a full day of events</b>: a Mount Rushmore appearance earlier Jul 4, followed by a "Tribute to America" rally at the Lincoln Memorial/Washington Monument on the National Mall starting 7 PM ET, including military flyovers (reports of stealth bomber flyovers) and bands. Trump has vowed a full-length ~45-minute speech despite forecast highs near <b>107°F</b>. The evening culminates in a fireworks display expected to set a <b>new Guinness World Record</b> — roughly <b>850,000 shells</b> launched from 10 sites across the Reflecting Pool, the Potomac River, and West Potomac Park. <b>No direct market-moving tickers — a political/civic catalyst; monitor for any policy remarks made during the speech (tariffs, immigration) that could move markets Monday.</b></span>
-        </div>
-        <div class="lnb-item">
-          <span class="lnb-tag hawkish">🚨 NEW Jul 4: Khamenei Public State Funeral Begins in Tehran — 24-Hr Farewell at Imam Khomeini Mosalla, Delegations From 100+ Countries</span>
-          <span><b>The public phase of assassinated Supreme Leader Ali Khamenei's state funeral began Jul 4 at 6 AM local time</b> at Tehran's Imam Khomeini Mosalla, opening for a continuous 24-hour farewell ceremony after his body lay in state Jul 3. <b>Foreign delegations from more than 100 countries</b> are attending, including Pakistani PM Shehbaz Sharif and Tajik President Emomali Rahmon. The published schedule remains unchanged from prior reporting: <b>main Tehran procession Jul 6</b> (Imam Hossein Square to Azadi Square), continuing to <b>Qom</b>, briefly into <b>Iraq (Najaf/Karbala) Jul 8</b>, and <b>burial in Mashhad Jul 9</b>. <b>Consistent with the existing thesis: US-Iran MOU talks stay paused through the funeral period; XOM/COP hold ACTIVE BUY, GLD holds ACTIVE HEDGE, DAL/UAL remain at WATCH pending a resumed, confirmed session post-Jul 9.</b></span>
-        </div>
-        <div class="lnb-item">
-          <span class="lnb-tag semis">🚨 NEW Jul 2: OpenAI Reportedly Proposes 5% US Government Equity Stake (~$42.6B) — Altman Discussed With Trump, Lutnick, Bessent</span>
-          <span><b>The Financial Times reported OpenAI has proposed handing the Trump administration a 5% equity stake</b>, worth roughly <b>$42.6 billion</b> based on OpenAI's March $852B valuation round. Per CNBC/Forbes coverage, <b>Sam Altman and other OpenAI executives suggested US AI companies pool ~5% equity stakes into a sovereign-style vehicle</b> modeled on the Alaska Permanent Fund, paying dividends back to the government; a formal deal would likely require an act of Congress. Altman has reportedly discussed the structure directly with <b>Trump, Commerce Secretary Lutnick, and Treasury Secretary Bessent</b> — the culmination of talks running since early 2025. It remains unclear whether other frontier AI labs would join a similar arrangement. <b>This is the most concrete AI gov-stake development yet — directly bullish for MSFT (OpenAI's largest backer, &gt;49% holder) if formalized; also reinforces the NSPM-11 government-AI-adoption thesis underpinning NVDA/PLTR/INTC.</b></span>
-        </div>
-        <div class="lnb-item">
-          <span class="lnb-tag hawkish">🚨 NEW: Iran-US Talks PAUSED for Khamenei State Funeral (Jul 4–9) — Iran to Open "Communication Channel" for MOU Breach Reports</span>
-          <span><b>Funeral ceremonies for Iran's assassinated Supreme Leader Ali Khamenei are set for July 4–9, 2026</b> across Tehran (Imam Khomeini Mosalla, Jul 4–5), a Tehran procession (Jul 6), Qom (Jul 7), Najaf/Karbala in Iraq (Jul 8), and burial at the Imam Reza shrine in Mashhad (Jul 9) — delegations from 30+ countries and religious scholars from 90+ countries are attending. <b>Per Iranian Deputy FM Kazem Gharibabadi, the next round of indirect US-Iran MOU talks will only resume "at the earliest possible time" after the funeral processions conclude</b>; Iran separately announced it will establish a formal "communication channel" with Washington to report any MOU breaches going forward. <b>Net read: diplomatic track is on hold, not broken — but the multi-day funeral concentrates security risk in the region through Jul 9. XOM/COP/GLD hold ACTIVE BUY/HEDGE; DAL/UAL remain WATCH pending a resumed, confirmed session.</b></span>
-        </div>
-        <div class="lnb-item">
-          <span class="lnb-tag g7">⚡ NEW Jul 2: Dow Closes at Record 52,900.07 (+594pts) · Nasdaq −0.8% on Chip Selloff · Tesla Sinks −8.3% Despite Delivery Beat · June Jobs Miss</span>
-          <span><b>The Dow Jones Industrial Average scaled a fresh record close of 52,900.07</b> (+594.83 points, +1.14%), while the <b>S&amp;P 500 was roughly flat at 7,483.24</b> and the <b>Nasdaq Composite fell 0.8% to 25,832.67</b>, dragged down by chip names after The Information reported <b>Anthropic has started early-stage work on its own AI chip and held talks with Samsung as a potential manufacturing partner</b> — hitting Micron (−3.1%), SanDisk (−9%), Western Digital (−4.9%), Seagate (−5.3%), Intel (−2.9%), and AMD (−3.9%). <b>Tesla shares plunged as much as 8.3% intraday</b> — its steepest drop in a year — even after Q2 deliveries of 480,126 beat the 406,600 Wall Street estimate, as investors focused on demand-quality concerns. Separately, <b>June's jobs report missed badly</b>: +57,000 payrolls vs. 113,000 expected, unemployment at 4.2%. <b>Chip-sector weakness is a near-term headwind for the INTC/MU/NVDA/QCOM thesis; monitor whether the Anthropic-Samsung chip story is durable or a one-day repricing.</b></span>
-        </div>
-        <div class="lnb-item">
-          <span class="lnb-tag signed">⚡ NEW Jul 2: General Dynamics Electric Boat Awarded $1.85B Submarine Contract Mod · $150M Army + $580M GD IT Contracts · FY2027 NDAA Advances at $1.15T</span>
-          <span><b>General Dynamics' Electric Boat division was awarded a $1.85 billion contract modification</b> supporting Virginia-class/Columbia-class submarine production, alongside a <b>$150 million U.S. Army contract</b> and a <b>$580 million GD Information Technology contract</b> to sustain global force-protection systems (radars, cameras, sensors). The news lands as the <b>House Armed Services Committee advances the FY2027 NDAA at $1.15 trillion</b> — part of Trump's record $1.5 trillion total defense request (incl. $350B via reconciliation), the highest single-year defense funding level since WWII. Separately, <b>Citi upgraded Lockheed Martin (LMT) to Buy</b> with a $582 price target (from $571), and Northrop Grumman (NOC) carries Buy ratings from 10 of 15 covering analysts (+8.4% YTD). <b>GD, NOC, and LMT all reinforce the OBBBA defense-spending BUY thesis — GD is the freshest, most direct catalyst today.</b></span>
-        </div>
-        <div class="lnb-item">
-          <span class="lnb-tag hawkish">⚡ NEW Jul 1-2: Qatar Says Doha Talks Made "Positive Progress" — Two Days of Indirect US-Iran Talks Conclude, Major Questions Unresolved</span>
-          <span><b>Qatari Foreign Ministry spokesperson Majed Al Ansari said "positive progress was made regarding issues related to the memorandum of understanding"</b> after Witkoff and Kushner held two days of indirect, technical-level talks in Doha with Iranian counterparts via Qatari and Pakistani mediators — no direct US-Iran meeting took place. Per Washington Times, the two days of talks concluded with <b>major questions still unresolved</b>: Iran is demanding release of <b>$6 billion in frozen funds held in Qatari banks</b>, in two phases over 60 days, alongside firm Hormuz shipping-safety guarantees. Despite the "positive" framing, <b>international shipping unions/employers continue to classify the Strait of Hormuz as a war zone through at least July 9</b>, maintaining double hazard pay for seafarers. IAEA inspection access remains unconfirmed. <b>XOM/COP/GLD hold at ACTIVE BUY/HEDGE; DAL/UAL remain at WATCH — no verified breakthrough yet.</b></span>
-        </div>
-        <div class="lnb-item">
-          <span class="lnb-tag hawkish">⚠ Jun 30: Supreme Court Rules 6-3 Against Trump's Birthright Citizenship Order — Trump Pushes Congress for Legislative Fix</span>
-          <span><b>The Supreme Court ruled Jun 30 that the Constitution guarantees automatic birthright citizenship</b>, with Chief Justice Roberts and Justice Barrett joining the three liberal justices to strike down Trump's January 2025 executive order. <b>Trump responded on Truth Social Jul 1</b> — speaking at the Theodore Roosevelt Presidential Library opening in North Dakota — that "no long and unwieldy Constitutional Amendment is necessary" and called on Congress to legislate instead; Sen. Eric Schmitt (R-MO) countered by introducing a formal constitutional amendment. <b>No direct market-moving tickers identified — a political/legal catalyst, not a trading signal. Monitoring for any immigration-enforcement-linked sector spillover.</b></span>
-        </div>
-        <div class="lnb-item">
-          <span class="lnb-tag g7">Markets Slip to Start Q3 — S&amp;P −0.35%, Nasdaq −0.72% Jul 1 After Best Quarter Since 2020 · Closed Jul 3 for July 4th</span>
-          <span><b>Wall Street pulled back to open Q3:</b> S&amp;P 500 <b>−0.35%</b>, Nasdaq Composite <b>−0.72%</b> on Jul 1, with Caterpillar, Walmart, and Nvidia weighing on the Dow — a pause after Q2 2026 closed as the <b>best quarter since 2020</b> (S&amp;P 7,449 · Dow 52,319 · Nasdaq 26,214). <b>NYSE and Nasdaq are closed Friday, Jul 3, for Independence Day</b>; Trump previewed a lengthy Jul 4 National Mall address amid a forecast <b>107°F heat wave</b>. <b>SpaceX (SPCX) shares continue climbing ahead of Jul 7 Nasdaq-100 inclusion</b> — index funds begin buying after the close Jul 6, ~$4.3B in estimated passive Nasdaq-100 inflows.</span>
-        </div>
-        <div class="lnb-item">
-          <span class="lnb-tag hawkish">🚨 NEW Jul 1: Witkoff + Kushner Meet Qatari PM in Doha — NO Direct US-Iran Talks · Oman-Iran Hormuz Committee Held First Session</span>
-          <span><b>Steve Witkoff and Jared Kushner met Qatar's Prime Minister/FM Sheikh Mohammed bin Abdulrahman bin Jassim Al Thani in Doha</b> to review the US-Iran MOU implementation and regional stability, including the Lebanon ceasefire. <b>Qatar confirmed there was no direct high-level US-Iran meeting</b> — instead, US and Iranian delegations held separate technical talks with Qatari and Pakistani mediators, consistent with Tehran's denial of a scheduled sit-down. Separately, <b>Iran's Joint Hormuz Committee with Oman held its inaugural session in Muscat on June 29</b> — Deputy FM Kazem Gharibabadi says Iran wants an agreement with Oman to oversee Hormuz shipping traffic, but will proceed unilaterally if Oman is uninterested. <b>Net read: diplomacy is proceeding on a technical track but no verified de-escalation yet — Hormuz risk remains open. XOM/COP hold ACTIVE BUY; DAL/UAL remain at WATCH pending a confirmed breakthrough.</b></span>
-        </div>
-        <div class="lnb-item">
-          <span class="lnb-tag g7">⚡ NEW Jul 1: SpaceX (SPCX) to Join Nasdaq-100 Jul 7 — Fastest Index Inclusion on Record</span>
-          <span><b>Nasdaq confirmed SpaceX (SPCX) will be added to the Nasdaq-100 before market open Tuesday, July 7, 2026</b> — just 17 days after its June 12 IPO, one of the fastest mega-cap inclusions ever after Nasdaq rewrote eligibility rules to admit newly-public giants without the traditional seasoning period. Index funds begin buying after the close on <b>July 6</b>; analysts estimate <b>~$4.3B in passive Nasdaq-100 inflows plus ~$3B from Russell index reweighting</b> — over $800B tracks the Nasdaq-100 (including QQQ). <b>New anticipatory stock-to-buy signal: SPCX — a mechanical, passive-flow-driven catalyst ahead of the Jul 7 inclusion date, independent of underlying fundamentals. Note: not a Trump policy catalyst, but a market-structure event compounding the broader 2026 rally.</b></span>
-        </div>
-        <div class="lnb-item">
-          <span class="lnb-tag hawkish">⚡ NEW Jul 1: USTR Affirms All 60 Section 301 Forced-Labor Determinations · Comment Period Closes Jul 6</span>
-          <span><b>USTR made affirmative determinations across all 60 Section 301 forced-labor investigations</b> (initiated June 2), covering economies representing 99.4% of US imports. Proposed duties: <b>10%</b> for economies with import prohibitions on forced-labor goods, <b>12.5%</b> for all others. The <b>public comment period closes July 6</b>, with a USTR hearing <b>July 7</b> — the agency is moving on an expedited basis to be ready to impose tariffs by <b>~July 24</b>, aligned with the expiry of the temporary 10% Section 122 global surcharge (imposed after SCOTUS struck down IEEPA tariffs Feb 20). <b>Tariff reinstatement risk remains the key event risk into late July — SPY/IWM remain the cleanest domestic expressions; monitor for bilateral carve-outs following the Japan (15%) template.</b></span>
-        </div>
-        <div class="lnb-item">
-          <span class="lnb-tag hawkish">🚨 Jun 30: Iran Attacks Cargo Ship Near Oman · US Retaliates · Witkoff + Kushner Fly to Qatar — Tehran DENIES Talks Scheduled</span>
-          <span><b>Iran attacked a cargo ship near Oman on Thursday</b>, triggering US and Israeli retaliatory strikes over the weekend — disrupting the fragile MOU framework. <b>Trump announced the US and Iran will meet in Qatar</b> (Witkoff and Kushner flying there), but a senior Iranian negotiator, Kazem Gharibabadi, denied any talks had been scheduled. The situation marks a sharp reversal from the Hormuz "normalising" narrative — the Strait faces renewed risk. The interim deal framework (60-day window) remains nominally in force: uranium dilution, sanctions waivers, and Hormuz opening are all referenced — but the weekend military exchange casts doubt on implementation. Iranian President Pezeshkian separately announced expected release of sanctioned funds in apparent bid to sell the deal domestically. <b>Energy hedge (XOM, COP) UPGRADED to ACTIVE BUY — Hormuz re-escalation risk is now the primary catalyst. DAL/UAL airline thesis weakened — downgrade to WATCH pending de-escalation. GLD geopolitical hedge re-activated.</b></span>
-        </div>
-        <div class="lnb-item">
-          <span class="lnb-tag signed">⚡ NEW Jun 29: Trump "Freedom to Fix" EO — California Aftermarket Parts Limits · EPA Guidance in 30 Days</span>
-          <span><b>Trump signed a Presidential Memorandum titled "Lowering the Cost of Living by Promoting the Freedom to Fix"</b> on June 29, 2026. The order seeks to <b>limit California's Air Resources Board (CARB) ability to regulate aftermarket automotive parts nationwide</b>, directing the EPA to provide guidance within 30 days on what emissions repairs are allowable without violating emissions controls. Officials are directed to <b>deprioritize enforcement against independent vehicle restorers</b>. The order establishes a policy right for consumers to repair their own vehicles using third-party parts. <b>Beneficiaries: aftermarket auto parts retailers AutoZone (AZO), O'Reilly Automotive (ORLY), and Advance Auto Parts (AAP) — reduced regulatory overhang for independent repair market. Negative for dealership-captive service networks (long-term). Minor consumer cost-of-living positive consistent with OBBBA consumer tailwind.</b></span>
-        </div>
-        <div class="lnb-item">
-          <span class="lnb-tag semis">⚡ NEW Jun 29: Trump AI Cybersecurity EO — AI Clearinghouse + 30-Day Frontier Model Pre-Release Review</span>
-          <span><b>Trump's June 2 "Promoting Advanced AI Innovation and Security" EO</b> has now fully kicked in: the Departments of Treasury, NSA, and CISA must establish an <b>AI Cybersecurity Clearinghouse</b> — a voluntary industry-government hub coordinating AI vulnerability discovery, software testing, and remediation. Separately, agencies must establish a <b>voluntary 30-day pre-release review window</b> for frontier AI developers to share model access with the US government before public launch (with trusted partners). CISA is directed to expand AI-enabled defensive tools to state, local, and critical infrastructure operators. DoD and intel agencies directed to <b>prioritize cyber defence of national security systems within 30 days</b>. <b>Palantir (PLTR), Cloudflare (NET), and MSFT are top beneficiaries of the clearinghouse mandate. OpenAI, Anthropic, and xAI benefit from the pre-release framework strengthening their government relationships.</b></span>
-        </div>
-        <div class="lnb-item">
-          <span class="lnb-tag signed">⚡ NEW Jun 29: S&amp;P 500 Up ~30% Since Trump Election · Hormuz: 12.5M Barrels Overnight — Strait Normalising</span>
-          <span><b>The S&amp;P 500's total return has climbed nearly 30% since the 2024 presidential election</b> as of June 24, 2026 (U.S. Bank), despite meaningful tariff and Iran volatility along the way. The recovery has been driven by OBBBA tax tailwinds, the Iran MOU signed Jun 17, and AI policy acceleration via multiple EOs. Separately, <b>VP Vance confirmed 12.5 million barrels of oil passed through the Strait of Hormuz overnight</b> — a major signal the Strait is resuming normal operations post-MOU. However, <b>IAEA inspection access is still unconfirmed</b>; Tehran has not provided dates or locations for nuclear site access. <b>Strait normalisation is the single biggest tailwind for airline (DAL, UAL) positions — upgrade to high confidence BUY if IAEA access is confirmed.</b></span>
-        </div>
-        <div class="lnb-item">
-          <span class="lnb-tag hawkish">⚡ NEW Jun 28: France Wine — 100% Tariff Threat · EU Trade Escalation Risk</span>
-          <span><b>Trump warned France of a 100% tariff on wine</b> over France's digital services tax targeting US tech giants. Beyond French wines and Champagne, Trump also threatened higher levies on <b>EU cars</b>, claiming the EU violated a prior agreement. Post-Iran deal, Trump is <b>refocusing squarely on tariffs and trade battles</b> (CNN Business, Jun 16). Section 301 investigations against the EU and 59 countries have a public comment deadline of <b>July 6</b> and a USTR hearing on <b>July 7</b>; the current 10% flat rate expires <b>July 24</b>. <b>Elevated EU tariff escalation risk through early July. Negative for European-exposed multinationals. SPY and IWM remain the cleanest domestic expressions.</b></span>
-        </div>
-        <div class="lnb-item">
-          <span class="lnb-tag hawkish">⚠ NEW Jun 28: US Inflation 4.2% — Highest in 3 Years · Fed Rate Hike Risk</span>
-          <span><b>Annual US inflation surged to 4.2%</b> — the highest rate in three years per the latest Consumer Price Index. The figure adds significant economic pressure on the Trump administration despite some recent job growth. Approximately <b>one-third of US adults approve</b> of Trump's economic handling (AP-NORC poll, June 2026). Higher inflation reinforces the Fed's hawkish stance signalled at the June 18 meeting, where ~half of FOMC members projected a rate hike ahead. <b>Headwind for rate-sensitive growth tech and homebuilders. Supports GLD and TIPS as inflation hedges. Monitor closely through July 2026 tariff expiry window.</b></span>
-        </div>
-        <div class="lnb-item">
-          <span class="lnb-tag hawkish">⚠ ROAD Housing Act — Trump Cancels Signing · Tense GOP Senator Meeting Jun 27</span>
-          <span><b>Congress passed the landmark 21st Century ROAD to Housing Act</b> (House 358-32, Senate 85-5) — the largest federal housing affordability bill in nearly two decades. Key provisions: investor acquisition limits (350+ single-family homes), small-dollar mortgage pilot, raised FHA multifamily limits, and <b>Trump directing Fannie Mae &amp; Freddie Mac to purchase $200B in MBS</b> to push down mortgage rates. <b>Trump cancelled the signing less than 24 hours later</b> (Jun 24), demanding Congress first pass the voter-ID SAVE America Act — which lacks the 60 Senate votes needed to clear the filibuster. Trump met with GOP senators Jun 27 in a tense session; no resolution reached. <i>Time</i> reports the bill could still become law if Congress mustered a veto-override (two-thirds majority). <b>No new signing date. Negative near-term for homebuilders (LEN, DHI) pending resolution; positive structural signal if signed.</b></span>
-        </div>
-        <div class="lnb-item">
-          <span class="lnb-tag semis">⚡ NVDA $0.25 Dividend — PAID Jun 26 · OpenAI Gov-Stake Talks Ongoing</span>
-          <span><b>NVIDIA's $0.25/share quarterly dividend was paid June 26, 2026</b> to all shareholders of record as of June 4. This represents a <b>25× increase</b> from the prior $0.01/share dividend — the largest dividend raise in NVDA's history. Accompanies the active <b>$80B share buyback</b> authorization. Separately, <b>Trump admin and OpenAI continue discussions</b> on a potential US government equity stake; Anthropic and xAI executives expected at White House shortly. NSPM-11 + Jun 2 AI EO provide dual government policy backstop. Blackwell demand remains insatiable. <b>NVDA remains top BUY signal.</b></span>
-        </div>
-        <div class="lnb-item">
-          <span class="lnb-tag semis">Quantum EOs — PQC Deadline 2030/2031 + IBM $1B</span>
-          <span><b>Trump signed two quantum EOs on Jun 22:</b> (1) "Ushering in the Next Frontier of Quantum Innovation" — commits ~$1B to IBM quantum R&amp;D, $375M to GlobalFoundries, $100M each to D-Wave, Rigetti, and Infleqtion. Creates Quantum Computer for Application Development &amp; Discovery Science at DOE. (2) "Securing the Nation Against Advanced Cryptographic Attacks" — federal agencies must migrate high-value assets to post-quantum cryptography (PQC) by <b>December 31, 2030</b> (encryption) and <b>2031</b> (authentication). Agencies must designate a PQC migration lead. IBM CEO Arvind Krishna attended the White House signing. <b>Cloudflare, IBM, and quantum pure-plays all benefit.</b></span>
-        </div>
-        <div class="lnb-item">
-          <span class="lnb-tag hawkish">⚠ Tariff Clock: 10% Global Tariff Expires Jul 24 · Bessent: Prior Rates Return Early July</span>
-          <span><b>The Supreme Court ruled Feb 20, 2026 that Trump cannot use IEEPA to impose tariffs.</b> Most 2025-era tariffs were struck down. The administration responded with a <b>10% global base tariff under Section 122</b> of the Trade Act of 1974 — set to expire <b>July 24, 2026</b> (150-day limit). Treasury Secretary Bessent warned prior tariff levels could be reinstated via Section 301 findings as <b>early as the first week of July</b> once trade investigations complete. Average US import tax is now 11.8% — highest since the 1940s. <b>Tariff reinstatement risk is elevated and rising — volatility likely in early July.</b> Japan deal (15%) signals further bilateral agreements possible; EU and India talks active.</span>
-        </div>
-        <div class="lnb-item">
-          <span class="lnb-tag signed">Japan Trade Deal ✓ — 15% Tariff · Template for EU &amp; India</span>
-          <span><b>Trump administration confirmed a bilateral trade deal with Japan</b> — one of the US's largest trading partners. Tariffs on Japanese goods, including automobiles, set at <b>15%</b> (well below the previously floated 25%). Japan deal is the first major bilateral trade framework after the SCOTUS tariff ruling. <b>Positive for AAPL</b> (Japan supply chain exposure) and broad tech names with Japan manufacturing dependencies. Template for future EU and India agreements.</span>
-        </div>
-        <div class="lnb-item">
-          <span class="lnb-tag semis">NSPM-11: AI in National Security + OpenAI Gov-Stake Talks</span>
-          <span><b>Trump signed NSPM-11 on Jun 5</b> — "Artificial Intelligence in the National Security Enterprise." Directs DoD and intelligence agencies to <b>rapidly onboard the most advanced AI models from multiple vendors</b>, build next-generation high-security compute facilities, and set "aggressive timelines." Simultaneously, <b>Trump admin and OpenAI are in active discussions</b> about a potential US government equity stake (CNBC, Jun 5). No deal confirmed. <b>Microsoft (MSFT)</b> — OpenAI's largest backer — is the direct derivative play. PLTR, NVDA, and INTC remain primary NSPM-11 beneficiaries.</span>
-        </div>
-        <div class="lnb-item">
-          <span class="lnb-tag hawkish">⚡ Jun 28 UPDATE: IAEA Chief — Timing "Not Essential" · Iran Inspection Dispute Ongoing</span>
-          <span><b>IAEA Director General Rafael Grossi updated his position</b> — while nuclear site inspections are "going to happen," the timing is now described as <b>"not essential"</b> (CBS News). Crucially, the MoU does <b>NOT set a specific timeframe</b> for renewed IAEA inspections; all matters relating to Iran's enrichment program are to be agreed as part of a final deal during the 60-day window. <b>Iran's Ministry of Foreign Affairs</b> says there is no "clear schedule" for IAEA examination of nuclear facilities struck by US and Israel. Dates and locations "still being discussed in collaboration and cooperation with the government of Iran." VP Vance said inspectors could return "as soon as this week"; Trump: "There is no rush." Four working groups still active: Sanctions Termination · Nuclear Affairs · Reconstruction &amp; Economic Development · Monitoring &amp; Implementation. <b>Energy hedge (XOM, COP) remains active — no physical IAEA access yet confirmed.</b></span>
-        </div>
-      </div>
+      <p class="riskline">Risk: +9–10% already realized — you're buying after the first leg. Program economics per account are thin; the trade is about flow durability, not near-term revenue.</p>
+      <a class="chartlink" href="https://www.tradingview.com/symbols/NASDAQ-HOOD/" target="_blank" rel="noopener">Chart → TradingView</a>
     </div>
+  </details>
 
-    <div style="background:rgba(34,197,94,0.05);border:1px solid rgba(34,197,94,0.2);border-radius:8px;padding:14px 16px;font-family:monospace;font-size:11px;line-height:1.9;margin-bottom:0">
-      <div style="font-size:9px;letter-spacing:2px;color:var(--fg-subtle);text-transform:uppercase;margin-bottom:4px;font-weight:700">Top Stocks to Buy — Jul 4, 2026</div>
-      <div style="font-size:9px;color:#ef4444;margin-bottom:10px;font-weight:700">⚡ UPDATES: Trump Accounts officially launched Jul 4 — HOOD (app/brokerage) and BK (custodian) are the direct beneficiaries, HOOD +9–10% on the news · SPYM named default ETF for account contributions · OpenAI reportedly proposes 5% US gov equity stake (~$42.6B) — MSFT is the derivative play · Khamenei state funeral began Jul 4, talks PAUSED through the funeral period (procession Jul 6, burial Jul 9) · Dow closed at record 52,900 (+594pts) Jul 2, Nasdaq −0.8% as Anthropic in-house chip/Samsung talks hit MU/INTC/AMD · Tesla sank −8.3% despite Q2 delivery beat · June jobs missed (+57K vs 113K est.) · GD Electric Boat wins $1.85B submarine contract mod + $150M Army + $580M IT contracts, FY2027 NDAA at $1.15T · Markets CLOSED Jul 3–4 for July 4th weekend, reopen Jul 6</div>
-      <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:8px">
-        <div style="background:rgba(34,197,94,0.1);border:1px solid rgba(34,197,94,0.4);border-radius:6px;padding:10px 12px">
-          <span style="color:var(--success);font-weight:800">HOOD</span> <span style="color:#22c55e;font-size:9px;background:rgba(34,197,94,0.15);padding:1px 5px;border-radius:3px">🆕 NEW — TRUMP ACCOUNTS LAUNCHED Jul 4</span> <span style="color:var(--fg-muted)">Robinhood</span> — <b>Trump Accounts officially launched Jul 4</b> with Robinhood as the app builder and brokerage/initial trustee alongside custodian BNY Mellon (BK); every eligible child gets a $1,000 federal seed, defaulted into SPYM. Shares jumped ~9–10% on confirmation with fresh analyst PT hikes (Cantor $110, Goldman $105, Deutsche Bank $98, KeyBanc $100). A durable, policy-mandated account-growth flow rather than a one-time pop. <b>New high-conviction BUY — durable distribution tailwind; BK is the custody/infrastructure derivative play.</b>
-        </div>
-        <div style="background:rgba(59,130,246,0.08);border:1px solid rgba(59,130,246,0.35);border-radius:6px;padding:10px 12px">
-          <span style="color:#3b82f6;font-weight:800">SPCX</span> <span style="color:#3b82f6;font-size:9px;background:rgba(59,130,246,0.15);padding:1px 5px;border-radius:3px">🆕 SHARES RISING — 4 DAYS TO NASDAQ-100</span> <span style="color:var(--fg-muted)">SpaceX</span> — <b>Joins the Nasdaq-100 before market open Jul 7, 2026</b> — just 17 days post-IPO (Jun 12), the fastest mega-cap inclusion on record after Nasdaq rewrote seasoning rules. Shares have been climbing into the event. Passive funds start buying after the close Jul 6; est. <b>~$4.3B Nasdaq-100 + ~$3B Russell reweighting inflows</b>. Mechanical, anticipatory flow trade — position ahead of the Jul 7 effective date.
-        </div>
-        <div style="background:rgba(34,197,94,0.08);border:1px solid rgba(34,197,94,0.35);border-radius:6px;padding:10px 12px">
-          <span style="color:var(--success);font-weight:800">NVDA</span> <span style="color:#22c55e;font-size:9px;background:rgba(34,197,94,0.15);padding:1px 5px;border-radius:3px">⚡ DIVIDEND PAID Jun 26</span> <span style="color:var(--fg-muted)">Nvidia</span> — <b>$0.25 dividend paid Jun 26 (25× raise).</b> $80B buyback active. NSPM-11 + Jun 2 AI EO = dual government AI policy backstop. OpenAI gov-stake talks (Anthropic, xAI also in White House meetings) signal deepening AI policy commitment flowing to compute. Blackwell demand insatiable. Rule of 40 = 145%. Trump personal position confirmed.
-        </div>
-        <div style="background:rgba(34,197,94,0.08);border:1px solid rgba(34,197,94,0.35);border-radius:6px;padding:10px 12px">
-          <span style="color:var(--success);font-weight:800">IBM</span> <span style="color:#22c55e;font-size:9px;background:rgba(34,197,94,0.15);padding:1px 5px;border-radius:3px">↑ QUANTUM EO — $1B</span> <span style="color:var(--fg-muted)">Quantum</span> — Trump's Jun 22 Quantum EO commits ~$1B directly to IBM quantum R&amp;D. PQC migration: federal deadline Dec 31, 2030 (encryption) / 2031 (authentication) — IBM is the leading PQC vendor. CEO Arvind Krishna attended White House signing. Multi-year government revenue runway from mandatory agency migration. First-mover in US quantum policy stack.
-        </div>
-        <div style="background:rgba(34,197,94,0.08);border:1px solid rgba(34,197,94,0.35);border-radius:6px;padding:10px 12px">
-          <span style="color:var(--success);font-weight:800">INTC</span> <span style="color:#22c55e;font-size:9px;background:rgba(34,197,94,0.15);padding:1px 5px;border-radius:3px">↑ GOV STAKE CONFIRMED</span> <span style="color:var(--fg-muted)">Intel</span> — US government 9.9% equity stake at $20.47/share ($8.9B confirmed). Stock up ~5x. NSPM-11 high-security compute facility mandate = new long-tail government revenue. Intel-Apple domestic chip partnership in execution. 35% fab tax credit + Quantum GlobalFoundries ($375M). Strongest single-catalyst semi play this cycle.
-        </div>
-        <div style="background:rgba(34,197,94,0.08);border:1px solid rgba(34,197,94,0.35);border-radius:6px;padding:10px 12px">
-          <span style="color:var(--success);font-weight:800">PLTR</span> <span style="color:#22c55e;font-size:9px;background:rgba(34,197,94,0.15);padding:1px 5px;border-radius:3px">↑ NSPM-11 + AI CLEARINGHOUSE</span> <span style="color:var(--fg-muted)">Palantir</span> — USG revenue +84% YoY to $687M Q1 2026. NSPM-11 directs DoD to "rapidly onboard the most advanced AI models from multiple vendors" — Palantir is the incumbent AI defense platform. <b>NEW Jun 29:</b> AI Cybersecurity Clearinghouse (Treasury + NSA + CISA mandate) = new government contract pathway for Palantir's AI security stack. OBBBA $150B defense surge + NSPM-11 + clearinghouse mandate = triple-stacked revenue tailwind. Rule of 40 = 145%. Trump holds personal PLTR position.
-        </div>
-        <div style="background:rgba(34,197,94,0.08);border:1px solid rgba(34,197,94,0.35);border-radius:6px;padding:10px 12px">
-          <span style="color:var(--success);font-weight:800">GD / NOC / LMT</span> <span style="color:#22c55e;font-size:9px;background:rgba(34,197,94,0.15);padding:1px 5px;border-radius:3px">⚡ NEW — $1.85B CONTRACT + NDAA $1.15T</span> <span style="color:var(--fg-muted)">Defense</span> — <b>GD's Electric Boat won a $1.85B submarine contract mod Jul 2, plus a $150M Army contract and $580M GD IT force-protection contract.</b> House Armed Services Committee advances the FY2027 NDAA at $1.15T (part of Trump's record $1.5T total defense request) — the highest single-year defense budget since WWII. <b>Citi upgraded LMT to Buy ($582 PT, from $571)</b>; NOC carries Buy ratings from 10 of 15 analysts (+8.4% YTD). OBBBA's $150B spending surge + NSPM-11 AI-adoption mandate + this fresh contract flow = triple-stacked conviction buy across all three primes.
-        </div>
-        <div style="background:rgba(34,197,94,0.08);border:1px solid rgba(34,197,94,0.35);border-radius:6px;padding:10px 12px">
-          <span style="color:var(--success);font-weight:800">XOM / COP</span> <span style="color:#ef4444;font-size:9px;background:rgba(239,68,68,0.15);padding:1px 5px;border-radius:3px">🚨 ACTIVE BUY — HELD Jul 2</span> <span style="color:var(--fg-muted)">Energy</span> — <b>Qatar says the two days of Doha talks made "positive progress" on the MOU, but major questions — including release of Iran's $6B in Qatari-held frozen funds and firm Hormuz safety guarantees — remain unresolved.</b> Shipping unions still classify Hormuz as a war zone through at least Jul 9, keeping double hazard pay in place. IAEA inspection still unconfirmed. Brent remains bid on Hormuz transit risk. OBBBA expanded drilling rights provide structural floor. <b>Hold ACTIVE BUY — "positive progress" language is not verified de-escalation; upgrade trigger is a signed asset-release/Hormuz guarantee deal or IAEA access.</b>
-        </div>
-        <div style="background:rgba(34,197,94,0.06);border:1px solid rgba(34,197,94,0.2);border-radius:6px;padding:10px 12px">
-          <span style="color:var(--success);font-weight:800">AZO / ORLY</span> <span style="color:#22c55e;font-size:9px;background:rgba(34,197,94,0.15);padding:1px 5px;border-radius:3px">↑ NEW — FREEDOM TO FIX EO</span> <span style="color:var(--fg-muted)">Auto Parts</span> — <b>Trump's Jun 29 "Freedom to Fix" EO limits California CARB's ability to regulate aftermarket parts nationally.</b> Consumers can now repair vehicles with third-party parts; EPA guidance on allowable emissions repairs due in 30 days. AutoZone (AZO) and O'Reilly Automotive (ORLY) are the primary aftermarket retail beneficiaries — reduced regulatory overhang for independent repair market. Consistent with OBBBA cost-of-living reduction thesis.
-        </div>
-        <div style="background:rgba(34,197,94,0.06);border:1px solid rgba(34,197,94,0.2);border-radius:6px;padding:10px 12px">
-          <span style="color:var(--success);font-weight:800">AAPL</span> <span style="color:#22c55e;font-size:9px;background:rgba(34,197,94,0.15);padding:1px 5px;border-radius:3px">↑ JAPAN DEAL</span> <span style="color:var(--fg-muted)">Apple</span> — Japan trade deal confirmed at 15% (below 25% feared). Apple has significant Japan supply chain exposure (TSMC Japan fab, display suppliers). Tim Cook attended Beijing summit. Domestic Intel-Apple chip partnership in execution. Japan deal is the clearest new positive catalyst for AAPL this update.
-        </div>
-        <div style="background:rgba(245,158,11,0.06);border:1px solid rgba(245,158,11,0.25);border-radius:6px;padding:10px 12px">
-          <span style="color:var(--warning);font-weight:800">LEN / DHI</span> <span style="color:#f59e0b;font-size:9px;background:rgba(245,158,11,0.15);padding:1px 5px;border-radius:3px">⚠ WATCH — SIGNING DELAYED</span> <span style="color:var(--fg-muted)">Homebuilders</span> — ROAD to Housing Act passed Congress 358-32 (largest housing bill in ~20 years) but <b>Trump cancelled the signing</b> pending SAVE Act passage. If signed: $200B Fannie/Freddie MBS purchase + FHA loan limit increases = powerful homebuilder tailwind. LEN and DHI are the two largest US homebuilders by volume. <b>Hold for confirmed presidential signature — do not enter before signing.</b>
-        </div>
-        <div style="background:rgba(245,158,11,0.06);border:1px solid rgba(245,158,11,0.25);border-radius:6px;padding:10px 12px">
-          <span style="color:var(--warning);font-weight:800">DAL / UAL</span> <span style="color:#f59e0b;font-size:9px;background:rgba(245,158,11,0.15);padding:1px 5px;border-radius:3px">⚠ WATCH — HELD Jul 2</span> <span style="color:var(--fg-muted)">Airlines</span> — <b>Qatar's "positive progress" statement on the two-day Doha talks is not a confirmed breakthrough — major sticking points (frozen assets, Hormuz guarantees) remain open, and shipping unions still classify the Strait as a war zone through Jul 9.</b> Fuel cost thesis stays fragile until a signed oversight/guarantee deal lands. World Cup travel tailwind (US soil, through July) partially offsets but is insufficient to overcome fuel uncertainty. <b>Remain at WATCH — do not add. Upgrade back to BUY only on a confirmed Hormuz deal or verified IAEA access.</b>
-        </div>
-        <div style="background:rgba(34,197,94,0.06);border:1px solid rgba(34,197,94,0.2);border-radius:6px;padding:10px 12px">
-          <span style="color:var(--success);font-weight:800">IWM</span> <span style="color:var(--fg-muted)">Russell 2000</span> — OBBBA tax cuts flow to small caps. SocGen highest-conviction OBBBA trade. SCOTUS striking most tariffs removes import cost headwind for domestic small-cap manufacturers. Avg 15% EPS growth 2026–27. Q2 earnings season: first OBBBA tax uplift wave in guidance. Insulated from Hormuz risk vs large-cap multinationals.
-        </div>
-        <div style="background:rgba(34,197,94,0.1);border:1px solid rgba(34,197,94,0.4);border-radius:6px;padding:10px 12px">
-          <span style="color:var(--success);font-weight:800">MSFT</span> <span style="color:#22c55e;font-size:9px;background:rgba(34,197,94,0.15);padding:1px 5px;border-radius:3px">🆕 OPENAI 5% STAKE PROPOSED Jul 2</span> <span style="color:var(--fg-muted)">Microsoft</span> — <b>OpenAI has reportedly proposed a concrete 5% US government equity stake (~$42.6B), per FT/CNBC — the most tangible step yet in talks Altman has held with Trump, Lutnick, and Bessent.</b> Microsoft is OpenAI's largest backer (&gt;49% stake); a formalized gov-stake deal would validate AI infrastructure valuations across the board and directly benefit MSFT/Azure. NSPM-11 directs DoD to rapidly onboard frontier AI models. Azure AI revenue growing at 50%+ YoY. <b>Watch for Congressional reaction — any deal structure likely needs legislative sign-off.</b>
-        </div>
-        <div style="background:rgba(245,158,11,0.06);border:1px solid rgba(245,158,11,0.25);border-radius:6px;padding:10px 12px">
-          <span style="color:var(--warning);font-weight:800">TSLA</span> <span style="color:#f59e0b;font-size:9px;background:rgba(245,158,11,0.15);padding:1px 5px;border-radius:3px">⚠ WATCH — SANK −8.3% Jul 2</span> <span style="color:var(--fg-muted)">Tesla</span> — <b>Shares plunged as much as 8.3% Jul 2 — the steepest drop in a year — despite Q2 deliveries of 480,126 beating the 406,600 Street estimate.</b> Investors focused on demand-quality/incentive-pull-forward concerns rather than the headline beat. Not currently tied to a specific Trump policy catalyst on this desk. <b>Hold at WATCH — needs a stabilizing catalyst (guidance, robotaxi/FSD news) before re-rating.</b>
-        </div>
-        <div style="background:rgba(245,158,11,0.06);border:1px solid rgba(245,158,11,0.25);border-radius:6px;padding:10px 12px">
-          <span style="color:var(--warning);font-weight:800">GLD</span> <span style="color:#f59e0b;font-size:9px;background:rgba(245,158,11,0.15);padding:1px 5px;border-radius:3px">⚠ ACTIVE HEDGE — HELD Jul 2</span> <span style="color:var(--fg-muted)">Gold ETF</span> — <b>Geopolitical safe-haven bid remains active — Qatar's "positive progress" framing on the Doha talks has not translated into a verified Hormuz breakthrough, and shipping unions keep the Strait classed as a war zone through Jul 9.</b> Layered on top of the existing inflation hedge: US CPI at 4.2% (3-year high), Fed rate hike risk, and Section 301 tariff escalation now formalized (comment period closes Jul 6). Gold's triple role as inflation, geopolitical, and tariff-volatility hedge remains simultaneously active. <b>Hold ACTIVE HEDGE through confirmed Hormuz resolution or Section 301 outcome.</b>
-        </div>
+  <!-- NVDA -->
+  <details class="row">
+    <summary>
+      <span class="tick">NVDA</span>
+      <span class="sig buy">BUY</span>
+      <span class="conv"><span class="on">●●●</span></span>
+      <span class="changed"><b>Core hold.</b> Dividend 25× raise paid Jun 26 · $80B buyback · NSPM-11 backstop. Watch the Anthropic in-house chip story.</span>
+    </summary>
+    <div class="detail">
+      <p class="thesis"><b>Thesis:</b> The desk's anchor position. NSPM-11 + Jun 2 AI EO = dual government AI policy backstop; OpenAI gov-stake talks deepen the policy commitment to compute. Blackwell demand insatiable. $0.25/qtr dividend (25× raise) + $80B buyback signal management confidence.</p>
+      <div class="levels">
+        <div class="lvl entry"><div class="lab">Entry</div><div class="val">Staged: half now, half on any pullback ≥5% (chip-sector selloffs like Jul 2 are the entry gift)</div></div>
+        <div class="lvl stop"><div class="lab">Invalidation</div><div class="val">−15% from entry, or confirmed hyperscaler capex cuts / Anthropic-Samsung chip proving durable share loss</div></div>
+        <div class="lvl tgt"><div class="lab">Target</div><div class="val">12-month hold; review at each earnings. Trim if position grows past 40% of portfolio</div></div>
       </div>
-      <div style="font-size:9px;color:var(--fg-faint);margin-top:8px">NOT FINANCIAL ADVICE · Signals are research outputs only · Consult a licensed financial advisor</div>
+      <p class="riskline">Risk: Jul 2 chip selloff (NVDA −1.25%, MU −3.1%) on the Anthropic custom-chip report — monitor whether it's a one-day repricing or a customer-concentration crack.</p>
+      <a class="chartlink" href="https://www.tradingview.com/symbols/NASDAQ-NVDA/" target="_blank" rel="noopener">Chart → TradingView</a>
     </div>
+  </details>
 
-    <div class="tabs-wrap">
-      <div class="tabs-inner" id="tabs" role="tablist" aria-label="Market catalysts"></div>
-    </div>
-
-    <section class="hero-grid" id="heroSection"></section>
-    <section class="briefing-grid" id="briefingSection" aria-label="Catalyst briefing"></section>
-    <div class="update-banner" id="updateBanner"></div>
-
-    <div class="scorecard" id="scorecard"></div>
-
-    <section aria-labelledby="signals-heading">
-      <div class="signals-header">
-        <div>
-          <p class="signals-count" id="countLabel"></p>
-          <h2 id="signals-heading" class="signals-title">Live trading signals</h2>
-        </div>
-        <div class="toggle-area">
-          <div class="signals-legend">
-            <span class="lbuy">● Buy</span>
-            <span class="lhedge">● Hedge / Watch</span>
-          </div>
-          <button class="toggle-btn" id="toggleBtn" onclick="toggleBuyOnly()">ALL SIGNALS</button>
-        </div>
+  <!-- XOM/COP -->
+  <details class="row">
+    <summary>
+      <span class="tick">XOM·COP</span>
+      <span class="sig buy">BUY</span>
+      <span class="conv"><span class="on">●●</span><span class="off">●</span></span>
+      <span class="changed">Hormuz still a war zone through Jul 9. <b>Exit trigger:</b> signed Hormuz deal or confirmed IAEA access.</span>
+    </summary>
+    <div class="detail">
+      <p class="thesis"><b>Thesis:</b> Doha talks made "positive progress" but the $6B frozen-funds release and Hormuz safety guarantees remain unresolved; shipping unions keep the Strait classed as a war zone through at least Jul 9 (double hazard pay in force). Brent stays bid on transit risk; OBBBA drilling rights provide a structural floor.</p>
+      <div class="levels">
+        <div class="lvl entry"><div class="lab">Entry</div><div class="val">Already active — add only on Hormuz re-escalation, not on calm days</div></div>
+        <div class="lvl stop"><div class="lab">Invalidation / Exit</div><div class="val">Signed asset-release + Hormuz guarantee deal, or verified IAEA site access — thesis over, take profit same day</div></div>
+        <div class="lvl tgt"><div class="lab">Target</div><div class="val">Event-driven, not price-driven. This unwinds fast when peace lands — don't be last out</div></div>
       </div>
-      <div class="ticker-list" id="tickerList"></div>
-    </section>
-
-    <div class="legend-box">
-      <div class="legend-title">LEGEND</div>
-      <div class="legend-items">
-        <div class="legend-item"><span class="legend-key" style="color:var(--success)">✦ BUY</span><span class="legend-desc">High-conviction anticipatory entry</span></div>
-        <div class="legend-item"><span class="legend-key" style="color:var(--warning)">◈ HEDGE</span><span class="legend-desc">Breakdown protection</span></div>
-        <div class="legend-item"><span class="legend-key" style="color:var(--warning)">◈ WATCH</span><span class="legend-desc">Monitor — confirm before entry</span></div>
-        <div class="legend-item"><span class="legend-key" style="color:var(--success)">HIGH</span><span class="legend-desc">High conviction</span></div>
-        <div class="legend-item"><span class="legend-key" style="color:var(--warning)">MEDIUM</span><span class="legend-desc">Medium conviction</span></div>
-      </div>
-      <div style="font-family:monospace;font-size:9px;color:var(--fg-faint);margin-top:6px">Charts: TradingView (full interactive). NOT FINANCIAL ADVICE. Always consult a licensed financial advisor.</div>
+      <p class="riskline">Risk: this is a geopolitical option that decays on every "positive progress" headline. Talks may resume after Jul 9 — the exit window could be days away.</p>
+      <a class="chartlink" href="https://www.tradingview.com/symbols/NYSE-XOM/" target="_blank" rel="noopener">Chart → TradingView</a>
     </div>
+  </details>
 
-    <footer class="page-footer">
-      <p><strong>Not financial advice.</strong> Signals are probabilistic research outputs. Consult a licensed financial advisor before making investment decisions.</p>
-      <p class="page-footer-meta">Updated Jul 4, 2026 · 20:00 GMT+8 · Sources: White House, NPR, PBS NewsHour, Al Jazeera, CNBC, CBS News, NBC News, Bloomberg, CNN Business, Fox News, HousingWire, Time, Federal Register, AP-NORC, Epoch Times, U.S. Bank, TheStreet, The Hill, CNN, Washington Times, Nasdaq, USTR, Financial Times, Seeking Alpha</p>
-    </footer>
+  <!-- GD -->
+  <details class="row">
+    <summary>
+      <span class="tick">GD</span>
+      <span class="sig buy">BUY</span>
+      <span class="conv"><span class="on">●●</span><span class="off">●</span></span>
+      <span class="changed"><b>$1.85B sub contract Jul 2</b> + $730M in Army/IT awards · FY2027 NDAA advancing at $1.15T.</span>
+    </summary>
+    <div class="detail">
+      <p class="thesis"><b>Thesis:</b> Freshest defense catalyst on the desk: Electric Boat's $1.85B Virginia/Columbia-class contract mod, plus $150M Army and $580M GDIT awards, as the House advances the FY2027 NDAA at $1.15T — part of a record $1.5T total defense request. NOC/LMT ride the same tide (Citi upgraded LMT, PT $582) but GD has the most direct new money.</p>
+      <div class="levels">
+        <div class="lvl entry"><div class="lab">Entry</div><div class="val">Any day — this is a slow-burn budget thesis, no gap risk</div></div>
+        <div class="lvl stop"><div class="lab">Invalidation</div><div class="val">NDAA stalls materially below $1.1T, or −12% from entry</div></div>
+        <div class="lvl tgt"><div class="lab">Target</div><div class="val">Hold through NDAA passage; review at Q3 earnings backlog numbers</div></div>
+      </div>
+      <p class="riskline">Risk: defense primes are consensus longs in 2026 — much of the NDAA is priced. Slow compounder, not a fast catalyst.</p>
+      <a class="chartlink" href="https://www.tradingview.com/symbols/NYSE-GD/" target="_blank" rel="noopener">Chart → TradingView</a>
+    </div>
+  </details>
 
-  </div>
+  <!-- PLTR -->
+  <details class="row">
+    <summary>
+      <span class="tick">PLTR</span>
+      <span class="sig buy">BUY</span>
+      <span class="conv"><span class="on">●●</span><span class="off">●</span></span>
+      <span class="changed">NSPM-11 incumbent + <b>AI Cybersecurity Clearinghouse</b> (Jun 29 EO) opens a new contract pathway. USG rev +84% YoY.</span>
+    </summary>
+    <div class="detail">
+      <p class="thesis"><b>Thesis:</b> USG revenue +84% YoY to $687M in Q1. NSPM-11 directs DoD to "rapidly onboard" frontier AI — Palantir is the incumbent platform. The new Treasury/NSA/CISA clearinghouse mandate adds a third stacked tailwind on top of OBBBA's $150B defense surge.</p>
+      <div class="levels">
+        <div class="lvl entry"><div class="lab">Entry</div><div class="val">Half position; PLTR is high-beta — add the rest only on a ≥10% pullback</div></div>
+        <div class="lvl stop"><div class="lab">Invalidation</div><div class="val">−20% from entry (it moves like that), or USG growth decelerating below +40% YoY</div></div>
+        <div class="lvl tgt"><div class="lab">Target</div><div class="val">Hold through next two earnings; the thesis is contract flow, verify it quarterly</div></div>
+      </div>
+      <p class="riskline">Risk: valuation is extreme by any classical measure — this only works while government AI spend accelerates. Sized small or not at all on US$7.4k.</p>
+      <a class="chartlink" href="https://www.tradingview.com/symbols/NASDAQ-PLTR/" target="_blank" rel="noopener">Chart → TradingView</a>
+    </div>
+  </details>
+
+  <!-- GLD -->
+  <details class="row">
+    <summary>
+      <span class="tick">GLD</span>
+      <span class="sig hedge">HEDGE</span>
+      <span class="conv"><span class="on">●●</span><span class="off">●</span></span>
+      <span class="changed">Triple hedge live: CPI 4.2% · Hormuz risk · tariff volatility. <b>Hold through Jul 24</b> tariff decision.</span>
+    </summary>
+    <div class="detail">
+      <p class="thesis"><b>Thesis:</b> Gold's three roles are simultaneously active: inflation hedge (CPI 4.2%, 3-yr high, Fed hike risk), geopolitical hedge (Hormuz war-zone classification), and tariff-volatility hedge (Section 301 reinstatement into Jul 24). One instrument covering the desk's three biggest macro risks.</p>
+      <div class="levels">
+        <div class="lvl entry"><div class="lab">Entry</div><div class="val">10–15% of portfolio max — it's a hedge, not a bet</div></div>
+        <div class="lvl stop"><div class="lab">Unwind trigger</div><div class="val">Hormuz resolution AND Section 301 outcome both settled — then it's dead weight</div></div>
+        <div class="lvl tgt"><div class="lab">Role</div><div class="val">Reduces the pain if the Jul 24 tariff window turns ugly. Judge it by portfolio drawdown, not its own return</div></div>
+      </div>
+      <a class="chartlink" href="https://www.tradingview.com/symbols/AMEX-GLD/" target="_blank" rel="noopener">Chart → TradingView</a>
+    </div>
+  </details>
+
+  <!-- MSFT -->
+  <details class="row">
+    <summary>
+      <span class="tick">MSFT</span>
+      <span class="sig watch">WATCH</span>
+      <span class="conv"><span class="on">●●</span><span class="off">●</span></span>
+      <span class="changed">OpenAI proposed a <b>5% US gov stake (~$42.6B)</b> Jul 2. Upgrade trigger: a formalized deal or Congressional path.</span>
+    </summary>
+    <div class="detail">
+      <p class="thesis"><b>Thesis:</b> OpenAI reportedly proposed handing the administration a 5% equity stake — the most concrete gov-stake development yet, discussed directly with Trump, Lutnick, and Bessent. MSFT (&gt;49% OpenAI backer, Azure AI growing 50%+ YoY) is the listed derivative play. But a deal likely needs an act of Congress.</p>
+      <div class="levels">
+        <div class="lvl entry"><div class="lab">Upgrade to BUY when</div><div class="val">A formal deal structure is announced or legislation is introduced with real sponsorship</div></div>
+        <div class="lvl stop"><div class="lab">Kill the idea if</div><div class="val">Congress signals rejection or OpenAI walks the proposal back</div></div>
+        <div class="lvl tgt"><div class="lab">Note</div><div class="val">MSFT is a fine core hold regardless — but as a *catalyst trade*, wait for the trigger</div></div>
+      </div>
+      <a class="chartlink" href="https://www.tradingview.com/symbols/NASDAQ-MSFT/" target="_blank" rel="noopener">Chart → TradingView</a>
+    </div>
+  </details>
+
+  <!-- DAL/UAL -->
+  <details class="row">
+    <summary>
+      <span class="tick">DAL·UAL</span>
+      <span class="sig watch">WATCH</span>
+      <span class="conv"><span class="on">●</span><span class="off">●●</span></span>
+      <span class="changed"><b>Do not add.</b> Upgrade only on a signed Hormuz deal or verified IAEA access. Fuel thesis fragile until then.</span>
+    </summary>
+    <div class="detail">
+      <p class="thesis"><b>Thesis (paused):</b> Cheaper fuel on Hormuz normalization + World Cup travel tailwind. But "positive progress" in Doha ≠ a deal — frozen assets and safety guarantees unresolved, Strait still a war zone through Jul 9. The mirror image of the XOM/COP trade: one of them is wrong.</p>
+      <div class="levels">
+        <div class="lvl entry"><div class="lab">Upgrade to BUY when</div><div class="val">Signed Hormuz oversight/guarantee deal OR verified IAEA site access</div></div>
+        <div class="lvl stop"><div class="lab">Stay away while</div><div class="val">Talks are paused (through at least Jul 9) — no edge in guessing</div></div>
+      </div>
+      <a class="chartlink" href="https://www.tradingview.com/symbols/NYSE-DAL/" target="_blank" rel="noopener">Chart → TradingView</a>
+    </div>
+  </details>
+
+  <!-- LEN/DHI -->
+  <details class="row">
+    <summary>
+      <span class="tick">LEN·DHI</span>
+      <span class="sig wait">WAIT</span>
+      <span class="conv"><span class="on">●</span><span class="off">●●</span></span>
+      <span class="changed">ROAD Act passed Congress but <b>Trump cancelled the signing.</b> Do not enter before a confirmed signature.</span>
+    </summary>
+    <div class="detail">
+      <p class="thesis"><b>Thesis (locked):</b> If signed, the ROAD to Housing Act ($200B Fannie/Freddie MBS purchases + FHA limit raises) is a powerful homebuilder tailwind. But Trump cancelled the signing pending the SAVE Act, which lacks 60 Senate votes. Tense Jun 27 GOP meeting resolved nothing. A veto-override (two-thirds) is the only other path.</p>
+      <div class="levels">
+        <div class="lvl entry"><div class="lab">Unlock trigger</div><div class="val">Confirmed presidential signature or a successful override vote — nothing less</div></div>
+        <div class="lvl stop"><div class="lab">Meanwhile</div><div class="val">Signing limbo is a near-term negative — being early here is just being wrong</div></div>
+      </div>
+      <a class="chartlink" href="https://www.tradingview.com/symbols/NYSE-LEN/" target="_blank" rel="noopener">Chart → TradingView</a>
+    </div>
+  </details>
+
+  <!-- TSLA -->
+  <details class="row">
+    <summary>
+      <span class="tick">TSLA</span>
+      <span class="sig watch">WATCH</span>
+      <span class="conv"><span class="on">●</span><span class="off">●●</span></span>
+      <span class="changed">−8.3% Jul 2 despite a delivery beat — demand-quality worry. Needs a stabilizing catalyst before re-rating.</span>
+    </summary>
+    <div class="detail">
+      <p class="thesis"><b>Thesis (none active):</b> Q2 deliveries of 480,126 beat the 406,600 estimate, but shares fell 8.3% — the market read it as incentive-driven pull-forward. Not tied to any Trump policy catalyst on this desk. Off-thesis; it's here only because the drop was big enough to note.</p>
+      <div class="levels">
+        <div class="lvl entry"><div class="lab">Re-rate only on</div><div class="val">Guidance, robotaxi/FSD news, or a policy catalyst that fits this desk</div></div>
+      </div>
+      <a class="chartlink" href="https://www.tradingview.com/symbols/NASDAQ-TSLA/" target="_blank" rel="noopener">Chart → TradingView</a>
+    </div>
+  </details>
 </div>
 
-<script>
-const catalysts = [
-  {
-    id: "iran-stuck",
-    title: "Iran MOU ✓",
-    statusColor: "#22c55e",
-    status: "MOU SIGNED",
-    timing: "Signed Jun 17 · 60-day nuclear talks OPEN · Talks PAUSED for Khamenei state funeral Jul 4-9, resume after processions conclude",
-    confidence: 97.2,
-    vsAvg: "+28.6%",
-    description: `<b>✅ SIGNED Jun 17 (G7 Versailles):</b> Trump formally signed the <b>14-point US-Iran peace agreement</b> with FM Mojtaba Khamenei during a dinner with French President Macron at Versailles. G7 joint statement praised Trump; world leaders endorsed the framework.
-<br><br>
-<span class="desc-tag">DEAL TERMS</span> Strait of Hormuz <b>now reopening</b> &nbsp;·&nbsp; Washington sanctions on Tehran <b>lifted</b> &nbsp;·&nbsp; <b>Nuclear freeze</b> framework (60-day detail phase to follow) &nbsp;·&nbsp; Ceasefire extended
-<br><br>
-<span class="desc-tag">MARKET IMPACT</span> Dow near <b>52,000</b> &nbsp;·&nbsp; Brent crude <b>−5% to ~$82</b> &nbsp;·&nbsp; Nikkei <b>+5.5%</b> &nbsp;·&nbsp; Kospi <b>+5.7%</b> &nbsp;·&nbsp; Airlines surged &nbsp;·&nbsp; <b>⚠ Fed offset:</b> S&P slipped −1.2% Jun 18 as Fed projections showed ~half of policymakers see a rate hike ahead`,
-    summary: "The 14-point MOU is now <b>signed and in force</b>. Strait of Hormuz is reopening, sanctions are being lifted, and a nuclear-detail phase begins. Core thesis confirmed — airlines and QQQ played out as predicted.",
-    triggerShort: "Nuclear detail negotiations (60-day window) and <b>implementation checkpoints</b> are the next catalysts. Watch for any breakdown in nuclear talks as the next risk event.",
-    impactShort: "<span style='color:#22c55e;font-weight:600'>Airlines (DAL, UAL) and QQQ thesis confirmed.</span> <span style='color:#f59e0b;font-weight:600'>Energy/gold hedges reversed.</span> Monitor Fed rate-hike risk as the new offsetting headwind.",
-    update: `🚨 <b>NEW — TALKS PAUSED FOR KHAMENEI STATE FUNERAL (JUL 4-9) · IRAN TO OPEN "COMMUNICATION CHANNEL" FOR MOU BREACHES · HORMUZ STILL CLASSED A WAR ZONE</b><br>
-<b>Funeral (Jul 4-9):</b> State funeral for assassinated Supreme Leader Ali Khamenei runs Tehran (Jul 4-6) → Qom (Jul 7) → Najaf/Karbala, Iraq (Jul 8) → burial in Mashhad (Jul 9) · delegations from 30+ countries, religious scholars from 90+ countries attending<br>
-<b>Talks on Hold:</b> Per Iranian Deputy FM Kazem Gharibabadi, the next US-Iran MOU session resumes only "at the earliest possible time" after the funeral processions conclude · Iran separately says it will open a formal <b>"communication channel"</b> with Washington to report any MOU breaches going forward<br>
-<b>Doha Recap (Jul 1-2):</b> Qatari FM spokesperson Majed Al Ansari had said "positive progress" was made on the MOU after two days of indirect, technical-level talks — but frozen $6B asset release and firm Hormuz safety guarantees remained unresolved going into the pause<br>
-<b>Hormuz Track:</b> International shipping unions/employers continue to classify the Strait of Hormuz as a war zone through at least <b>Jul 9</b>, maintaining double hazard pay for seafarers · IAEA inspections still unconfirmed<br>
-<b>Energy hedge:</b> XOM/COP HELD at ACTIVE BUY — a multi-day funeral concentrates regional security risk with talks paused · DAL/UAL remain at WATCH — fuel cost thesis still fragile · GLD HELD at ACTIVE HEDGE<br>
-<span class="ub-action">🚨 STATUS QUO, RISK ELEVATED: Diplomatic track paused through Jul 9, not broken — XOM/COP ACTIVE BUY · GLD ACTIVE HEDGE · DAL/UAL WATCH · Next trigger: resumed session post-funeral or a signed asset-release/Hormuz guarantee deal</span>`,
-    trigger: "60-day nuclear detail negotiations | Any breakdown in implementation → oil spike, gold rally | Fed rate decision impact on QQQ/growth",
-    tickers: [
-      { symbol: "DAL", tv: "NYSE:DAL", name: "Delta Air Lines", sector: "Airlines", direction: "WATCH", thesis: "<b>Held at WATCH — MOU talks now paused for Khamenei's Jul 4-9 state funeral, delaying any near-term Hormuz resolution.</b> Shipping unions keep the Strait classed a war zone through Jul 9. Fuel cost thesis fragile until talks resume and a concrete guarantee deal lands. Do not add until confirmed.", confidence: "MEDIUM", estimatedMove: "−2–5%", todayPct: "−1.42%", todayUp: false, isNew: false, spark: "0,30 12,33 24,29 36,34 48,31 60,36 72,40 84,37 96,42 108,46" },
-      { symbol: "UAL", tv: "NASDAQ:UAL", name: "United Airlines", sector: "Airlines", direction: "WATCH", thesis: "<b>Mirror play to DAL — held alongside it.</b> Talks are paused through the Jul 4-9 funeral period; fuel cost uncertainty persists. World Cup travel tailwind partially offsets but insufficient to overcome the fuel risk until diplomacy resumes.", confidence: "MEDIUM", estimatedMove: "−2–5%", todayPct: "−1.58%", todayUp: false, isNew: false, spark: "0,32 12,35 24,31 36,36 48,33 60,38 72,42 84,39 96,44 108,48" },
-      { symbol: "QQQ", tv: "NASDAQ:QQQ", name: "Nasdaq 100 ETF", sector: "Broad Tech", direction: "BUY", thesis: "<b>Nasdaq slipped −0.72% Jul 1 opening Q3</b> after Q2 2026 closed as the best quarter since 2020. Middle East risk and a modest pullback are a partial offset, but SpaceX's Jul 7 Nasdaq-100 inclusion (~$4.3B forced passive buying) and AI capex momentum keep the risk-on tilt intact. Monitor Fed rate path closely for headwind.", confidence: "HIGH", estimatedMove: "+1–3%", todayPct: "−0.72%", todayUp: false, isNew: false, spark: "0,46 12,43 24,39 36,40 48,35 60,29 72,27 84,30 96,34 108,38" },
-      { symbol: "XOM", tv: "NYSE:XOM", name: "Exxon Mobil", sector: "Energy", direction: "BUY", thesis: "<b>ACTIVE BUY held into Jul 2 — Hormuz risk still unresolved.</b> Qatar reports \"positive progress\" from the two-day Doha talks, but frozen-asset release and Hormuz safety guarantees remain unresolved, and shipping unions still class the Strait a war zone through Jul 9. Brent remains bid on transit risk. Hold until a signed deal or IAEA access.", confidence: "MEDIUM", estimatedMove: "+3–6%", todayPct: "+1.86%", todayUp: true, isNew: false, spark: "0,40 12,37 24,41 36,36 48,39 60,34 72,38 84,33 96,29 108,24" },
-      { symbol: "CVX", tv: "NYSE:CVX", name: "Chevron", sector: "Energy", direction: "BUY", thesis: "<b>ACTIVE BUY held alongside XOM.</b> Same Hormuz re-escalation thesis — Qatar's \"positive progress\" language has not translated into a verified deal as of Jul 2. Retain full position until a signed Hormuz guarantee/asset-release agreement or IAEA access confirmed.", confidence: "MEDIUM", estimatedMove: "+2–5%", todayPct: "+1.52%", todayUp: true, isNew: false, spark: "0,42 12,39 24,43 36,38 48,41 60,36 72,39 84,35 96,31 108,27" },
-      { symbol: "GLD", tv: "AMEX:GLD", name: "Gold ETF", sector: "Safe Haven", direction: "HEDGE", thesis: "<b>ACTIVE HEDGE held into Jul 2 — safe-haven bid remains intact.</b> No verified Hormuz breakthrough yet despite Qatar's \"positive progress\" framing, plus CPI at 4.2% and Section 301 tariff escalation (comment period closes Jul 6) — triple hedge role stays active. Hold through confirmed resolution.", confidence: "MEDIUM", estimatedMove: "+1–3%", todayPct: "+0.91%", todayUp: true, isNew: false, spark: "0,26 12,24 24,27 36,23 48,26 60,22 72,25 84,21 96,18 108,15" }
-    ]
-  },
-  {
-    id: "obbba",
-    title: "OBBBA Tailwinds",
-    statusColor: "#22c55e",
-    status: "ACTIVE NOW",
-    timing: "Kicking in Jan–Dec 2026",
-    confidence: 91.5,
-    vsAvg: "+19.7%",
-    description: `<b>Signed July 4, 2025.</b> The One Big Beautiful Bill Act is now flowing through corporate earnings.
-<br><br>
-<span class="desc-tag">KEY PROVISIONS</span> Corporate tax rate cut to as low as <b>15%</b> &nbsp;·&nbsp; <b>$127B</b> net consumer boost &nbsp;·&nbsp; <b>$150B</b> defense spending increase (US defense budget now <b>&gt;$1 trillion</b>) &nbsp;·&nbsp; <b>35%</b> semiconductor CHIPS tax credit
-<br><br>
-<span class="desc-tag">MARKET SIGNAL</span> SocGen identifies <b>30 stocks</b> as top beneficiaries. Q2 earnings season starting — <b>first wave of OBBBA tax uplift</b> expected in corporate guidance. Markets still have NOT fully priced cyclical earnings uplift.`,
-    summary: "The OBBBA delivers a <b>$127B consumer boost</b>, <b>$150B in new defense spending</b>, and a <b>35% semiconductor CHIPS tax credit</b> — all flowing through to earnings in 2026.",
-    triggerShort: "Quarterly earnings beats driven by <b>OBBBA tax relief</b>. Watch for guidance upgrades citing lower effective tax rates across defense and consumer names.",
-    impactShort: "<b>Defense, consumer, industrials, and small caps</b> are the primary beneficiaries. Markets have NOT yet fully priced the cyclical earnings uplift.",
-    update: `⚡ <b>Jul 2 — GD ELECTRIC BOAT WINS $1.85B SUBMARINE CONTRACT MOD · $150M ARMY + $580M GD IT CONTRACTS · FY2027 NDAA ADVANCES AT $1.15T</b><br>
-<b>GD Contracts (Jul 2):</b> Electric Boat awarded a $1.85B contract modification supporting submarine production &nbsp;·&nbsp; separate $150M U.S. Army contract &nbsp;·&nbsp; $580M GD Information Technology contract to sustain global force-protection systems<br>
-<b>NDAA:</b> House Armed Services Committee advances the FY2027 NDAA at $1.15T — part of Trump's record $1.5T total defense request (incl. $350B reconciliation) — highest single-year defense funding since WWII<br>
-<b>Analyst Action:</b> Citi upgraded Lockheed Martin (LMT) to Buy, PT $582 (from $571), ahead of its Jul 23 Q2 earnings &nbsp;·&nbsp; NOC carries Buy ratings from 10 of 15 covering analysts, +8.4% YTD<br>
-<span class="ub-action">🎯 GD's fresh contract flow + NDAA advance + LMT upgrade reinforce the OBBBA defense-spending BUY thesis across all three primes</span>`,
-    trigger: "Quarterly earnings beats driven by OBBBA tax relief | Further executive orders expanding domestic manufacturing incentives | FY2027 NDAA full House/Senate passage",
-    tickers: [
-      { symbol: "GD", tv: "NYSE:GD", name: "General Dynamics", sector: "Defense", direction: "BUY", thesis: "<b>Electric Boat won a $1.85B submarine contract mod Jul 2, plus $150M Army and $580M GD IT force-protection contracts.</b> $150B OBBBA defense spending surge + FY2027 NDAA advancing at $1.15T. GD covers shipbuilding, combat vehicles, and IT systems — all front-loaded in the spending schedule.", confidence: "HIGH", estimatedMove: "+4–8%", todayPct: "+2.31%", todayUp: true, isNew: false, spark: "0,50 12,45 24,42 36,38 48,36 60,30 72,28 84,22 96,17 108,12" },
-      { symbol: "NOC", tv: "NYSE:NOC", name: "Northrop Grumman", sector: "Defense", direction: "BUY", thesis: "<b>Buy-rated by 10 of 15 covering analysts, +8.4% YTD.</b> OBBBA defense modernization funding directly benefits advanced systems contracts. Global aerospace & electronics. Pairs with GD for full defense coverage.", confidence: "HIGH", estimatedMove: "+4–8%", todayPct: null, todayUp: null, isNew: false, spark: "0,48 12,44 24,40 36,42 48,35 60,30 72,26 84,22 96,18 108,14" },
-      { symbol: "LMT", tv: "NYSE:LMT", name: "Lockheed Martin", sector: "Defense", direction: "BUY", thesis: "<b>Citi upgraded LMT to Buy Jul 2, PT $582 (from $571).</b> $194B backlog amid strong defense spending trends; Q2 earnings webcast set for Jul 23. FY2027 NDAA at $1.15T and OBBBA's $150B surge provide a multi-year revenue runway alongside GD and NOC.", confidence: "HIGH", estimatedMove: "+3–7%", todayPct: "+1.44%", todayUp: true, isNew: true, spark: "0,46 12,42 24,44 36,38 48,40 60,34 72,30 84,26 96,20 108,15" },
-      { symbol: "COST", tv: "NASDAQ:COST", name: "Costco", sector: "Consumer", direction: "BUY", thesis: "<b>$127B consumer boost from OBBBA tax relief flows to membership models.</b> SocGen top pick. Captures incremental discretionary spend as take-home pay rises.", confidence: "MEDIUM", estimatedMove: "+2–5%", todayPct: null, todayUp: null, isNew: false, spark: "0,44 12,42 24,40 36,38 48,35 60,33 72,30 84,28 96,22 108,17" },
-      { symbol: "ULTA", tv: "NASDAQ:ULTA", name: "Ulta Beauty", sector: "Consumer", direction: "BUY", thesis: "<b>'Front-loaded consumer tailwinds and higher-income spending' under OBBBA tax cuts.</b> SocGen top pick. TrumpRx adds incremental wallet share boost.", confidence: "MEDIUM", estimatedMove: "+3–6%", todayPct: null, todayUp: null, isNew: false, spark: "0,46 12,44 24,42 36,38 48,36 60,32 72,28 84,24 96,20 108,16" },
-      { symbol: "IWM", tv: "AMEX:IWM", name: "Russell 2000 ETF", sector: "Small Caps", direction: "BUY", thesis: "<b>OBBBA boosts 'the other half of the S&P 500'</b> — cyclicals and small caps with avg <b>15% EPS growth</b> in 2026–27. SocGen's highest-conviction OBBBA trade.", confidence: "HIGH", estimatedMove: "+3–7%", todayPct: null, todayUp: null, isNew: false, spark: "0,50 12,46 24,44 36,40 48,36 60,32 72,28 84,24 96,19 108,14" },
-      { symbol: "XLI", tv: "AMEX:XLI", name: "Industrials ETF", sector: "Industrials", direction: "BUY", thesis: "<b>OBBBA capex incentives benefit industrial manufacturers.</b> Caterpillar named explicitly by SocGen. Broad coverage across domestic capex themes.", confidence: "HIGH", estimatedMove: "+3–6%", todayPct: null, todayUp: null, isNew: false, spark: "0,48 12,45 24,42 36,39 48,36 60,31 72,27 84,23 96,19 108,15" }
-    ]
-  },
-  {
-    id: "ai-semis",
-    title: "AI & Semis EO",
-    statusColor: "#a855f7",
-    status: "ACTIVE",
-    timing: "Jun 22 Quantum EOs + AI EO signed",
-    confidence: 88.7,
-    vsAvg: "+16.9%",
-    description: `<b>June 2 AI EO</b> requests voluntary 30-day early government access to frontier AI models. CHIPS Act restructured — <b>loans converted to equity stakes.</b>
-<br><br>
-<span class="desc-tag">KEY POLICY SHIFTS</span> <b>35%</b> semiconductor tax credit for new US fabs &nbsp;·&nbsp; H200 exports shifted from denial to <b>case-by-case review</b> (May) &nbsp;·&nbsp; Blackwell demand described as 'insatiable'
-<br><br>
-<span class="desc-tag">TRUMP-APPLE-INTEL</span> Trump <b>personally announced</b> Intel will work alongside Apple to design and produce semiconductors domestically — a new major catalyst for INTC &nbsp;·&nbsp; CHIPS loan-to-equity conversion expected
-<br><br>
-<span class="desc-tag">NVIDIA CAPITAL RETURN</span> Dividend raised <b>25× ($0.01 → $0.25)</b> payable Jun 26 &nbsp;·&nbsp; <b>$80B</b> new buyback authorization — largest in company history`,
-    summary: "The June 2 AI EO accelerates government AI adoption while Trump's Intel-Apple chip partnership announcement adds a new major catalyst. CHIPS Act restructuring converts loans to equity stakes with a <b>35% fab tax credit</b>.",
-    triggerShort: "Trump <b>Intel-Apple semiconductor partnership</b> formalisation. Further CHIPS equity stake announcements, Micron/Intel fab groundbreakings, or AI EO expansions.",
-    impactShort: "<b>INTC (NEW), MU, NVDA, and QCOM</b> are the primary beneficiaries. Intel-Apple announcement is the freshest catalyst — not yet fully priced.",
-    update: `🚨 <b>Jul 2 — OPENAI PROPOSES CONCRETE 5% US GOV EQUITY STAKE (~$42.6B) · CHIP SECTOR SLIDES ON ANTHROPIC IN-HOUSE CHIP/SAMSUNG TALKS · NVDA DIVIDEND + CLEARINGHOUSE STILL IN FORCE</b><br>
-<b>OpenAI Gov-Stake (Jul 2, FT/CNBC):</b> OpenAI reportedly proposed a <b>5% US government equity stake (~$42.6B)</b>; Altman discussed the structure — modeled on the Alaska Permanent Fund — directly with Trump, Lutnick, and Bessent. Would likely require Congressional sign-off · <b>MSFT is the clearest derivative beneficiary as OpenAI's largest backer</b><br>
-<b>Chip Sector Pressure (Jul 2):</b> The Information reported <b>Anthropic is exploring an in-house AI chip and held talks with Samsung as a manufacturing partner</b> — Micron −3.1%, Intel −2.9%, AMD −3.9%, SanDisk −9%, Western Digital −4.9%, Seagate −5.3%; Nasdaq fell 0.8% on the day even as the Dow hit a fresh record close<br>
-<b>AI Cybersecurity Clearinghouse (Jun 29, still active):</b> Treasury + NSA + CISA directed to build an AI clearinghouse — PLTR, NET, MSFT primary beneficiaries · 30-day frontier-model pre-release review benefits OpenAI/Anthropic/xAI<br>
-<b>NVDA Dividend:</b> $0.25 paid Jun 26 (25× raise) · $80B buyback active — largest capital return program in NVDA history<br>
-<b>Quantum EOs (Jun 22):</b> PQC migration deadline Dec 31, 2030 / 2031 · IBM $1B · GlobalFoundries $375M<br>
-<span class="ub-action">🎯 OpenAI 5% stake proposal is the freshest, most concrete AI-policy catalyst — bullish MSFT · Near-term chip-sector pullback (Anthropic/Samsung chip story) is a headwind for INTC/MU — watch if it's durable or a one-day repricing</span>`,
-    trigger: "Intel-Apple domestic fab partnership formalisation | Trump CHIPS equity stake announcements for specific fabs | Further AI EO expansions | Micron/Intel fab groundbreakings",
-    tickers: [
-      { symbol: "INTC", tv: "NASDAQ:INTC", name: "Intel", sector: "Semiconductors", direction: "BUY", thesis: "<b>Pulled back −2.9% Jul 2 on the Anthropic in-house chip/Samsung headline, but the policy thesis is unchanged:</b> Trump personally announced Intel will work alongside Apple to design &amp; produce domestic semiconductors, and CHIPS loan-to-equity conversion remains expected. Treat the dip as noise unless it persists.", confidence: "HIGH", estimatedMove: "+8–18%", todayPct: "−2.90%", todayUp: false, isNew: false, spark: "0,20 12,18 24,22 36,19 48,24 60,28 72,33 84,38 96,44 108,52" },
-      { symbol: "MU", tv: "NASDAQ:MU", name: "Micron Technology", sector: "Semiconductors", direction: "BUY", thesis: "<b>Fell −3.1% Jul 2 after The Information reported Anthropic is exploring its own AI chip with Samsung as a manufacturing partner</b> — a competitive-threat headline, not a policy reversal. $6.1B CHIPS funding + equity stake conversion still expected; Idaho + NY fabs still accelerating.", confidence: "HIGH", estimatedMove: "+5–12%", todayPct: "−3.10%", todayUp: false, isNew: false, spark: "0,52 12,47 24,45 36,40 48,36 60,31 72,27 84,30 96,38 108,46" },
-      { symbol: "NVDA", tv: "NASDAQ:NVDA", name: "Nvidia", sector: "Semiconductors", direction: "BUY", thesis: "<b>Softened alongside the broader chip-sector pullback Jul 1-2 tied to Anthropic's in-house chip/Samsung talks</b>, but the $0.25 dividend (25× raise) + $80B buyback + H200 China approvals remain three concurrent tailwinds. Blackwell demand insatiable; AI EO + NSPM-11 + the fresh OpenAI 5% gov-stake proposal keep the policy backdrop supportive.", confidence: "HIGH", estimatedMove: "+4–8%", todayPct: "−1.25%", todayUp: false, isNew: false, spark: "0,48 12,44 24,42 36,37 48,33 60,29 72,32 84,36 96,40 108,46" },
-      { symbol: "QCOM", tv: "NASDAQ:QCOM", name: "Qualcomm", sector: "Semiconductors", direction: "BUY", thesis: "<b>46% China revenue × tariff relief + CHIPS 35% tax credit = dual earnings tailwind.</b> Biggest relative beneficiary of the US-China trade framework; less directly exposed to the Anthropic in-house-chip headline than memory/foundry names.", confidence: "HIGH", estimatedMove: "+3–7%", todayPct: null, todayUp: null, isNew: false, spark: "0,46 12,43 24,40 36,37 48,33 60,30 72,27 84,23 96,19 108,15" }
-    ]
-  },
-  {
-    id: "china-sept",
-    title: "China Summit",
-    statusColor: "#3b82f6",
-    status: "UPCOMING",
-    timing: "Fall 2026 — Xi visits Washington",
-    confidence: 72.3,
-    vsAvg: "+0.5%",
-    description: `<b>May 14–15 Beijing summit complete.</b> Trump-Xi announced <b>$17B/yr</b> US ag purchases through 2028, Boeing <b>200-plane</b> delivery schedule confirmed, 'board of trade' + 'board of investment' institutions established.
-<br><br>
-<span class="desc-tag">NEXT CATALYST</span> Xi confirmed to visit Washington in <b>fall 2026</b>, no specific date set yet.
-<br><br>
-<span class="desc-tag">MARKET PATTERN</span> Post-summit markets rallied <b>3–4 weeks ahead</b>, then sold on vague outcomes. Markets now more cynical — <b>entry point is earlier, exit before the event, not after.</b>`,
-    summary: "Xi's confirmed Washington visit and the May summit's <b>$17B ag deal</b> and <b>Boeing 200-plane order</b> create a multi-week anticipatory window for positioning.",
-    triggerShort: "Xi Washington visit <b>date confirmed</b>, or a pre-summit diplomatic leak about tariff rollbacks or deal expansion beyond the May framework.",
-    impactShort: "<b>BA, ADM, and MP Materials</b> are the primary plays. Pattern: entry 4–5 weeks ahead, exit <em>before</em> the summit — not after.",
-    update: `⚡ <b>Jun 11–12 — US-China Trade Framework</b><br>
-<b>Tariffs:</b> 30% total maintained (20% fentanyl + 10% reciprocal) &nbsp;·&nbsp; Higher tariffs <b>paused 60 days</b><br>
-<b>Xi visit:</b> Confirmed for fall 2026, no specific date set<br>
-<b>Next trigger:</b> Specific date announcement or pre-summit tariff concession signal<br>
-<span class="ub-action">📍 Pattern: Trade earlier in the anticipation window — exit BEFORE the summit, not after</span>`,
-    trigger: "Xi Washington visit date confirmed | Pre-summit diplomatic leaks about tariff rollback or Boeing/ag deal expansion",
-    tickers: [
-      { symbol: "BA", tv: "NYSE:BA", name: "Boeing", sector: "Aerospace", direction: "BUY", thesis: "<b>200-plane order confirmed at May summit.</b> September summit likely confirms delivery schedule and timeline. Position 4–5 weeks ahead of date announcement, not 2.", confidence: "HIGH", estimatedMove: "+4–8%", todayPct: "−1.16%", todayUp: false, isNew: false, spark: "0,40 12,44 24,41 36,38 48,42 60,36 72,32 84,29 96,25 108,20" },
-      { symbol: "ADM", tv: "NYSE:ADM", name: "Archer-Daniels-Midland", sector: "Agriculture", direction: "BUY", thesis: "<b>$17B/yr ag purchase commitment through 2028.</b> ADM is the primary US corn/soybean exporter. September summit likely to formalize and expand.", confidence: "MEDIUM", estimatedMove: "+2–5%", todayPct: null, todayUp: null, isNew: false, spark: "0,42 12,40 24,38 36,42 48,37 60,35 72,31 84,28 96,24 108,20" },
-      { symbol: "MP", tv: "NYSE:MP", name: "MP Materials", sector: "Rare Earths", direction: "BUY", thesis: "<b>Only US rare earth miner.</b> September summit expected to confirm rare earth supply framework agreed in Beijing. Highest beta play on summit outcome.", confidence: "MEDIUM", estimatedMove: "+5–15%", todayPct: null, todayUp: null, isNew: false, spark: "0,50 12,47 24,43 36,39 48,44 60,38 72,33 84,28 96,22 108,16" },
-      { symbol: "AAPL", tv: "NASDAQ:AAPL", name: "Apple", sector: "Consumer Tech", direction: "WATCH", thesis: "<b>Tim Cook attended Beijing summit.</b> Tariff relief = margin recovery. But markets now skeptical of summit outcomes — watch for early exit signal.", confidence: "MEDIUM", estimatedMove: "+2–4%", todayPct: null, todayUp: null, isNew: false, spark: "0,38 12,36 24,34 36,38 48,33 60,31 72,35 84,30 96,27 108,23" }
-    ]
-  },
-  {
-    id: "tariff-signals",
-    title: "Tariff Signals",
-    statusColor: "#8b5cf6",
-    status: "ACTIVE",
-    timing: "Jun 1–3 tariff wave — ongoing",
-    confidence: 68.9,
-    vsAvg: "−2.9%",
-    description: `<span class="desc-tag">JUN 1–3 TARIFF WAVE</span> Section 232 metals to <b>50%</b> (aluminum, copper, steel) &nbsp;·&nbsp; Section 301 tariffs on <b>59 countries + EU</b> at 10–12.5% (comment period through <b>Jul 6</b>) &nbsp;·&nbsp; Customs Enforcement EO tightens import penalties
-<br><br>
-<span class="desc-tag">MARKET PATTERN</span> Credibility of Trump tariff announcements eroding — <b>smaller pops, faster reversals.</b> Best expression now via <b>ETFs, not single stocks.</b>
-<br><br>
-<span class="desc-tag">RISK WINDOW</span> Volatility elevated through <b>July 6</b> comment period. Global 10% base tariff runs until <b>Jul 24, 2026.</b>`,
-    summary: "The Jun 1–3 tariff wave (metals to <b>50%</b>, Section 301 on 60 countries) creates directional risk through the July 6 comment period. <b>ETF expressions preferred</b> over single-name bets.",
-    triggerShort: "A <b>Truth Social tariff pause post</b> or a new trade deal with the EU, India, or another major partner confirmed via official channels.",
-    impactShort: "<b>SPY and XLY</b> capture broad tariff relief. <b>COP</b> provides an oil and drilling rights hedge under OBBBA's expanded drilling framework.",
-    update: `⚡ <b>Jul 1 — USTR AFFIRMS ALL 60 SECTION 301 FORCED-LABOR DETERMINATIONS · COMMENT PERIOD CLOSES JUL 6 · 10% EXPIRY JUL 24 · EU WINE TARIFF THREAT STILL ACTIVE</b><br>
-<b>USTR Determination:</b> Affirmative findings issued across all 60 Section 301 forced-labor investigations (economies covering 99.4% of US imports) · Proposed duties: <b>10%</b> for countries with import prohibitions, <b>12.5%</b> for all others<br>
-<b>CRITICAL WINDOW:</b> Public comment period closes <b>July 6 — 4 days away.</b> USTR hearing July 7. USTR moving on an expedited basis to be ready to impose tariffs by <b>~July 24</b>, aligned with the Section 122 surcharge expiry<br>
-<b>Tariff Clock:</b> 10% global base tariff under Section 122 expires <b>July 24, 2026</b> (150-day limit) · Avg import tax 11.8% — highest since 1940s<br>
-<b>EU Escalation:</b> Trump's 100% French wine tariff threat and EU auto tariff warnings remain unresolved · Section 301 overlaps with the broader EU/59-country action<br>
-<b>Japan Deal:</b> 15% tariff confirmed — EU and India negotiations active using same template; positive signal for bilateral resolution<br>
-<b>SCOTUS (Feb 20):</b> Ruled IEEPA cannot impose tariffs — administration using Section 122 + 301 as legal replacement<br>
-<span class="ub-action">⚠ HIGHEST TARIFF RISK IN MONTHS — Section 301 determinations now formalized · comment period closes Jul 6 · SPY and IWM remain cleanest domestic expressions · Watch for bilateral deal announcements before Jul 24 expiry</span>`,
-    trigger: "Truth Social tariff pause or reduction post | New trade deal announcement with EU, India, or any major partner",
-    tickers: [
-      { symbol: "SPY", tv: "AMEX:SPY", name: "S&P 500 ETF", sector: "Broad Market", direction: "BUY", thesis: "<b>Broadest expression of tariff relief trade.</b> S&P up 33% since election — any tariff de-escalation compounds that trend. Lowest single-name risk.", confidence: "HIGH", estimatedMove: "+2–4%", todayPct: "+0.54%", todayUp: true, isNew: false, spark: "0,46 12,43 24,40 36,38 48,34 60,31 72,29 84,25 96,21 108,17" },
-      { symbol: "XLY", tv: "AMEX:XLY", name: "Consumer Disc. ETF", sector: "Consumer", direction: "BUY", thesis: "<b>Lower tariffs = lower goods costs = consumer spending recovery.</b> OBBBA consumer boost compounds this. Covers Amazon, Tesla, Home Depot in one trade.", confidence: "MEDIUM", estimatedMove: "+2–5%", todayPct: null, todayUp: null, isNew: false, spark: "0,48 12,45 24,42 36,40 48,36 60,33 72,30 84,26 96,22 108,18" },
-      { symbol: "COP", tv: "NYSE:COP", name: "ConocoPhillips", sector: "Energy", direction: "BUY", thesis: "<b>OBBBA expanded drilling rights + Iran escalation hedge.</b> Extra $1B FCF/yr at $70 oil. Cross-catalyst: benefits from either OBBBA tailwind or Iran breakdown.", confidence: "MEDIUM", estimatedMove: "+3–7%", todayPct: null, todayUp: null, isNew: false, spark: "0,44 12,41 24,38 36,42 48,37 60,34 72,30 84,26 96,22 108,17" }
-    ]
-  }
-];
+<div class="sizing">
+  <b>Position sizing on ~US$7.4k:</b> maximum 3 positions of ~US$2,200–2,500 each, keep ~10% cash. Every entry gets its invalidation level set as a stop <b>on the day you buy</b> — not later. Never average down on a WATCH. If two signals conflict (XOM vs DAL), you hold at most one side. A 20%+ target on any single name means elevated risk — the stop is what makes it survivable.
+</div>
 
-let activeId = "iran-stuck";
-let buyOnly = false;
-
-function openSidebar() { document.getElementById('sidebar').classList.add('open'); document.getElementById('overlay').classList.add('show'); }
-function closeSidebar() { document.getElementById('sidebar').classList.remove('open'); document.getElementById('overlay').classList.remove('show'); }
-
-function donutSVG(pct, color) {
-  const r = 48, cx = 56, cy = 56, circ = 2 * Math.PI * r;
-  const dash = (pct / 100) * circ, gap = circ - dash;
-  return `<svg class="confidence-donut" width="112" height="112" viewBox="0 0 112 112" aria-label="${pct}% catalyst confidence">
-    <circle cx="${cx}" cy="${cy}" r="${r}" fill="none" stroke="rgba(255,255,255,0.05)" stroke-width="9"/>
-    <circle cx="${cx}" cy="${cy}" r="${r}" fill="none" stroke="${color}" stroke-width="9"
-      stroke-dasharray="${dash.toFixed(1)} ${gap.toFixed(1)}" stroke-linecap="round"
-      transform="rotate(-90 ${cx} ${cy})"/>
-    <text x="${cx}" y="${cy+6}" text-anchor="middle" fill="${color}" font-family="monospace" font-size="17" font-weight="800">${pct}%</text>
-  </svg>`;
-}
-
-function renderSidebar() {
-  document.getElementById('sidebarNav').innerHTML =
-    '<div class="sidebar-section-label">Catalysts</div>' +
-    catalysts.map(c => `
-      <button class="sidebar-item${c.id === activeId ? ' active' : ''}" onclick="setActive('${c.id}');closeSidebar()">
-        <div class="sidebar-dot" style="background:${c.statusColor}"></div>
-        <div class="sidebar-item-content">
-          <div class="sidebar-item-title">${c.title}</div>
-          <div class="sidebar-item-status">${c.status}</div>
-        </div>
-        <span class="sidebar-item-count">${c.tickers.length}</span>
-      </button>`).join('');
-}
-
-function renderTabs() {
-  document.getElementById('tabs').innerHTML = catalysts.map(c => `
-    <button class="tab-btn${c.id === activeId ? ' active' : ''}"
-      role="tab" aria-selected="${c.id === activeId}" onclick="setActive('${c.id}')">
-      <span class="tab-dot" style="background:${c.statusColor}"></span>${c.title}
-    </button>`).join('');
-}
-
-function renderHero() {
-  const c = catalysts.find(x => x.id === activeId);
-  const vsColor = c.vsAvg.startsWith('-') ? 'var(--destructive)' : 'var(--success)';
-  document.getElementById('heroSection').innerHTML = `
-    <article class="hero-card">
-      <div style="position:relative;z-index:1">
-        <div class="hero-badge" style="color:${c.statusColor};background:${c.statusColor}18;border-color:${c.statusColor}40">
-          <svg xmlns="http://www.w3.org/2000/svg" width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M16.247 7.761a6 6 0 0 1 0 8.478"/><path d="M19.075 4.933a10 10 0 0 1 0 14.134"/><path d="M4.925 19.067a10 10 0 0 1 0-14.134"/><path d="M7.753 16.239a6 6 0 0 1 0-8.478"/><circle cx="12" cy="12" r="2"/></svg>
-          ${c.status} · active catalyst
-        </div>
-        <h1 class="hero-title">Position Before<br><span style="color:${c.statusColor}">He Speaks.</span></h1>
-        <p class="hero-desc">${c.description}</p>
-      </div>
-      <div class="hero-glow" style="background:radial-gradient(circle,${c.statusColor}15,transparent 70%)"></div>
-    </article>
-    <aside class="confidence-card">
-      <h2 class="confidence-title">Catalyst Confidence</h2>
-      ${donutSVG(c.confidence, c.statusColor)}
-      <div class="confidence-bottom">
-        <div>
-          <p class="confidence-pct" style="color:${c.statusColor}">${c.confidence}%</p>
-          <p class="confidence-label">Signal strength</p>
-        </div>
-        <span class="confidence-vs" style="color:${vsColor}">${c.vsAvg} vs avg</span>
-      </div>
-    </aside>`;
-}
-
-function renderBriefing() {
-  const c = catalysts.find(x => x.id === activeId);
-  document.getElementById('briefingSection').innerHTML = `
-    <article class="briefing-card">
-      <p class="briefing-label" style="color:${c.statusColor}">Summary</p>
-      <p class="briefing-text">${c.summary}</p>
-    </article>
-    <article class="briefing-card">
-      <p class="briefing-label" style="color:${c.statusColor}">Trigger</p>
-      <p class="briefing-text">${c.triggerShort}</p>
-    </article>
-    <article class="briefing-card">
-      <p class="briefing-label" style="color:${c.statusColor}">Impact</p>
-      <p class="briefing-text">${c.impactShort}</p>
-    </article>`;
-  document.getElementById('updateBanner').innerHTML = catalysts.find(x => x.id === activeId).update;
-}
-
-function renderScorecard() {
-  const c = catalysts.find(x => x.id === activeId);
-  const tracked = c.tickers.filter(t => t.todayPct !== null);
-  if (!tracked.length) { document.getElementById('scorecard').style.display = 'none'; return; }
-  document.getElementById('scorecard').style.display = '';
-  const wins = tracked.filter(t => t.todayUp).length;
-  const total = tracked.length;
-  const allGood = wins === total;
-  const verdictClass = allGood ? 'good' : wins / total >= 0.7 ? 'good' : 'mixed';
-  const verdictText = allGood ? `✓ ${wins}/${total} tracked positive` : `${wins}/${total} tracked positive`;
-  document.getElementById('scorecard').innerHTML = `
-    <div class="sc-head">
-      <span class="sc-title">Today's Scorecard</span>
-      <span class="sc-verdict ${verdictClass}">${verdictText}</span>
-      <span class="sc-note">As of Jul 2 close · markets closed Jul 3</span>
+<!-- ================= BENCH ================= -->
+<details class="section">
+  <summary>Bench — valid theses, not top-3 material <span class="count">8 tickers · tap to expand</span></summary>
+  <div class="section-body">
+    <div class="bench">
+      <div class="b"><span class="t">BK</span><p>Trump Accounts custodian — the infrastructure derivative of the HOOD trade. Slower, safer expression of the same catalyst.</p></div>
+      <div class="b"><span class="t">IBM</span><p>Jun 22 Quantum EO commits ~$1B to IBM quantum R&D; federal PQC migration deadline 2030/31 = multi-year mandated revenue. Slow burn.</p></div>
+      <div class="b"><span class="t">INTC</span><p>Gov 9.9% stake at $20.47 confirmed; stock already up ~5× — the easy money is made. NSPM-11 compute mandate is the remaining tail.</p></div>
+      <div class="b"><span class="t">AAPL</span><p>Japan deal at 15% (vs 25% feared) de-risks supply chain. A relief catalyst, not a growth one.</p></div>
+      <div class="b"><span class="t">AZO · ORLY</span><p>"Freedom to Fix" EO (Jun 29) trims CARB overhang on aftermarket parts. Real but small; EPA guidance due in 30 days.</p></div>
+      <div class="b"><span class="t">IWM</span><p>OBBBA tax cuts flow to small caps; tariff strike-down removes import cost headwind. Cleanest domestic diversifier if single names feel too hot.</p></div>
+      <div class="b"><span class="t">NOC · LMT</span><p>Same NDAA tide as GD. Citi upgraded LMT (PT $582); NOC 10/15 Buy. Own GD first — it has the freshest contract flow.</p></div>
+      <div class="b"><span class="t">MU</span><p>−3.1% Jul 2 on the Anthropic-Samsung chip report. Wait to see if the story is durable before treating the dip as an entry.</p></div>
     </div>
-    <div class="sc-items">
-      ${tracked.map(t => `
-        <div class="sc-item ${t.todayUp ? 'up' : 'dn'}">
-          <span class="sc-sym">${t.symbol}</span>
-          <span>${t.todayPct}</span>
-          <span class="sc-dir">${t.direction}</span>
-        </div>`).join('')}
-    </div>`;
-}
+  </div>
+</details>
 
-function renderTickers() {
-  const c = catalysts.find(x => x.id === activeId);
-  const tickers = buyOnly ? c.tickers.filter(t => t.direction === 'BUY') : c.tickers;
-  document.getElementById('countLabel').textContent = tickers.length + ' tickers shown';
-  const btn = document.getElementById('toggleBtn');
-  btn.textContent = buyOnly ? '✦ BUY ONLY' : 'ALL SIGNALS';
-  btn.className = 'toggle-btn' + (buyOnly ? ' active-buy' : '');
-  const list = document.getElementById('tickerList');
-  list.innerHTML = '';
-  tickers.forEach((t, i) => {
-    const isBuy = t.direction === 'BUY';
-    const color = isBuy ? 'var(--success)' : 'var(--warning)';
-    const sparkColor = isBuy ? '#22c55e' : '#f59e0b';
-    const badgeClass = t.direction.toLowerCase();
-    const badgeLabel = isBuy ? '✦ BUY' : t.direction === 'HEDGE' ? '◈ HEDGE' : '◈ WATCH';
-    const todayBadge = t.todayPct !== null
-      ? `<span class="tc-today ${t.todayUp ? 'up' : 'dn'}">TODAY ${t.todayPct}</span>` : '';
-    const html = `
-      <article class="ticker-card" style="animation-delay:${i * 45}ms">
-        <div class="tc-top">
-          <div class="tc-left">
-            <div class="tc-header">
-              <h3 class="tc-symbol" style="color:${color}">${t.symbol}</h3>
-              <span class="tc-name">${t.name}</span>
-              <span class="tc-sector">${t.sector}</span>
-              ${todayBadge}
-              ${t.isNew ? '<span class="tc-new">NEW</span>' : ''}
-            </div>
-            <p class="tc-thesis">${t.thesis}</p>
-          </div>
-          <div class="tc-right">
-            <span class="direction-badge ${badgeClass}">${badgeLabel}</span>
-            <p class="tc-conf">${t.confidence}</p>
-          </div>
-        </div>
-        <div class="tc-bottom">
-          <div>
-            <p class="tc-move-label">Estimated move</p>
-            <p class="tc-move" style="color:${color}">${t.estimatedMove}</p>
-          </div>
-          <svg class="tc-sparkline" viewBox="0 0 108 64" role="img" aria-label="${t.symbol} price trend" preserveAspectRatio="none">
-            <polyline points="${t.spark}" fill="none" stroke="${sparkColor}" stroke-width="1.5" vector-effect="non-scaling-stroke"/>
-          </svg>
-          <a class="tc-chart-btn" href="https://www.tradingview.com/chart/?symbol=${encodeURIComponent(t.tv)}" target="_blank" rel="noopener">
-            Full chart
-            <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m9 18 6-6-6-6"/></svg>
-          </a>
-        </div>
-      </article>`;
-    list.appendChild(document.createRange().createContextualFragment(html));
-  });
-}
+<!-- ================= CATALYST LOG ================= -->
+<details class="section">
+  <summary>Catalyst log — one entry per story <span class="count">7 active · deduplicated</span></summary>
+  <div class="section-body">
 
-function render() {
-  renderSidebar();
-  renderTabs();
-  renderHero();
-  renderBriefing();
-  renderScorecard();
-  renderTickers();
-}
+    <div class="cat">
+      <h3>Iran / Hormuz / MOU talks</h3>
+      <p class="impact"><b>Drives:</b> XOM·COP (BUY) · GLD (HEDGE) · DAL·UAL (WATCH). One story, one entry — the changelog below replaces five duplicate cards.</p>
+      <div class="log">
+        <span class="d">Jun 28</span> — IAEA chief: inspection timing "not essential"; no schedule in the MOU<br>
+        <span class="d">Jun 30</span> — Iran attacks cargo ship near Oman; US/Israel retaliate; XOM·COP upgraded to ACTIVE BUY, DAL·UAL cut to WATCH<br>
+        <span class="d">Jul 1</span> — Witkoff + Kushner in Doha; no direct US-Iran meeting; Oman-Hormuz committee's first session<br>
+        <span class="d">Jul 2</span> — Qatar: "positive progress," but $6B frozen funds + Hormuz guarantees unresolved; Strait a war zone through Jul 9<br>
+        <span class="d">Jul 4</span> — Khamenei funeral begins (procession Jul 6, burial Jul 9); talks paused until after
+      </div>
+    </div>
 
-function setActive(id) { activeId = id; render(); }
-function toggleBuyOnly() { buyOnly = !buyOnly; renderTickers(); }
+    <div class="cat">
+      <h3>Trump Accounts launch</h3>
+      <p class="impact"><b>Drives:</b> HOOD (BUY) · BK (bench) · SPYM named default ETF. Launched Jul 4; $1,000 seed per child born 2025–28; HOOD +9–10% with PT hikes to $98–110.</p>
+    </div>
 
-render();
-</script>
+    <div class="cat">
+      <h3>Tariff clock — Section 122 → Section 301</h3>
+      <p class="impact"><b>Drives:</b> GLD (HEDGE) · IWM (bench) · broad volatility. SCOTUS struck IEEPA tariffs Feb 20; 10% global Section 122 rate expires <b>Jul 24</b>. USTR affirmed all 60 forced-labor determinations (10–12.5% proposed duties); comment closes Jul 6, hearing Jul 7. Japan's 15% deal is the bilateral template.</p>
+    </div>
+
+    <div class="cat">
+      <h3>Government AI stack — NSPM-11 · AI EOs · OpenAI stake</h3>
+      <p class="impact"><b>Drives:</b> NVDA · PLTR (BUY) · MSFT (WATCH) · INTC (bench). NSPM-11 (Jun 5) mandates rapid DoD AI onboarding; Jun 29 EO adds the AI Cybersecurity Clearinghouse; OpenAI's proposed 5% gov stake (~$42.6B, Jul 2) is the most concrete step yet — likely needs Congress.</p>
+    </div>
+
+    <div class="cat">
+      <h3>Defense budget — FY2027 NDAA</h3>
+      <p class="impact"><b>Drives:</b> GD (BUY) · NOC·LMT (bench). $1.15T NDAA advancing; GD's $1.85B sub contract + $730M in further awards Jul 2. Highest single-year defense funding since WWII.</p>
+    </div>
+
+    <div class="cat">
+      <h3>SPCX Nasdaq-100 inclusion</h3>
+      <p class="impact"><b>Drives:</b> SPCX (BUY, time-boxed). Effective pre-open Jul 7; passive buying begins after Jul 6 close; ~$7.3B combined estimated index flows. Market-structure event — not a policy catalyst.</p>
+    </div>
+
+    <div class="cat">
+      <h3>ROAD Housing Act — signing limbo</h3>
+      <p class="impact"><b>Drives:</b> LEN·DHI (WAIT). Passed 358-32 / 85-5; Trump cancelled the signing pending the SAVE Act (lacks 60 votes). No new date. Locked until signature or override.</p>
+    </div>
+
+  </div>
+</details>
+
+<!-- ================= CONTEXT ================= -->
+<details class="section">
+  <summary>Context — not tradeable <span class="count">3 items</span></summary>
+  <div class="section-body">
+    <p style="margin-bottom:10px">Worth knowing, no tickers attached. Kept out of the signal board on purpose.</p>
+    <div class="cat"><h3>Jul 4 "Salute to America" rally</h3><p class="impact">Mount Rushmore + National Mall speech + record fireworks. Only relevance: any tariff/immigration remarks in the speech could move markets Monday.</p></div>
+    <div class="cat"><h3>SCOTUS birthright citizenship ruling (6-3)</h3><p class="impact">Struck Trump's EO Jun 30; Trump wants a legislative fix. Political/legal catalyst — no sector signal identified.</p></div>
+    <div class="cat"><h3>Macro tape</h3><p class="impact">Dow record 52,900 (Jul 2) · June jobs missed badly (+57K vs 113K) · CPI 4.2% (3-yr high), Fed hike risk. Net: supports the GLD hedge; headwind for rate-sensitive growth.</p></div>
+  </div>
+</details>
+
+<!-- ================= SIGNAL HISTORY ================= -->
+<details class="section">
+  <summary>Signal history — keeping the desk honest <span class="count">since Jun 28</span></summary>
+  <div class="section-body">
+    <p style="margin-bottom:8px">Every signal change, dated. Fill in the price at issue when you log a change — this is how you find out whether the anticipatory-catalyst premise actually beats buying SPY.</p>
+    <table class="hist">
+      <tr><th>Ticker</th><th>Change</th><th>Date</th><th>Since issue</th></tr>
+      <tr><td>HOOD</td><td>New BUY — Trump Accounts launch</td><td>Jul 4</td><td class="up">+9–10% on announcement (pre-signal)</td></tr>
+      <tr><td>SPCX</td><td>New BUY — index inclusion flow</td><td>Jul 1</td><td class="up">Rising into event</td></tr>
+      <tr><td>MSFT</td><td>New WATCH — OpenAI gov-stake proposal</td><td>Jul 2</td><td class="fl">Pending trigger</td></tr>
+      <tr><td>XOM·COP</td><td>Upgraded to ACTIVE BUY — Hormuz re-escalation</td><td>Jun 30</td><td class="fl">Held Jul 2, Jul 4</td></tr>
+      <tr><td>DAL·UAL</td><td>Downgraded BUY → WATCH — fuel thesis broke</td><td>Jun 30</td><td class="fl">Still gated on Hormuz deal</td></tr>
+      <tr><td>GLD</td><td>Hedge re-activated — geopolitical + CPI 4.2%</td><td>Jun 30</td><td class="fl">Held</td></tr>
+      <tr><td>LEN·DHI</td><td>Cut to WAIT — signing cancelled</td><td>Jun 24</td><td class="dn">Negative pending resolution</td></tr>
+      <tr><td>TSLA</td><td>WATCH — −8.3% despite delivery beat</td><td>Jul 2</td><td class="dn">No active thesis</td></tr>
+    </table>
+  </div>
+</details>
+
+<!-- ================= FOOTER ================= -->
+<footer>
+  <div class="legend">
+    <span><b style="color:var(--buy)">BUY</b> actionable now</span>
+    <span><b style="color:var(--watch)">WATCH</b> trigger not yet met</span>
+    <span><b style="color:var(--hedge)">HEDGE</b> portfolio protection</span>
+    <span><b style="color:var(--dim)">WAIT</b> locked — do not enter</span>
+    <span>●●● conviction</span>
+  </div>
+  <p>Manually refreshed research snapshot · Jul 4, 2026, 20:00 GMT+8 · Sources: White House, Reuters, Bloomberg, CNBC, FT, Al Jazeera, NPR, PBS, CBS, NBC, CNN, The Hill, Washington Times, USTR, Nasdaq, HousingWire, TheStreet, Time, Seeking Alpha, AP-NORC, U.S. Bank.</p>
+  <p><b>Not financial advice.</b> Signals are probabilistic research outputs from one person's desk. Analyst price targets are frequently wrong; a 20%+ target implies elevated risk. Consult a licensed financial advisor before acting.</p>
+</footer>
+
+</div>
 </body>
 </html>
